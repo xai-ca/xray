@@ -1,0 +1,1 @@
+{"name": "AF", "arguments": ["Pasta", "Fish", "Meat", "White", "Red"], "defeats": [["Fish", "Meat"], ["Meat", "Fish"], ["Fish", "Pasta"], ["Pasta", "Fish"], ["Pasta", "Meat"], ["Meat", "Pasta"], ["Pasta", "White"], ["Meat", "White"], ["White", "Red"], ["Red", "White"]]}

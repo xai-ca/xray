@@ -1,0 +1,32 @@
+/* Flat pastel-gray style for .btn-secondary */
+.btn-secondary {
+    background-color: #e0e6ed !important;
+    /* Light pastel gray/blue */
+    color: #2f3b4a !important;
+    /* Dark text for contrast */
+    border: 1px solid #d1d9e2 !important;
+    border-radius: 4px;
+    /* Subtle rounding */
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover, Focus, Active: slightly darker shade and gentle shadow */
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+    background-color: #a8d0ff !important;
+    /* Darker pastel gray/blue */
+    border-color: #b8c9d6 !important;
+    color: #1c252f !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Soft shadow on hover/focus */
+}
+
+/* Toggled "active" state (for toggle buttons) */
+.btn-secondary.active {
+    background-color: #a8d0ff !important;
+    border-color: #a2b2c2 !important;
+    color: #111 !important;
+}
+
+/* Removed any margin between consecutive .btn-secondary buttons */
