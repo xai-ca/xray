@@ -121,7 +121,7 @@ def generate_dot_string(
 
                 pos_attr = (
                     f'pos="{node_positions[argument_name][0]},{node_positions[argument_name][1]}!"'
-                    if argument_name in node_positions
+                    if argument_name in node_positions and "NO" in special_handling
                     else ""
                 )
                 node = (

@@ -315,7 +315,6 @@ right_column = dbc.Col(
                                                                         value=[
                                                                             "BU",
                                                                             "RD",
-                                                                            "NO",
                                                                         ],
                                                                         inline=True,
                                                                         id="21-abstract-graph-special-handling",
