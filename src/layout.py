@@ -412,7 +412,7 @@ layout = html.Div(
                                         className="me-3",
                                     ),  # Logo Placeholder
                                     html.Span(
-                                        "WESE",
+                                        "WESE - Workflow Test",
                                         style={
                                             "font-weight": "bold",
                                             "color": "#333333",
