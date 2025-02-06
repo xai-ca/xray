@@ -14,7 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code
 COPY . .
 
-# Expose the port Dash will run on
 EXPOSE 8050
 
 # Run the Dash app
