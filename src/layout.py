@@ -5,6 +5,8 @@ from dash import html, dcc
 import dash_interactive_graphviz
 import visdcc
 import os
+import dash_daq as daq
+
 
 # Abstract Argumentation Framework Layout
 def get_abstract_setting_specification_div():
@@ -101,6 +103,7 @@ def get_abstract_setting_specification_div():
         ]
     )
 
+
 # Evaluation Layout
 def get_abstract_evaluation_div():
     return html.Div(
@@ -152,6 +155,7 @@ def get_abstract_evaluation_div():
             ),
         ]
     )
+
 
 # Explanation Layout
 def get_abstract_explanation_div():
@@ -307,10 +311,10 @@ right_column = dbc.Col(
                                                                                 "label": "Use Re-Derivations",
                                                                                 "value": "RD",
                                                                             },
-                                                                            {
-                                                                                "label": "Use Neato",
-                                                                                "value": "NO",
-                                                                            },
+                                                                            # {
+                                                                            #     "label": "Use Neato",
+                                                                            #     "value": "NO",
+                                                                            # },
                                                                         ],
                                                                         value=[
                                                                             "BU",
@@ -323,7 +327,7 @@ right_column = dbc.Col(
                                                             ]
                                                         ),
                                                     ],
-                                                    width=8,
+                                                    width=7,
                                                 ),
                                                 dbc.Col(
                                                     [
@@ -331,7 +335,7 @@ right_column = dbc.Col(
                                                             "Download DOT File",
                                                             id="21-dot-download-button",
                                                             style={
-                                                                "width": "150px",
+                                                                "width": "140px",
                                                                 "marginTop": "-15px",
                                                                 "marginLeft": "30px",
                                                             },
@@ -341,25 +345,24 @@ right_column = dbc.Col(
                                                         ),
                                                     ],
                                                     className="d-flex flex-column justify-content-center align-items-center",
-                                                    width=3,
+                                                    width=2,
                                                 ),
-                                                # dbc.Col(
-                                                #     [
-                                                #         dbc.Button(
-                                                #             " Layout",
-                                                #             id="21-dot-layout-button",
-                                                #             style={
-                                                #                 "width": "120px",
-                                                #                 "marginTop": "-15px",
-                                                #             },
-                                                #         ),
-                                                #         dcc.Download(
-                                                #             id="21-dot-layout"
-                                                #         ),
-                                                #     ],
-                                                #     className="d-flex flex-column justify-content-center align-items-center",
-                                                #     width=2,
-                                                # ),
+                                                dbc.Col(
+                                                    [
+                                                        dbc.Label(
+                                                            "Freeze Layout",
+                                                            className="me-2 fw-bold",
+                                                        ),
+                                                        daq.ToggleSwitch(
+                                                            id="layout-freeze-switch",
+                                                            value=False,
+                                                            color="#007BFF",  # Change to the desired color
+                                                        ),
+                                                    ],
+                                                    className="d-flex flex-column justify-content-center align-items-center",
+                                                    width=2,
+                                                    style={"marginTop": "-15px"},
+                                                ),
                                             ]
                                         ),
                                     ],

@@ -63,6 +63,7 @@ def generate_dot_string(
     layout=any,
     rank=any,
     special_handling=any,
+    layout_freeze=False,
     layout_file= None,
 ):
     gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(
@@ -73,7 +74,7 @@ def generate_dot_string(
     node_positions = extract_node_positions(layout_file) if layout_file else {}
     # print(node_positions)
     
-    if "NO" in special_handling:
+    if layout_freeze:
         graph_layout="layout=neato"
     else:
         graph_layout="layout=dot"
@@ -121,7 +122,7 @@ def generate_dot_string(
 
                 pos_attr = (
                     f'pos="{node_positions[argument_name][0]},{node_positions[argument_name][1]}!"'
-                    if argument_name in node_positions and "NO" in special_handling
+                    if argument_name in node_positions and layout_freeze
                     else ""
                 )
                 node = (

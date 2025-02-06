@@ -13,11 +13,14 @@ import os
 import subprocess
 import time
 import shutil
+
 # Check where 'dot' is located
 dot_path = shutil.which("dot")
 
 if dot_path is None:
-    raise FileNotFoundError("Graphviz 'dot' command not found. Ensure Graphviz is installed.")
+    raise FileNotFoundError(
+        "Graphviz 'dot' command not found. Ensure Graphviz is installed."
+    )
 
 
 # -- Your PyArg imports --
@@ -223,6 +226,7 @@ def show_hide_element(accordion_value):
     Input("21-abstract-graph-rank", "value"),
     Input("21-abstract-graph-special-handling", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
+    Input("layout-freeze-switch", "value"),
     State("selected_arguments_changed", "data"),
     prevent_initial_call=True,
 )
@@ -235,6 +239,7 @@ def create_abstract_argumentation_framework(
     dot_rank: str,
     special_handling: List[str],
     active_item: str,
+    layout_freeze: bool,
     selected_arguments_changed,
 ):
     if not isinstance(selected_arguments, dict):
@@ -275,6 +280,7 @@ def create_abstract_argumentation_framework(
                 dot_layout,
                 dot_rank,
                 special_handling,
+                layout_freeze,
             )
             selected_arguments_changed = True  # Set flag so it doesn't re-trigger
             with open("temp/layout.dot", "w") as dot_file:
@@ -295,6 +301,7 @@ def create_abstract_argumentation_framework(
                 dot_layout,
                 dot_rank,
                 special_handling,
+                layout_freeze,
                 layout_file="temp/layout.txt",
             )
 
@@ -310,6 +317,7 @@ def create_abstract_argumentation_framework(
                 dot_layout,
                 dot_rank,
                 special_handling,
+                layout_freeze,
             )
             with open("temp/layout.dot", "w") as dot_file:
                 dot_file.write(dot_source)
@@ -318,12 +326,17 @@ def create_abstract_argumentation_framework(
                 check=True,
             )
 
-    
     # Sleep to ensure files are written before returning
     time.sleep(0.1)
 
     download_dot_source = generate_dot_string(
-        arg_framework, selected_arguments, True, dot_layout, dot_rank, special_handling
+        arg_framework,
+        selected_arguments,
+        True,
+        dot_layout,
+        dot_rank,
+        special_handling,
+        layout_freeze,
     )
     # Define graph settings for output
     rank_dict = {

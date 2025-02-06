@@ -1,58 +1,58 @@
-graph 1 8.7778 5.5
-node A 5.3611 2.25 0.75 0.5 "A.2" filled ellipse black #40cfff
-node F 2.3056 4.25 0.75 0.5 "F.4" filled ellipse black #40cfff
-node K 7.4028 0.25 0.75 0.5 "K.0" filled ellipse black #40cfff
-node L 8.4028 0.25 0.75 0.5 "L.0" filled ellipse black #40cfff
-node Q 1.375 0.25 0.75 0.5 "Q.0" filled ellipse black #40cfff
-node T 3.8333 2.25 0.75 0.5 "T.2" filled ellipse black #40cfff
-node V 4.375 0.25 0.75 0.5 "V.0" filled ellipse black #40cfff
-node W 6.375 0.25 0.75 0.5 "W.0" filled ellipse black #40cfff
+graph 1 8.75 5.5
+node A 7.0139 2.25 0.75 0.5 "A.2" filled ellipse black #40cfff
+node F 4.375 4.25 0.75 0.5 "F.4" filled ellipse black #40cfff
+node K 1.375 0.25 0.75 0.5 "K.0" filled ellipse black #40cfff
+node L 0.375 0.25 0.75 0.5 "L.0" filled ellipse black #40cfff
+node Q 4.375 0.25 0.75 0.5 "Q.0" filled ellipse black #40cfff
+node T 5.4861 2.25 0.75 0.5 "T.2" filled ellipse black #40cfff
+node V 6.375 0.25 0.75 0.5 "V.0" filled ellipse black #40cfff
+node W 7.375 0.25 0.75 0.5 "W.0" filled ellipse black #40cfff
 node X 2.375 0.25 0.75 0.5 "X.0" filled ellipse black #40cfff
-node Y 5.375 0.25 0.75 0.5 "Y.0" filled ellipse black #40cfff
-node Z 3.375 0.25 0.75 0.5 "Z.0" filled ellipse black #40cfff
-node E 6.125 4.25 0.75 0.5 "E.∞" filled ellipse black #FEFE62
-node J 7.7917 5.25 0.75 0.5 "J.∞" filled ellipse black #FEFE62
-node M 7.4167 3.25 0.75 0.5 "M.∞" filled ellipse black #FEFE62
-node N 7.4167 4.25 0.75 0.5 "N.∞" filled ellipse black #FEFE62
-node O 7.4167 2.25 0.75 0.5 "O.∞" filled ellipse black #FEFE62
-node B 5.375 1.25 0.75 0.5 "B.1" filled ellipse black #ffb763
-node C 3.375 1.25 0.75 0.5 "C.1" filled ellipse black #ffb763
+node Y 8.375 0.25 0.75 0.5 "Y.0" filled ellipse black #40cfff
+node Z 5.375 0.25 0.75 0.5 "Z.0" filled ellipse black #40cfff
+node E 2.7222 4.25 0.75 0.5 "E.∞" filled ellipse black #FEFE62
+node J 1.0417 5.25 0.75 0.5 "J.∞" filled ellipse black #FEFE62
+node M 1.4306 3.25 0.75 0.5 "M.∞" filled ellipse black #FEFE62
+node N 1.4306 4.25 0.75 0.5 "N.∞" filled ellipse black #FEFE62
+node O 1.4306 2.25 0.75 0.5 "O.∞" filled ellipse black #FEFE62
+node B 7.375 1.25 0.75 0.5 "B.1" filled ellipse black #ffb763
+node C 5.375 1.25 0.75 0.5 "C.1" filled ellipse black #ffb763
 node D 2.375 1.25 0.75 0.5 "D.1" filled ellipse black #ffb763
-node G 1.375 1.25 0.75 0.5 "G.1" filled ellipse black #ffb763
-node H 0.375 1.25 0.75 0.5 "H.1" filled ellipse black #ffb763
-node I 7.4167 1.25 0.75 0.5 "I.1" filled ellipse black #ffb763
-node S 2.3056 3.25 0.75 0.5 "S.3" filled ellipse black #ffb763
-node U 4.375 1.25 0.75 0.5 "U.1" filled ellipse black #ffb763
-edge K I 4 7.4063 0.50234 7.4077 0.60459 7.4094 0.72533 7.411 0.83961 solid #40cfff
-edge L I 4 8.1937 0.46207 8.0603 0.59731 7.8849 0.77517 7.7345 0.92767 solid #40cfff
-edge Q C 4 1.6788 0.40188 2.014 0.56951 2.5566 0.84078 2.9376 1.0313 solid #40cfff
-edge Q G 4 1.375 0.50234 1.375 0.60459 1.375 0.72533 1.375 0.83961 solid #40cfff
-edge Q H 4 1.1629 0.46207 1.0264 0.59863 0.84634 0.77866 0.69285 0.93215 solid #40cfff
-edge T S 4 3.5602 2.4288 3.3223 2.5845 2.9743 2.8123 2.7051 2.9885 solid #40cfff
-edge V B 4 4.5871 0.46207 4.7236 0.59863 4.9037 0.77866 5.0572 0.93215 solid #40cfff
-edge V U 4 4.375 0.50234 4.375 0.60459 4.375 0.72533 4.375 0.83961 solid #40cfff
-edge W B 4 6.1629 0.46207 6.0264 0.59863 5.8463 0.77866 5.6928 0.93215 solid #40cfff
+node G 3.375 1.25 0.75 0.5 "G.1" filled ellipse black #ffb763
+node H 4.375 1.25 0.75 0.5 "H.1" filled ellipse black #ffb763
+node I 1.375 1.25 0.75 0.5 "I.1" filled ellipse black #ffb763
+node S 3.5694 3.25 0.75 0.5 "S.3" filled ellipse black #ffb763
+node U 6.375 1.25 0.75 0.5 "U.1" filled ellipse black #ffb763
+edge K I 4 1.375 0.50234 1.375 0.60459 1.375 0.72533 1.375 0.83961 solid #40cfff
+edge L I 4 0.58707 0.46207 0.72363 0.59863 0.90366 0.77866 1.0572 0.93215 solid #40cfff
+edge Q C 4 4.5871 0.46207 4.7236 0.59863 4.9037 0.77866 5.0572 0.93215 solid #40cfff
+edge Q G 4 4.1629 0.46207 4.0264 0.59863 3.8463 0.77866 3.6928 0.93215 solid #40cfff
+edge Q H 4 4.375 0.50234 4.375 0.60459 4.375 0.72533 4.375 0.83961 solid #40cfff
+edge T S 4 5.1866 2.4062 4.8687 2.5721 4.3634 2.8358 4.0022 3.0242 solid #40cfff
+edge V B 4 6.5871 0.46207 6.7236 0.59863 6.9037 0.77866 7.0572 0.93215 solid #40cfff
+edge V U 4 6.375 0.50234 6.375 0.60459 6.375 0.72533 6.375 0.83961 solid #40cfff
+edge W B 4 7.375 0.50234 7.375 0.60459 7.375 0.72533 7.375 0.83961 solid #40cfff
 edge X D 4 2.375 0.50234 2.375 0.60459 2.375 0.72533 2.375 0.83961 solid #40cfff
-edge Y B 4 5.375 0.50234 5.375 0.60459 5.375 0.72533 5.375 0.83961 solid #40cfff
-edge Z C 4 3.375 0.50234 3.375 0.60459 3.375 0.72533 3.375 0.83961 solid #40cfff
-edge M E 4 7.1676 3.4428 6.9764 3.5908 6.7095 3.7975 6.4936 3.9647 solid #f1dd4b
-edge M N 4 7.4167 3.5023 7.4167 3.6046 7.4167 3.7253 7.4167 3.8396 solid #f1dd4b
-edge M O 4 7.4989 3.0028 7.5095 2.897 7.5128 2.7708 7.5088 2.6522 solid #f1dd4b
-edge N J 4 7.5094 4.4972 7.5504 4.6066 7.5996 4.7378 7.6454 4.8599 solid #f1dd4b
-edge O M 4 7.3345 2.4972 7.3239 2.603 7.3206 2.7292 7.3246 2.8478 solid #f1dd4b
-edge B A 4 5.3715 1.5023 5.3701 1.6046 5.3684 1.7253 5.3668 1.8396 solid #ffb763
-edge B F 4 5.0507 1.5669 4.4218 2.1817 3.0515 3.521 2.5212 4.0393 dashed #40cfff
-edge B T 4 5.1029 1.4265 4.8633 1.5819 4.5111 1.8104 4.2383 1.9873 solid #ffb763
-edge B E 4 5.4762 1.6549 5.6335 2.2841 5.9321 3.4784 6.062 3.998 dotted #919191
-edge C B 4 3.7559 1.25 4.0617 1.25 4.4949 1.25 4.8363 1.25 dotted #919191
-edge D E 4 2.7368 1.5395 3.4964 2.1471 5.2398 3.5419 5.8819 4.0555 dotted #919191
-edge D C 4 2.7531 1.25 2.7817 1.25 2.8109 1.25 2.8402 1.25 dotted #919191
-edge G S 4 1.4873 1.4912 1.6459 1.8321 1.9372 2.4583 2.1261 2.8642 dotted #919191
-edge H F 4 0.52649 1.4854 0.86201 2.0068 1.6697 3.2619 2.0711 3.8856 solid #ffb763
-edge I E 4 7.311 1.4955 7.0871 2.0154 6.5637 3.2311 6.2933 3.8591 dotted #919191
-edge I J 4 7.4553 1.6618 7.5327 2.4872 7.7047 4.3224 7.7679 4.9958 dotted #919191
-edge I O 4 7.4167 1.6605 7.4167 1.7735 7.4167 1.8928 7.4167 1.9943 dotted #919191
-edge S F 4 2.3056 3.5023 2.3056 3.6046 2.3056 3.7253 2.3056 3.8396 solid #ffb763
-edge S E 4 2.6581 3.3423 3.3388 3.5205 4.8363 3.9126 5.6217 4.1182 dotted #919191
-edge U T 4 4.2466 1.487 4.1832 1.6041 4.1052 1.748 4.0342 1.8792 solid #ffb763
+edge Y B 4 8.1629 0.46207 8.0264 0.59863 7.8463 0.77866 7.6928 0.93215 solid #40cfff
+edge Z C 4 5.375 0.50234 5.375 0.60459 5.375 0.72533 5.375 0.83961 solid #40cfff
+edge M E 4 1.6796 3.4428 1.8708 3.5908 2.1378 3.7975 2.3537 3.9647 solid #f1dd4b
+edge M N 4 1.4306 3.5023 1.4306 3.6046 1.4306 3.7253 1.4306 3.8396 solid #f1dd4b
+edge M O 4 1.5128 3.0028 1.5234 2.897 1.5267 2.7708 1.5227 2.6522 solid #f1dd4b
+edge N J 4 1.3345 4.4972 1.2919 4.6066 1.2409 4.7378 1.1934 4.8599 solid #f1dd4b
+edge O M 4 1.3484 2.4972 1.3378 2.603 1.3345 2.7292 1.3385 2.8478 solid #f1dd4b
+edge B A 4 7.2857 1.4972 7.2467 1.6054 7.1999 1.735 7.1562 1.8559 solid #ffb763
+edge B F 4 7.0542 1.5708 6.4378 2.1872 5.103 3.522 4.5857 4.0393 dashed #40cfff
+edge B T 4 7.0757 1.4085 6.7648 1.573 6.2754 1.8322 5.9216 2.0194 solid #ffb763
+edge B E 4 6.9729 1.5093 6.0455 2.1072 3.7763 3.5703 2.9932 4.0753 dotted #919191
+edge C B 4 5.7559 1.25 6.0617 1.25 6.4949 1.25 6.8363 1.25 dotted #919191
+edge D E 4 2.423 1.6643 2.4959 2.2948 2.6326 3.4762 2.6927 3.9949 dotted #919191
+edge D C 4 2.755 1.25 3.281 1.25 4.234 1.25 4.8341 1.25 dotted #919191
+edge G S 4 3.3996 1.5033 3.4323 1.8399 3.4906 2.4388 3.5296 2.8402 dotted #919191
+edge H F 4 4.375 1.5058 4.375 2.0261 4.375 3.2115 4.375 3.8405 solid #ffb763
+edge I E 4 1.4852 1.4955 1.7192 2.0165 2.267 3.2363 2.5484 3.8631 dotted #919191
+edge I J 4 1.3407 1.6618 1.2719 2.4872 1.119 4.3224 1.0629 4.9958 dotted #919191
+edge I O 4 1.3978 1.6605 1.4041 1.7735 1.4107 1.8928 1.4164 1.9943 dotted #919191
+edge S F 4 3.7482 3.4719 3.8507 3.5992 3.9817 3.7617 4.0973 3.9053 solid #ffb763
+edge S E 4 3.3814 3.4719 3.2728 3.6001 3.1339 3.764 3.0117 3.9083 dotted #919191
+edge U T 4 6.1821 1.467 6.0645 1.5993 5.9118 1.7711 5.7794 1.9201 solid #ffb763
 stop
