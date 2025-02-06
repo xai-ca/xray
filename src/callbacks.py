@@ -12,6 +12,12 @@ import dash_interactive_graphviz
 import os
 import subprocess
 import time
+import shutil
+# Check where 'dot' is located
+dot_path = shutil.which("dot")
+
+if dot_path is None:
+    raise FileNotFoundError("Graphviz 'dot' command not found. Ensure Graphviz is installed.")
 
 
 # -- Your PyArg imports --
