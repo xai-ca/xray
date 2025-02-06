@@ -60,9 +60,4 @@ node [fontname = "helvetica"]
     "X" -> "D" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
     "Y" -> "B" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
     "Z" -> "C" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    {rank = same K L Q V W X Y Z}
-    {rank = same U H G I D C B}
-    {rank = same A T}
-    // {rank = same S}
-    // {rank = same F}
 }
