@@ -1,4 +1,4 @@
-name: Deploy to Docker Hub
+name: Deploy to Docker Hub and Render
 
 on:
   push:
@@ -32,3 +32,14 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: seanyl/wese:latest
+
+  deploy-to-render:
+    needs: build-and-push  # Ensure this runs only after the Docker image is pushed
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deployment
+        run: |
+          curl -X POST "$RENDER_DEPLOY_HOOK"
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
