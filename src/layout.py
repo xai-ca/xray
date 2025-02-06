@@ -6,11 +6,12 @@ import dash_interactive_graphviz
 import visdcc
 import os
 
-
+# Abstract Argumentation Framework Layout
 def get_abstract_setting_specification_div():
     return html.Div(
         children=[
             dcc.Store(id="selected-argument-store-abstract"),
+            dcc.Store(id="selected_arguments_changed", data=None),
             dbc.Col(
                 [
                     dbc.Row(
@@ -100,7 +101,7 @@ def get_abstract_setting_specification_div():
         ]
     )
 
-
+# Evaluation Layout
 def get_abstract_evaluation_div():
     return html.Div(
         [
@@ -152,7 +153,7 @@ def get_abstract_evaluation_div():
         ]
     )
 
-
+# Explanation Layout
 def get_abstract_explanation_div():
     return html.Div(
         [
@@ -208,7 +209,6 @@ right_column = dbc.Col(
     [
         dbc.Row(
             [
-                # html.H5("Layered Visualization"),  # Added header
                 dbc.Card(
                     [
                         dbc.CardBody(
@@ -307,10 +307,15 @@ right_column = dbc.Col(
                                                                                 "label": "Use Re-Derivations",
                                                                                 "value": "RD",
                                                                             },
+                                                                            {
+                                                                                "label": "Use Neato",
+                                                                                "value": "NO",
+                                                                            },
                                                                         ],
                                                                         value=[
                                                                             "BU",
                                                                             "RD",
+                                                                            "NO",
                                                                         ],
                                                                         inline=True,
                                                                         id="21-abstract-graph-special-handling",
@@ -319,25 +324,43 @@ right_column = dbc.Col(
                                                             ]
                                                         ),
                                                     ],
-                                                    width=9,
+                                                    width=8,
                                                 ),
                                                 dbc.Col(
                                                     [
                                                         dbc.Button(
-                                                            "Download DOT file",
+                                                            "Download DOT File",
                                                             id="21-dot-download-button",
                                                             style={
-                                                                "width": "120px",
-                                                                "margin": "10px auto",
+                                                                "width": "150px",
+                                                                "marginTop": "-15px",
+                                                                "marginLeft": "30px",
                                                             },
                                                         ),
                                                         dcc.Download(
                                                             id="21-dot-download"
                                                         ),
                                                     ],
-                                                    className="d-flex justify-content-center align-items-center",
+                                                    className="d-flex flex-column justify-content-center align-items-center",
                                                     width=3,
                                                 ),
+                                                # dbc.Col(
+                                                #     [
+                                                #         dbc.Button(
+                                                #             " Layout",
+                                                #             id="21-dot-layout-button",
+                                                #             style={
+                                                #                 "width": "120px",
+                                                #                 "marginTop": "-15px",
+                                                #             },
+                                                #         ),
+                                                #         dcc.Download(
+                                                #             id="21-dot-layout"
+                                                #         ),
+                                                #     ],
+                                                #     className="d-flex flex-column justify-content-center align-items-center",
+                                                #     width=2,
+                                                # ),
                                             ]
                                         ),
                                     ],

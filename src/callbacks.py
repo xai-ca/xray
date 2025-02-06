@@ -5,11 +5,13 @@ import json
 from typing import List, Dict
 
 import dash
-from dash import html, callback, Input, Output, State, ALL, dcc
+from dash import html, callback, Input, Output, State, ALL, dcc, ctx
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_interactive_graphviz
 import os
+import subprocess
+import time
 
 
 # -- Your PyArg imports --
@@ -91,7 +93,8 @@ def get_example_files():
         return [
             {"label": f[:-5], "value": f}  # Remove '.json' from label
             for f in os.listdir(EXAMPLES_FOLDER)
-            if os.path.isfile(os.path.join(EXAMPLES_FOLDER, f)) and f.lower().endswith(".json")
+            if os.path.isfile(os.path.join(EXAMPLES_FOLDER, f))
+            and f.lower().endswith(".json")
         ]
     return []
 
@@ -171,9 +174,13 @@ def load_argumentation_framework(
             with open(example_path, "r", encoding="utf-8") as file:
                 file_content = file.read()
 
-            opened_af = ArgumentationFrameworkFromJsonReader().from_json(json.loads(file_content))
+            opened_af = ArgumentationFrameworkFromJsonReader().from_json(
+                json.loads(file_content)
+            )
 
-            abstract_arguments_value = "\n".join(str(arg) for arg in opened_af.arguments)
+            abstract_arguments_value = "\n".join(
+                str(arg) for arg in opened_af.arguments
+            )
             abstract_attacks_value = "\n".join(
                 f"({str(defeat.from_argument)},{str(defeat.to_argument)})"
                 for defeat in opened_af.defeats
@@ -201,6 +208,7 @@ def show_hide_element(accordion_value):
 @callback(
     Output("21-dot-download", "data"),
     Output("explanation-graph", "dot_source"),
+    Output("selected_arguments_changed", "data"),
     Input("21-dot-download-button", "n_clicks"),
     Input("abstract-arguments", "value"),
     Input("abstract-attacks", "value"),
@@ -209,6 +217,7 @@ def show_hide_element(accordion_value):
     Input("21-abstract-graph-rank", "value"),
     Input("21-abstract-graph-special-handling", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
+    State("selected_arguments_changed", "data"),
     prevent_initial_call=True,
 )
 def create_abstract_argumentation_framework(
@@ -220,39 +229,100 @@ def create_abstract_argumentation_framework(
     dot_rank: str,
     special_handling: List[str],
     active_item: str,
+    selected_arguments_changed,
 ):
+    if not isinstance(selected_arguments, dict):
+        selected_arguments = {}
     """
-    Send the AF data to the graph for plotting and optionally generate a .gv file.
+    Generate the argumentation framework visualization and handle file download.
     """
+
+    # Ensure `selected_arguments_changed` is initialized properly
+    if selected_arguments_changed is None:
+        selected_arguments_changed = False
+
+    # Set `dot_source` to None so we can update it properly
+    dot_source = None
+
+    # Read or initialize the argumentation framework
     try:
         arg_framework = read_argumentation_framework(arguments, attacks)
     except ValueError:
         arg_framework = AbstractArgumentationFramework()
 
-    # If in 'ArgumentationFramework' tab, clear highlight color
-    if active_item == "ArgumentationFramework":
-        selected_arguments = None
+    triggered_id = ctx.triggered_id  # Get which input triggered the callback
 
-    color_blind_mode = True
-    data = get_argumentation_framework_graph_data(
-        arg_framework, selected_arguments, color_blind_mode
-    )
-
-    if selected_arguments:
-        dot_source = generate_dot_string(
-            arg_framework,
-            selected_arguments,
-            color_blind_mode,
-            dot_layout,
-            dot_rank,
-            special_handling,
-        )
-    else:
+    # Only set `dot_source` to default if no valid user interaction is detected
+    if not triggered_id or active_item == "ArgumentationFramework":
         dot_source = generate_plain_dot_string(arg_framework, dot_layout)
+        selected_arguments_changed = False  # Reset state
+    else:
+        # Correctly detect when `selected-argument-store-abstract` is triggered
+        if (
+            triggered_id == "selected-argument-store-abstract"
+            and not selected_arguments_changed
+        ):
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,
+                True,
+                dot_layout,
+                dot_rank,
+                special_handling,
+            )
+            selected_arguments_changed = True  # Set flag so it doesn't re-trigger
+            with open("temp/layout.dot", "w") as dot_file:
+                dot_file.write(dot_source)
+            subprocess.run(
+                ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                check=True,
+            )
 
+        elif (
+            triggered_id == "selected-argument-store-abstract"
+            and selected_arguments_changed
+        ):
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,
+                True,
+                dot_layout,
+                dot_rank,
+                special_handling,
+                layout_file="temp/layout.txt",
+            )
+
+        elif triggered_id in [
+            "21-abstract-graph-layout",
+            "21-abstract-graph-rank",
+            "21-abstract-graph-special-handling",
+        ]:
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,
+                True,
+                dot_layout,
+                dot_rank,
+                special_handling,
+            )
+            with open("temp/layout.dot", "w") as dot_file:
+                dot_file.write(dot_source)
+            subprocess.run(
+                ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                check=True,
+            )
+
+    
+    # Sleep to ensure files are written before returning
+    time.sleep(0.1)
+
+    download_dot_source = generate_dot_string(
+        arg_framework, selected_arguments, True, dot_layout, dot_rank, special_handling
+    )
+    # Define graph settings for output
     rank_dict = {
         "NR": "Attacks",
-        "MR": "Unattacked Arguments",
+        "MR": "Unchallenged Arguments",
         "AR": "Length of Arguments",
     }
     settings = f"""
@@ -262,13 +332,15 @@ def create_abstract_argumentation_framework(
     // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
     """.strip()
 
-    changed_id = [p["prop_id"] for p in dash.callback_context.triggered][0]
-    if "21-dot-download-button" in changed_id:
-        return dict(
-            content=settings + "\n" + dot_source, filename="pyarg_output.gv"
-        ), dot_source
-    else:
-        return None, dot_source
+    # Ensure function always returns three outputs
+    if triggered_id == "21-dot-download-button":
+        return (
+            dict(content=settings + "\n" + download_dot_source, filename="output.gv"),
+            dot_source,
+            selected_arguments_changed,
+        )
+
+    return None, dot_source, selected_arguments_changed
 
 
 @callback(
@@ -373,7 +445,7 @@ def evaluate_abstract_argumentation_framework(
             dbc.Button(
                 [extension_readable_str],
                 color="secondary",
-                id={"type": "extension-button-abstract", "index": extension_long_str}
+                id={"type": "extension-button-abstract", "index": extension_long_str},
             )
         )
 
