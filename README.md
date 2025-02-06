@@ -19,7 +19,7 @@ $$
 You can directly visit the following website to use the tool
 https://wese-app.onrender.com
 
-## Locally development
+## Locally Development
 Install the necessary package
 ```bash
 pip install -r requirements.txt
@@ -28,6 +28,17 @@ python app.py
 before deployment, you need to test by running
 ```bash
 gunicorn app:server
+```
+
+## Docker Manually Deployment
+Rebuild the Docker Image
+```bash
+docker buildx build --platform linux/amd64 -t seanyl/wese:latest .
+```
+
+Push the image to docker hub
+```
+docker push seanyl/wese:latest
 ```
 
 # License
