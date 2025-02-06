@@ -33,12 +33,12 @@ gunicorn app:server
 ## Docker Manually Deployment
 Rebuild the Docker Image
 ```bash
-docker buildx build --platform linux/amd64 -t seanyl/wese:latest .
+docker buildx build --platform linux/amd64 -t seanyl/wese:app .
 ```
 
 Push the image to docker hub
 ```
-docker push seanyl/wese:latest
+docker push seanyl/wese:app
 ```
 
 # License
