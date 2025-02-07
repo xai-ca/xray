@@ -8,7 +8,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src"
 
 from server import server
 from layout import layout
-import callbacks  
 
 app = dash.Dash(
     __name__,
@@ -20,5 +19,5 @@ app = dash.Dash(
 app.layout = layout
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8050, debug=True)
+    app.run(host="0.0.0.0", port=8050, debug=False)
 

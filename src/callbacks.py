@@ -475,6 +475,7 @@ def evaluate_abstract_argumentation_framework(
     all_argument_buttons = [
         dbc.Button(
             arg,
+            outline=True,
             color=(
                 "danger" if gr_status_by_arg[arg] == "defeated" else
                 "primary" if gr_status_by_arg[arg] == "accepted" else "warning"
