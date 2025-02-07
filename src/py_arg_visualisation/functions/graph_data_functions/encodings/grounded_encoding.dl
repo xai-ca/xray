@@ -1,5 +1,7 @@
 #const state_max = 100.
 
+pos(X) :- pos(X).
+
 % win-e rule in "doubled form" (2 rounds for 1, simplifying queries & termination)
 win_o(S, X) :- attack(Y,X), not win_u(S,Y), next(S,_).  % (1)
 win_u(S1,X) :- attack(Y,X), not win_o(S,Y), next(S,S1). % (2)

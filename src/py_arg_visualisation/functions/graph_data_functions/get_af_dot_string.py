@@ -1,6 +1,7 @@
 import pathlib
 from collections import defaultdict
 import clingo
+import time
 
 from py_arg_visualisation.functions.graph_data_functions.get_color import get_color
 
@@ -79,7 +80,7 @@ def generate_dot_string(
     # print(node_positions)
 
     if layout_freeze:
-        graph_layout = "graph[layout=neato overlap=false splines=true]"
+        graph_layout = "graph[layout=neato overlap=false]"
     else:
         graph_layout = "layout=dot"
 
@@ -326,7 +327,8 @@ def get_numbered_grounded_extension(argumentation_framework):
     ctl = clingo.Control()
     ctl.load(str(PATH_TO_ENCODINGS / "grounded_encoding.dl"))
     for argument in argumentation_framework.arguments:
-        ctl.add("base", [], f"pos({argument_name_to_id[argument.name]}).")
+        pos_fact = f"pos({argument_name_to_id[argument.name]})."
+        ctl.add("base", [], pos_fact)
     for defeat in argumentation_framework.defeats:
         ctl.add(
             "base",

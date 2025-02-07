@@ -326,38 +326,38 @@ def create_abstract_argumentation_framework(
                 check=True,
             )
 
-    # Sleep to ensure files are written before returning
-    time.sleep(0.1)
+        # Sleep to ensure files are written before returning
+        time.sleep(0.1)
 
-    download_dot_source = generate_dot_string(
-        arg_framework,
-        selected_arguments,
-        True,
-        dot_layout,
-        dot_rank,
-        special_handling,
-        layout_freeze,
-    )
-    # Define graph settings for output
-    rank_dict = {
-        "NR": "Attacks",
-        "MR": "Unchallenged Arguments",
-        "AR": "Length of Arguments",
-    }
-    settings = f"""
-    // Input AF: {str(arg_framework)}
-    // Layer by: {rank_dict.get(dot_rank, "Unknown")}
-    // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
-    // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
-    """.strip()
-
-    # Ensure function always returns three outputs
-    if triggered_id == "21-dot-download-button":
-        return (
-            dict(content=settings + "\n" + download_dot_source, filename="output.gv"),
-            dot_source,
-            selected_arguments_changed,
+        download_dot_source = generate_dot_string(
+            arg_framework,
+            selected_arguments,
+            True,
+            dot_layout,
+            dot_rank,
+            special_handling,
+            layout_freeze,
         )
+        # Define graph settings for output
+        rank_dict = {
+            "NR": "Attacks",
+            "MR": "Unchallenged Arguments",
+            "AR": "Length of Arguments",
+        }
+        settings = f"""
+        // Input AF: {str(arg_framework)}
+        // Layer by: {rank_dict.get(dot_rank, "Unknown")}
+        // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
+        // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
+        """.strip()
+
+        # Ensure function always returns three outputs
+        if triggered_id == "21-dot-download-button":
+            return (
+                dict(content=settings + "\n" + download_dot_source, filename="output.gv"),
+                dot_source,
+                selected_arguments_changed,
+            )
 
     return None, dot_source, selected_arguments_changed
 
