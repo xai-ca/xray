@@ -5,10 +5,9 @@ import json
 from typing import List, Dict
 
 import dash
-from dash import html, callback, Input, Output, State, ALL, dcc, ctx
+from dash import html, callback, Input, Output, State, ALL, ctx
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
-import dash_interactive_graphviz
 import os
 import subprocess
 import time
@@ -72,9 +71,7 @@ from py_arg_visualisation.functions.extensions_functions.get_acceptance_strategy
 from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string import (
     generate_plain_dot_string,
     generate_dot_string,
-)
-from py_arg_visualisation.functions.graph_data_functions.get_af_graph_data import (
-    get_argumentation_framework_graph_data,
+    get_numbered_grounded_extension
 )
 from py_arg_visualisation.functions.import_functions.read_argumentation_framework_functions import (
     read_argumentation_framework,
@@ -354,7 +351,9 @@ def create_abstract_argumentation_framework(
         # Ensure function always returns three outputs
         if triggered_id == "21-dot-download-button":
             return (
-                dict(content=settings + "\n" + download_dot_source, filename="output.gv"),
+                dict(
+                    content=settings + "\n" + download_dot_source, filename="output.gv"
+                ),
                 dot_source,
                 selected_arguments_changed,
             )
@@ -414,7 +413,7 @@ def download_generated_abstract_argumentation_framework(
 
 @callback(
     Output("21-abstract-evaluation-semantics", "children"),
-    Output("21-abstract-evaluation-accepted", "children"),
+    Output("21-abstract-evaluation-all-args", "children"),
     State("abstract-arguments", "value"),
     State("abstract-attacks", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
@@ -467,19 +466,23 @@ def evaluate_abstract_argumentation_framework(
                 id={"type": "extension-button-abstract", "index": extension_long_str},
             )
         )
-
     # Compute accepted arguments
     acceptance_strategy = get_acceptance_strategy(strategy)
     accepted_arguments = get_accepted_arguments(frozen_extensions, acceptance_strategy)
+    gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(arg_framework)
 
     # Build accepted argument buttons
-    accepted_argument_buttons = [
+    all_argument_buttons = [
         dbc.Button(
-            arg.name,
-            color="secondary",
-            id={"type": "argument-button-abstract", "index": arg.name},
+            arg,
+            color=(
+                "danger" if gr_status_by_arg[arg] == "defeated" else
+                "primary" if gr_status_by_arg[arg] == "accepted" else "warning"
+            ),
+            id={"type": "argument-button-abstract", "index": arg},
+            style={"margin": "5px"}  # Add margin to make buttons sparse
         )
-        for arg in sorted(accepted_arguments)
+        for arg in sorted(arguments.split("\n"))
     ]
 
     semantics_div = html.Div(
@@ -491,16 +494,16 @@ def evaluate_abstract_argumentation_framework(
             html.Br(),
         ]
     )
-    accepted_div = html.Div(
+    arguments_div = html.Div(
         [
-            html.B("The accepted argument(s):"),
+            html.B("All argument(s):"),
             html.Br(),
             html.I("Click on an argument to display it in the graph."),
-            html.Div(accepted_argument_buttons),
+            html.Div(all_argument_buttons),
         ]
     )
 
-    return semantics_div, accepted_div
+    return semantics_div, arguments_div
 
 
 @callback(
@@ -533,7 +536,7 @@ def mark_extension_or_argument_in_graph(
             "red": out_part.split("+") if out_part else [],
         }
     elif button_type == "argument-button-abstract":
-        return {"blue": [button_index]}
+        return {"red": [button_index]}
 
     return []
 

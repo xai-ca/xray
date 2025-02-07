@@ -3,8 +3,6 @@
 import dash_bootstrap_components as dbc
 from dash import html, dcc
 import dash_interactive_graphviz
-import visdcc
-import os
 import dash_daq as daq
 
 
@@ -134,7 +132,7 @@ def get_abstract_evaluation_div():
                             ),
                         ]
                     ),
-                    dbc.Row(id="21-abstract-evaluation-semantics"),
+                    
                     dbc.Row(
                         [
                             dbc.Col(html.B("Evaluation strategy")),
@@ -150,7 +148,8 @@ def get_abstract_evaluation_div():
                             ),
                         ]
                     ),
-                    dbc.Row(id="21-abstract-evaluation-accepted"),
+                    dbc.Row(id="21-abstract-evaluation-semantics"),
+                    dbc.Row(id="21-abstract-evaluation-all-args"),
                 ]
             ),
         ]
