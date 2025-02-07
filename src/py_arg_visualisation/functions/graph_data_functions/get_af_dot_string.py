@@ -9,7 +9,7 @@ PATH_TO_ENCODINGS = pathlib.Path(__file__).parent / "encodings"
 
 def generate_plain_dot_string(argumentation_framework, layout=any):
     dot_string = "digraph {\n"
-    dot_string += 'node [fontname = "helvetica"] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
+    dot_string += 'node [fontname = "helvetica" , shape=circle, fixedsize=true, width=0.8, height=0.8] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
         "BT"
     )
 
@@ -64,25 +64,28 @@ def generate_dot_string(
     rank=any,
     special_handling=any,
     layout_freeze=False,
-    layout_file= None,
+    layout_file=None,
 ):
     gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(
         argumentation_framework
     )
     # processing the layout file
-    layout_file = pathlib.Path(__file__).parent.parent.parent.parent.parent / "temp" / "layout.txt"
+    layout_file = (
+        pathlib.Path(__file__).parent.parent.parent.parent.parent
+        / "temp"
+        / "layout.txt"
+    )
     node_positions = extract_node_positions(layout_file) if layout_file else {}
     # print(node_positions)
-    
-    if layout_freeze:
-        graph_layout="layout=neato"
-    else:
-        graph_layout="layout=dot"
 
+    if layout_freeze:
+        graph_layout = "graph[layout=neato overlap=false splines=true]"
+    else:
+        graph_layout = "layout=dot"
 
     # creating the dot string
     dot_string = f"digraph {{\n{graph_layout} \n"
-    dot_string += 'node [fontname = "helvetica"] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
+    dot_string += 'node [fontname = "helvetica"  shape=circle fixedsize=true width=0.8, height=0.8] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
         layout
     )
 
