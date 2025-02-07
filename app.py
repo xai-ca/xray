@@ -8,6 +8,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src"
 
 from server import server
 from layout import layout
+import callbacks  # noqa: F401 (necessary for callbacks to register)
+
 
 app = dash.Dash(
     __name__,
