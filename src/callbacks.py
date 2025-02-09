@@ -418,11 +418,10 @@ def download_generated_abstract_argumentation_framework(
     State("abstract-attacks", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
     Input("abstract-evaluation-semantics", "value"),
-    Input("abstract-evaluation-strategy", "value"),
     prevent_initial_call=True,
 )
 def evaluate_abstract_argumentation_framework(
-    arguments: str, attacks: str, active_item: str, semantics: str, strategy: str
+    arguments: str, attacks: str, active_item: str, semantics: str
 ):
     if active_item != "Evaluation":
         raise PreventUpdate
@@ -467,6 +466,7 @@ def evaluate_abstract_argumentation_framework(
             )
         )
     # Compute accepted arguments
+    strategy = "Skeptical" #or Credulous
     acceptance_strategy = get_acceptance_strategy(strategy)
     accepted_arguments = get_accepted_arguments(frozen_extensions, acceptance_strategy)
     gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(arg_framework)
@@ -561,7 +561,6 @@ def setting_choice(choice: str):
     State("abstract-evaluation-semantics", "value"),
     Input("abstract-explanation-function", "value"),
     Input("abstract-explanation-type", "value"),
-    State("abstract-evaluation-strategy", "value"),
     prevent_initial_call=True,
 )
 def derive_explanations_abstract_argumentation_framework(
@@ -571,7 +570,6 @@ def derive_explanations_abstract_argumentation_framework(
     semantics: str,
     explanation_function: str,
     explanation_type: str,
-    explanation_strategy: str,
 ):
     if active_item != "Explanation":
         raise PreventUpdate
@@ -579,6 +577,7 @@ def derive_explanations_abstract_argumentation_framework(
     arg_framework = read_argumentation_framework(arguments, attacks)
     frozen_extensions = get_argumentation_framework_extensions(arg_framework, semantics)
     extensions = [set(frozen_extension) for frozen_extension in frozen_extensions]
+    explanation_strategy = "Skeptical"  # or Credulous
     acceptance_strategy = get_acceptance_strategy(explanation_strategy)
     accepted_arguments = get_accepted_arguments(frozen_extensions, acceptance_strategy)
 

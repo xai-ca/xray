@@ -132,22 +132,6 @@ def get_abstract_evaluation_div():
                             ),
                         ]
                     ),
-                    
-                    dbc.Row(
-                        [
-                            dbc.Col(html.B("Evaluation strategy")),
-                            dbc.Col(
-                                dbc.Select(
-                                    options=[
-                                        {"label": "Credulous", "value": "Credulous"},
-                                        {"label": "Skeptical", "value": "Skeptical"},
-                                    ],
-                                    value="Credulous",
-                                    id="abstract-evaluation-strategy",
-                                )
-                            ),
-                        ]
-                    ),
                     dbc.Row(id="21-abstract-evaluation-semantics"),
                     dbc.Row(id="21-abstract-evaluation-all-args"),
                 ]
