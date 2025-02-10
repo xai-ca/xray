@@ -386,7 +386,7 @@ def evaluate_abstract_argumentation_framework(
 
     if semantics == "Grounded":
         semantics_div.children.append(html.Br())
-        semantics_div.children.append(html.B("Grounded Extensions:"))
+        semantics_div.children.append(html.B("Grounded Extension:"))
         semantics_div.children.append(
             html.Div(
                 grounded_extension_radioitems,
@@ -466,7 +466,7 @@ def evaluate_abstract_argumentation_framework(
         )
     elif semantics == "Complete":
         semantics_div.children.append(html.Br())
-        semantics_div.children.append(html.B("Grounded Extensions:"))
+        semantics_div.children.append(html.B("Grounded Extension:"))
         semantics_div.children.append(
             html.Div(
                 grounded_extension_radioitems,
