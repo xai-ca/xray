@@ -3,61 +3,61 @@ layout=dot
 node [fontname = "helvetica"  shape=circle fixedsize=true width=0.8, height=0.8] 
   edge [fontname = "helvetica"] 
  rankdir=BT  // Node defaults can be set here if needed
-    "A" [style="filled" fillcolor="#40cfff" label="A.2" fontsize=14 ]
-    "F" [style="filled" fillcolor="#40cfff" label="F.4" fontsize=14 ]
-    "K" [style="filled" fillcolor="#40cfff" label="K.0" fontsize=14 ]
-    "L" [style="filled" fillcolor="#40cfff" label="L.0" fontsize=14 ]
-    "Q" [style="filled" fillcolor="#40cfff" label="Q.0" fontsize=14 ]
-    "T" [style="filled" fillcolor="#40cfff" label="T.2" fontsize=14 ]
-    "V" [style="filled" fillcolor="#40cfff" label="V.0" fontsize=14 ]
-    "W" [style="filled" fillcolor="#40cfff" label="W.0" fontsize=14 ]
-    "X" [style="filled" fillcolor="#40cfff" label="X.0" fontsize=14 ]
-    "Y" [style="filled" fillcolor="#40cfff" label="Y.0" fontsize=14 ]
-    "Z" [style="filled" fillcolor="#40cfff" label="Z.0" fontsize=14 ]
-    "E" [style="filled" fillcolor="#FEFE62" label="E.∞" fontsize=14 ]
-    "J" [style="filled" fillcolor="#FEFE62" label="J.∞" fontsize=14 ]
-    "M" [style="filled" fillcolor="#FEFE62" label="M.∞" fontsize=14 ]
-    "N" [style="filled" fillcolor="#FEFE62" label="N.∞" fontsize=14 ]
-    "O" [style="filled" fillcolor="#FEFE62" label="O.∞" fontsize=14 ]
-    "B" [style="filled" fillcolor="#ffb763" label="B.1" fontsize=14 ]
-    "C" [style="filled" fillcolor="#ffb763" label="C.1" fontsize=14 ]
-    "D" [style="filled" fillcolor="#ffb763" label="D.1" fontsize=14 ]
-    "G" [style="filled" fillcolor="#ffb763" label="G.1" fontsize=14 ]
-    "H" [style="filled" fillcolor="#ffb763" label="H.1" fontsize=14 ]
-    "I" [style="filled" fillcolor="#ffb763" label="I.1" fontsize=14 ]
-    "S" [style="filled" fillcolor="#ffb763" label="S.3" fontsize=14 ]
-    "U" [style="filled" fillcolor="#ffb763" label="U.1" fontsize=14 ]
+    "T" [fontsize=14]
+    "C" [fontsize=14]
+    "D" [fontsize=14]
+    "W" [fontsize=14]
+    "V" [fontsize=14]
+    "Q" [fontsize=14]
+    "X" [fontsize=14]
+    "K" [fontsize=14]
+    "F" [fontsize=14]
+    "M" [fontsize=14]
+    "E" [fontsize=14]
+    "N" [fontsize=14]
+    "B" [fontsize=14]
+    "L" [fontsize=14]
+    "Z" [fontsize=14]
+    "J" [fontsize=14]
+    "H" [fontsize=14]
+    "U" [fontsize=14]
+    "A" [fontsize=14]
+    "I" [fontsize=14]
+    "G" [fontsize=14]
+    "O" [fontsize=14]
+    "S" [fontsize=14]
+    "Y" [fontsize=14]
     edge[labeldistance=1.5 fontsize=12]
-    "B" -> "A" [color="#ffb763" style="solid"fontcolor="#ffb763"arrowtail="vee"arrowhead="vee"taillabel="2"]
-    "B" -> "T" [color="#ffb763" style="solid"fontcolor="#ffb763"arrowtail="vee"arrowhead="vee"taillabel="2"]
-    "C" -> "B" [color="#919191" style="dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"taillabel=""]
-    "D" -> "C" [color="#919191" style="dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"taillabel=""]
-    "B" -> "E" [dir=back color="#919191" style= "dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"headlabel=""]
-    "D" -> "E" [dir=back color="#919191" style= "dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"headlabel=""]
-    "B" -> "F" [dir=back color="#40cfff" style= "dashed"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"headlabel="5"]
-    "G" -> "S" [color="#919191" style="dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"taillabel=""]
-    "H" -> "F" [color="#ffb763" style="solid"fontcolor="#ffb763"arrowtail="vee"arrowhead="vee"taillabel="2"]
-    "I" -> "E" [color="#919191" style="dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"taillabel=""]
-    "I" -> "J" [dir=back color="#919191" style= "dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"headlabel=""]
-    "K" -> "I" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "L" -> "I" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "M" -> "E" [color="#f1dd4b" style="solid"fontcolor="#f1dd4b"arrowtail="vee"arrowhead="vee"taillabel="∞"]
-    "M" -> "O" [color="#f1dd4b" style="solid"fontcolor="#f1dd4b"arrowtail="vee"arrowhead="vee"taillabel="∞"]
-    "M" -> "N" [color="#f1dd4b" style="solid"fontcolor="#f1dd4b"arrowtail="vee"arrowhead="vee"taillabel="∞"]
-    "N" -> "J" [color="#f1dd4b" style="solid"fontcolor="#f1dd4b"arrowtail="vee"arrowhead="vee"taillabel="∞"]
-    "I" -> "O" [dir=back color="#919191" style= "dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"headlabel=""]
-    "O" -> "M" [color="#f1dd4b" style="solid"fontcolor="#f1dd4b"arrowtail="vee"arrowhead="vee"taillabel="∞"]
-    "Q" -> "G" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "Q" -> "H" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "Q" -> "C" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "S" -> "E" [color="#919191" style="dotted"fontcolor="#919191"arrowtail="onormal"arrowhead="onormal"taillabel=""]
-    "S" -> "F" [color="#ffb763" style="solid"fontcolor="#ffb763"arrowtail="vee"arrowhead="vee"taillabel="4"]
-    "T" -> "S" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="3"]
-    "U" -> "T" [color="#ffb763" style="solid"fontcolor="#ffb763"arrowtail="vee"arrowhead="vee"taillabel="2"]
-    "V" -> "B" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "V" -> "U" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "W" -> "B" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "X" -> "D" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "Y" -> "B" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
-    "Z" -> "C" [color="#40cfff" style="solid"fontcolor="#40cfff"arrowtail="vee"arrowhead="vee"taillabel="1"]
+    "B" -> "A"
+    "B" -> "T"
+    "C" -> "B"
+    "D" -> "C"
+    "E" -> "B"
+    "E" -> "D"
+    "F" -> "B"
+    "G" -> "S"
+    "H" -> "F"
+    "I" -> "E"
+    "J" -> "I"
+    "K" -> "I"
+    "L" -> "I"
+    "M" -> "E"
+    "M" -> "O"
+    "M" -> "N"
+    "N" -> "J"
+    "O" -> "I"
+    "O" -> "M"
+    "Q" -> "G"
+    "Q" -> "H"
+    "Q" -> "C"
+    "S" -> "E"
+    "S" -> "F"
+    "T" -> "S"
+    "U" -> "T"
+    "V" -> "B"
+    "V" -> "U"
+    "W" -> "B"
+    "X" -> "D"
+    "Y" -> "B"
+    "Z" -> "C"
 }

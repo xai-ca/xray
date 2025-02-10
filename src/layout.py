@@ -115,25 +115,34 @@ def get_abstract_evaluation_div():
                                 dbc.Select(
                                     options=[
                                         # {'label': 'Admissible', 'value': 'Admissible'},
-                                        {"label": "Complete", "value": "Complete"},
                                         {"label": "Grounded", "value": "Grounded"},
-                                        {"label": "Preferred", "value": "Preferred"},
                                         # {'label': 'Ideal', 'value': 'Ideal'},
                                         # {'label': 'Stage', 'value': 'Stage'},
                                         {"label": "Stable", "value": "Stable"},
+                                        {"label": "Preferred", "value": "Preferred"},
+                                        {"label": "Complete", "value": "Complete"},
                                         # {'label': 'Semi-stable', 'value': 'SemiStable'},
                                         # {'label': 'Eager', 'value': 'Eager'},
                                         # {'label': 'Conflict-free', 'value': 'ConflictFree'},
                                         # {'label': 'Naive', 'value': 'Naive'}
                                     ],
-                                    value="Complete",
+                                    value="Grounded",
                                     id="abstract-evaluation-semantics",
                                 )
                             ),
                         ]
                     ),
+                    html.Div(
+                        [
+                            dbc.RadioItems(id="extension-radioitems-grounded"),
+                            dbc.RadioItems(id="extension-radioitems-stable"),
+                            dbc.RadioItems(id="extension-radioitems-preferred"),
+                            dbc.RadioItems(id="extension-radioitems-other"),
+                        ],
+                        style={"display": "none"},
+                    ),
                     dbc.Row(id="21-abstract-evaluation-semantics"),
-                    dbc.Row(id="21-abstract-evaluation-all-args"),
+                    dcc.Store(id="grounded-extension-long-str-store"),
                 ]
             ),
         ]
@@ -143,30 +152,7 @@ def get_abstract_evaluation_div():
 # Explanation Layout
 def get_abstract_explanation_div():
     return html.Div(
-        [
-            dbc.Row(
-                [
-                    dbc.Col(html.B("Type")),
-                    dbc.Col(
-                        dbc.Select(
-                            options=[
-                                {"label": "Acceptance", "value": "Acceptance"},
-                                {"label": "Non-Acceptance", "value": "NonAcceptance"},
-                            ],
-                            value="Acceptance",
-                            id="abstract-explanation-type",
-                        )
-                    ),
-                ]
-            ),
-            dbc.Row(
-                [
-                    dbc.Col(html.B("Explanation function")),
-                    dbc.Col(dbc.Select(id="abstract-explanation-function")),
-                ]
-            ),
-            dbc.Row(id="abstract-explanation"),
-        ]
+        dbc.Row(id="21-abstract-evaluation-all-args"),
     )
 
 
@@ -179,7 +165,7 @@ left_column = dbc.Col(
                 item_id="ArgumentationFramework",
             ),
             dbc.AccordionItem(
-                get_abstract_evaluation_div(), title="Evaluation", item_id="Evaluation"
+                get_abstract_evaluation_div(), title="Solutions", item_id="Evaluation"
             ),
             dbc.AccordionItem(
                 get_abstract_explanation_div(),

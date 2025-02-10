@@ -5,7 +5,16 @@ import json
 from typing import List, Dict
 
 import dash
-from dash import html, callback, Input, Output, State, ALL, ctx
+from dash import (
+    html,
+    callback,
+    Input,
+    Output,
+    State,
+    ctx,
+    callback_context,
+    exceptions,
+)
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import os
@@ -23,9 +32,6 @@ if dot_path is None:
 
 
 # -- Your PyArg imports --
-from py_arg.abstract_argumentation.classes.abstract_argumentation_framework import (
-    AbstractArgumentationFramework,
-)
 from py_arg.abstract_argumentation.generators.abstract_argumentation_framework_generator import (
     AbstractArgumentationFrameworkGenerator,
 )
@@ -53,25 +59,13 @@ from py_arg.abstract_argumentation.import_export.argumentation_framework_to_json
 from py_arg.abstract_argumentation.import_export.argumentation_framework_to_trivial_graph_format_writer import (
     ArgumentationFrameworkToTrivialGraphFormatWriter,
 )
-from py_arg_visualisation.functions.explanations_functions.explanation_function_options import (
-    EXPLANATION_FUNCTION_OPTIONS,
-)
-from py_arg_visualisation.functions.explanations_functions.get_af_explanations import (
-    get_argumentation_framework_explanations,
-)
-from py_arg.abstract_argumentation.semantics.get_accepted_arguments import (
-    get_accepted_arguments,
-)
 from py_arg.abstract_argumentation.semantics.get_argumentation_framework_extensions import (
     get_argumentation_framework_extensions,
-)
-from py_arg_visualisation.functions.extensions_functions.get_acceptance_strategy import (
-    get_acceptance_strategy,
 )
 from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string import (
     generate_plain_dot_string,
     generate_dot_string,
-    get_numbered_grounded_extension
+    get_numbered_grounded_extension,
 )
 from py_arg_visualisation.functions.import_functions.read_argumentation_framework_functions import (
     read_argumentation_framework,
@@ -88,12 +82,76 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
 # ---------------------------
 # Callbacks
 # ---------------------------
+# Section0 :Accordion Item Setup
+@callback(
+    Output("layered-vis-param", "style"),
+    Input("abstract-evaluation-accordion", "active_item"),
+)
+def show_hide_element(accordion_value):
+    if accordion_value == "Evaluation":
+        return {"display": "block"}
+    else:
+        return {"display": "none"}
 
-# Define the examples folder path
+
+# Section1 : Abstract Argumentation Framework
+# 1.1 : Upload or generate an AF
+
+
+@callback(
+    Output("21-af-download", "data"),
+    Input("21-af-download-button", "n_clicks"),
+    State("abstract-arguments", "value"),
+    State("abstract-attacks", "value"),
+    State("21-af-filename", "value"),
+    State("21-af-extension", "value"),
+    prevent_initial_call=True,
+)
+def download_generated_abstract_argumentation_framework(
+    _nr_clicks: int,
+    arguments_text: str,
+    defeats_text: str,
+    filename: str,
+    extension: str,
+):
+    argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
+
+    if extension == "JSON":
+        argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
+            argumentation_framework
+        )
+        argumentation_framework_str = json.dumps(argumentation_framework_json)
+    elif extension == "TGF":
+        argumentation_framework_str = (
+            ArgumentationFrameworkToTrivialGraphFormatWriter.write_to_str(
+                argumentation_framework
+            )
+        )
+    elif extension == "APX":
+        argumentation_framework_str = (
+            ArgumentationFrameworkToASPARTIXFormatWriter.write_to_str(
+                argumentation_framework
+            )
+        )
+    elif extension == "ICCMA23":
+        argumentation_framework_str = (
+            ArgumentationFrameworkToICCMA23FormatWriter.write_to_str(
+                argumentation_framework
+            )
+        )
+    else:
+        raise NotImplementedError
+
+    return {
+        "content": argumentation_framework_str,
+        "filename": f"{filename}.{extension}",
+    }
+
+
+## 1.2 : Choose from Examples
 EXAMPLES_FOLDER = "examples"
 
 
-# Function to get file list
 def get_example_files():
     if os.path.exists(EXAMPLES_FOLDER):
         return [
@@ -114,6 +172,7 @@ def update_examples_dropdown(_):
     return get_example_files()
 
 
+# 1.3 : Text Field Interaction
 @callback(
     Output("abstract-arguments", "value"),
     Output("abstract-attacks", "value"),
@@ -200,17 +259,389 @@ def load_argumentation_framework(
     return "", ""
 
 
+# Section 2: Solutions
 @callback(
-    Output("layered-vis-param", "style"),
+    Output("21-abstract-evaluation-semantics", "children"),
+    Output("grounded-extension-long-str-store", "data"),
+    State("abstract-arguments", "value"),
+    State("abstract-attacks", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
+    Input("abstract-evaluation-semantics", "value"),
+    prevent_initial_call=True,
 )
-def show_hide_element(accordion_value):
-    if accordion_value == "Evaluation":
-        return {"display": "block"}
+def evaluate_abstract_argumentation_framework(
+    arguments: str, attacks: str, active_item: str, semantics: str
+):
+    if active_item != "Evaluation":
+        raise PreventUpdate
+
+    arg_framework = read_argumentation_framework(arguments, attacks)
+    frozen_extensions = get_argumentation_framework_extensions(
+        arg_framework, "Complete"
+    )
+    extensions = [set(frozen_ext) for frozen_ext in frozen_extensions]
+
+    # Store all the extensions and three status
+    extension_dict = {}
+    for extension in sorted(extensions):
+        out_arguments = {
+            attacked
+            for attacked in arg_framework.arguments
+            if any(
+                arg in arg_framework.get_incoming_defeat_arguments(attacked)
+                for arg in extension
+            )
+        }
+        undecided_arguments = {
+            argument
+            for argument in arg_framework.arguments
+            if argument not in extension and argument not in out_arguments
+        }
+        extension_readable_str = (
+            "{" + ", ".join(arg.name for arg in sorted(extension)) + "}"
+        )
+        extension_in_str = "+".join(arg.name for arg in sorted(extension))
+        extension_out_str = "+".join(arg.name for arg in sorted(out_arguments))
+        extension_undecided_str = "+".join(
+            arg.name for arg in sorted(undecided_arguments)
+        )
+        extension_long_str = "|".join(
+            [extension_in_str, extension_undecided_str, extension_out_str]
+        )
+        extension_dict[extension_readable_str] = extension_long_str
+
+    grounded_extensions = get_argumentation_framework_extensions(
+        arg_framework, "Grounded"
+    )
+    stable_extensions = get_argumentation_framework_extensions(arg_framework, "Stable")
+    preferred_extensions = get_argumentation_framework_extensions(
+        arg_framework, "Preferred"
+    )
+    complete_extensions = get_argumentation_framework_extensions(
+        arg_framework, "Complete"
+    )
+
+    # Grounded extensions radio items
+    grounded_extension_radioitems = dbc.RadioItems(
+        options=[
+            {"label": label, "value": value}
+            for label, value in extension_dict.items()
+            if label
+            in [
+                f"{{{', '.join(arg.name for arg in sorted(ext))}}}"
+                for ext in grounded_extensions
+            ]
+        ],
+        id="extension-radioitems-grounded",  # <-- Unique ID
+        inline=True,
+    )
+
+    # Stable extensions radio items
+    stable_extension_radioitems = dbc.RadioItems(
+        options=[
+            {"label": label, "value": value}
+            for label, value in extension_dict.items()
+            if label
+            in [
+                f"{{{', '.join(arg.name for arg in sorted(ext))}}}"
+                for ext in stable_extensions
+            ]
+        ],
+        id="extension-radioitems-stable",  # <-- Unique ID
+        inline=True,
+    )
+
+    # Preferred (non-stable) extensions radio items
+    preferred_non_stable_extension_radioitems = dbc.RadioItems(
+        options=[
+            {"label": label, "value": value}
+            for label, value in extension_dict.items()
+            if label
+            in [
+                f"{{{', '.join(arg.name for arg in sorted(ext))}}}"
+                for ext in preferred_extensions - stable_extensions
+            ]
+        ],
+        id="extension-radioitems-preferred",  # <-- Unique ID
+        inline=True,
+    )
+
+    # Other complete extensions radio items
+    other_complete_extension_radioitems = dbc.RadioItems(
+        options=[
+            {"label": label, "value": value}
+            for label, value in extension_dict.items()
+            if label
+            in [
+                f"{{{', '.join(arg.name for arg in sorted(ext))}}}"
+                for ext in complete_extensions
+                - grounded_extensions
+                - stable_extensions
+                - preferred_extensions
+            ]
+        ],
+        id="extension-radioitems-other",  # <-- Unique ID
+        inline=True,
+    )
+    semantics_div = html.Div(children=[])
+
+    if semantics == "Grounded":
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Grounded Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                grounded_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(
+            html.Div(
+                [
+                    dbc.RadioItems(id="extension-radioitems-stable"),
+                    dbc.RadioItems(id="extension-radioitems-preferred"),
+                    dbc.RadioItems(id="extension-radioitems-other"),
+                ],
+            )
+        )
+    elif semantics == "Stable":
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Stable Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                stable_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(
+            html.Div(
+                [
+                    dbc.RadioItems(id="extension-radioitems-grounded"),
+                    dbc.RadioItems(id="extension-radioitems-preferred"),
+                    dbc.RadioItems(id="extension-radioitems-other"),
+                ],
+            )
+        )
+    elif semantics == "Preferred":
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Stable Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                stable_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Preferred Non-Stable Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                preferred_non_stable_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(
+            html.Div(
+                [
+                    dbc.RadioItems(id="extension-radioitems-grounded"),
+                    dbc.RadioItems(id="extension-radioitems-other"),
+                ],
+            )
+        )
+    elif semantics == "Complete":
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Grounded Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                grounded_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Stable Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                stable_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Preferred Non-Stable Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                preferred_non_stable_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+        semantics_div.children.append(html.Br())
+        semantics_div.children.append(html.B("Other Complete Extensions:"))
+        semantics_div.children.append(
+            html.Div(
+                other_complete_extension_radioitems,
+                style={
+                    "border": "2px dotted lightblue",
+                    "border-radius": "10px",
+                    "padding": "10px",
+                },
+            )
+        )
+
+    grounded_long_str = ""
+    grounded_extensions_list = list(grounded_extensions)
+    if grounded_extensions_list:
+        grounded_long_str = extension_dict.get(
+            f"{{{', '.join(arg.name for arg in sorted(grounded_extensions_list[0]))}}}",
+            "",
+        )
+    return semantics_div, grounded_long_str
+
+
+@callback(
+    [
+        Output("extension-radioitems-grounded", "value"),
+        Output("extension-radioitems-stable", "value"),
+        Output("extension-radioitems-preferred", "value"),
+        Output("extension-radioitems-other", "value"),
+        Output("selected-argument-store-abstract", "data"),
+    ],
+    [
+        Input("extension-radioitems-grounded", "value"),
+        Input("extension-radioitems-stable", "value"),
+        Input("extension-radioitems-preferred", "value"),
+        Input("extension-radioitems-other", "value"),
+        Input("grounded-extension-long-str-store", "data"),
+    ],
+)
+def sync_radioitems(
+    grounded_val, stable_val, preferred_val, other_val, grounded_long_str
+):
+    ctx = callback_context
+
+    # If no input triggered the callback, do nothing.
+    if not ctx.triggered:
+        raise exceptions.PreventUpdate
+
+    # Identify which radio group triggered the callback.
+    triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    # Capture the new value from the triggering group.
+    new_value = None
+
+    if triggered_id == "extension-radioitems-grounded":
+        new_value = grounded_val
+    elif triggered_id == "extension-radioitems-stable":
+        new_value = stable_val
+    elif triggered_id == "extension-radioitems-preferred":
+        new_value = preferred_val
+    elif triggered_id == "extension-radioitems-other":
+        new_value = other_val
+
+    if new_value is not None:
+        in_part, undecided_part, out_part = new_value.split("|", 3)
+        selected_arguments = {
+            "green": in_part.split("+") if in_part else [],
+            "yellow": undecided_part.split("+") if undecided_part else [],
+            "red": out_part.split("+") if out_part else [],
+        }
     else:
-        return {"display": "none"}
+        # in_part, undecided_part, out_part = grounded_long_str.split("|", 3)
+        # selected_arguments = {
+        #         "green": in_part.split("+") if in_part else [],
+        #         "yellow": undecided_part.split("+") if undecided_part else [],
+        #         "red": out_part.split("+") if out_part else [],
+        #     }
+        selected_arguments = {}
+
+    return (
+        new_value if triggered_id == "extension-radioitems-grounded" else None,
+        new_value if triggered_id == "extension-radioitems-stable" else None,
+        new_value if triggered_id == "extension-radioitems-preferred" else None,
+        new_value if triggered_id == "extension-radioitems-other" else None,
+        selected_arguments,
+    )
 
 
+# Section 3: Explanations
+@callback(
+    Output("21-abstract-evaluation-all-args", "children"),
+    State("abstract-arguments", "value"),
+    State("abstract-attacks", "value"),
+    Input("abstract-evaluation-accordion", "active_item"),
+    Input("abstract-evaluation-semantics", "value"),
+    prevent_initial_call=True,
+)
+def evaluate_abstract_argumentation_framework(
+    arguments: str, attacks: str, active_item: str, semantics: str
+):
+    if active_item != "Evaluation":
+        raise PreventUpdate
+
+    arg_framework = read_argumentation_framework(arguments, attacks)
+
+    # Compute accepted arguments
+    gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(
+        arg_framework
+    )
+
+    # Build accepted argument buttons
+    all_argument_buttons = [
+        dbc.Button(
+            arg,
+            outline=True,
+            color=(
+                "danger"
+                if gr_status_by_arg[arg] == "defeated"
+                else "primary"
+                if gr_status_by_arg[arg] == "accepted"
+                else "warning"
+            ),
+            id={"type": "argument-button-abstract", "index": arg},
+            style={"margin": "5px"},  # Add margin to make buttons sparse
+        )
+        for arg in sorted(arguments.split("\n"))
+    ]
+
+    arguments_div = html.Div(
+        [
+            html.B("Argument Provenance:"),
+            html.Br(),
+            html.I("Click on an argument to display it in the graph."),
+            html.Div(all_argument_buttons),
+        ]
+    )
+    return arguments_div
+
+
+# Viz Section : Visualization
 @callback(
     Output("21-dot-download", "data"),
     Output("explanation-graph", "dot_source"),
@@ -239,38 +670,93 @@ def create_abstract_argumentation_framework(
     layout_freeze: bool,
     selected_arguments_changed,
 ):
-    if not isinstance(selected_arguments, dict):
-        selected_arguments = {}
-    """
-    Generate the argumentation framework visualization and handle file download.
-    """
+    if not arguments or not attacks:
+        raise PreventUpdate
+    else:
+        if selected_arguments == {}:
+            selected_arguments = None
+        else:
+            pass
 
-    # Ensure `selected_arguments_changed` is initialized properly
-    if selected_arguments_changed is None:
-        selected_arguments_changed = False
+        if not isinstance(selected_arguments, dict):
+            selected_arguments = {}
 
-    # Set `dot_source` to None so we can update it properly
-    dot_source = None
+        # Ensure `selected_arguments_changed` is initialized properly
+        if selected_arguments_changed is None:
+            selected_arguments_changed = False
 
-    # Read or initialize the argumentation framework
-    try:
+        # Set `dot_source` to None so we can update it properly
+        dot_source = None
         arg_framework = read_argumentation_framework(arguments, attacks)
-    except ValueError:
-        arg_framework = AbstractArgumentationFramework()
+        triggered_id = ctx.triggered_id  # Get which input triggered the callback
 
-    triggered_id = ctx.triggered_id  # Get which input triggered the callback
+        # Only set `dot_source` to default if no valid user interaction is detected
+        if not triggered_id or active_item == "ArgumentationFramework":
+            dot_source = generate_plain_dot_string(arg_framework, dot_layout)
+            selected_arguments_changed = False  # Reset state
+        else:
+            # Correctly detect when `selected-argument-store-abstract` is triggered
+            if (
+                triggered_id == "selected-argument-store-abstract"
+                and not selected_arguments_changed
+            ):
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                )
+                selected_arguments_changed = True  # Set flag so it doesn't re-trigger
+                with open("temp/layout.dot", "w") as dot_file:
+                    dot_file.write(dot_source)
+                subprocess.run(
+                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                    check=True,
+                )
 
-    # Only set `dot_source` to default if no valid user interaction is detected
-    if not triggered_id or active_item == "ArgumentationFramework":
-        dot_source = generate_plain_dot_string(arg_framework, dot_layout)
-        selected_arguments_changed = False  # Reset state
-    else:
-        # Correctly detect when `selected-argument-store-abstract` is triggered
-        if (
-            triggered_id == "selected-argument-store-abstract"
-            and not selected_arguments_changed
-        ):
-            dot_source = generate_dot_string(
+            elif (
+                triggered_id == "selected-argument-store-abstract"
+                and selected_arguments_changed
+            ):
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    layout_file="temp/layout.txt",
+                )
+
+            elif triggered_id in [
+                "21-abstract-graph-layout",
+                "21-abstract-graph-rank",
+                "21-abstract-graph-special-handling",
+            ]:
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                )
+                with open("temp/layout.dot", "w") as dot_file:
+                    dot_file.write(dot_source)
+                subprocess.run(
+                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                    check=True,
+                )
+
+            # Sleep to ensure files are written before returning
+            time.sleep(0.1)
+
+            download_dot_source = generate_dot_string(
                 arg_framework,
                 selected_arguments,
                 True,
@@ -279,331 +765,28 @@ def create_abstract_argumentation_framework(
                 special_handling,
                 layout_freeze,
             )
-            selected_arguments_changed = True  # Set flag so it doesn't re-trigger
-            with open("temp/layout.dot", "w") as dot_file:
-                dot_file.write(dot_source)
-            subprocess.run(
-                ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
-                check=True,
-            )
+            # Define graph settings for output
+            rank_dict = {
+                "NR": "Attacks",
+                "MR": "Unchallenged Arguments",
+                "AR": "Length of Arguments",
+            }
+            settings = f"""
+            // Input AF: {str(arg_framework)}
+            // Layer by: {rank_dict.get(dot_rank, "Unknown")}
+            // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
+            // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
+            """.strip()
 
-        elif (
-            triggered_id == "selected-argument-store-abstract"
-            and selected_arguments_changed
-        ):
-            dot_source = generate_dot_string(
-                arg_framework,
-                selected_arguments,
-                True,
-                dot_layout,
-                dot_rank,
-                special_handling,
-                layout_freeze,
-                layout_file="temp/layout.txt",
-            )
-
-        elif triggered_id in [
-            "21-abstract-graph-layout",
-            "21-abstract-graph-rank",
-            "21-abstract-graph-special-handling",
-        ]:
-            dot_source = generate_dot_string(
-                arg_framework,
-                selected_arguments,
-                True,
-                dot_layout,
-                dot_rank,
-                special_handling,
-                layout_freeze,
-            )
-            with open("temp/layout.dot", "w") as dot_file:
-                dot_file.write(dot_source)
-            subprocess.run(
-                ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
-                check=True,
-            )
-
-        # Sleep to ensure files are written before returning
-        time.sleep(0.1)
-
-        download_dot_source = generate_dot_string(
-            arg_framework,
-            selected_arguments,
-            True,
-            dot_layout,
-            dot_rank,
-            special_handling,
-            layout_freeze,
-        )
-        # Define graph settings for output
-        rank_dict = {
-            "NR": "Attacks",
-            "MR": "Unchallenged Arguments",
-            "AR": "Length of Arguments",
-        }
-        settings = f"""
-        // Input AF: {str(arg_framework)}
-        // Layer by: {rank_dict.get(dot_rank, "Unknown")}
-        // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
-        // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
-        """.strip()
-
-        # Ensure function always returns three outputs
-        if triggered_id == "21-dot-download-button":
-            return (
-                dict(
-                    content=settings + "\n" + download_dot_source, filename="output.gv"
-                ),
-                dot_source,
-                selected_arguments_changed,
-            )
-
-    return None, dot_source, selected_arguments_changed
-
-
-@callback(
-    Output("21-af-download", "data"),
-    Input("21-af-download-button", "n_clicks"),
-    State("abstract-arguments", "value"),
-    State("abstract-attacks", "value"),
-    State("21-af-filename", "value"),
-    State("21-af-extension", "value"),
-    prevent_initial_call=True,
-)
-def download_generated_abstract_argumentation_framework(
-    _nr_clicks: int,
-    arguments_text: str,
-    defeats_text: str,
-    filename: str,
-    extension: str,
-):
-    argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
-
-    if extension == "JSON":
-        argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
-            argumentation_framework
-        )
-        argumentation_framework_str = json.dumps(argumentation_framework_json)
-    elif extension == "TGF":
-        argumentation_framework_str = (
-            ArgumentationFrameworkToTrivialGraphFormatWriter.write_to_str(
-                argumentation_framework
-            )
-        )
-    elif extension == "APX":
-        argumentation_framework_str = (
-            ArgumentationFrameworkToASPARTIXFormatWriter.write_to_str(
-                argumentation_framework
-            )
-        )
-    elif extension == "ICCMA23":
-        argumentation_framework_str = (
-            ArgumentationFrameworkToICCMA23FormatWriter.write_to_str(
-                argumentation_framework
-            )
-        )
-    else:
-        raise NotImplementedError
-
-    return {
-        "content": argumentation_framework_str,
-        "filename": f"{filename}.{extension}",
-    }
-
-
-@callback(
-    Output("21-abstract-evaluation-semantics", "children"),
-    Output("21-abstract-evaluation-all-args", "children"),
-    State("abstract-arguments", "value"),
-    State("abstract-attacks", "value"),
-    Input("abstract-evaluation-accordion", "active_item"),
-    Input("abstract-evaluation-semantics", "value"),
-    prevent_initial_call=True,
-)
-def evaluate_abstract_argumentation_framework(
-    arguments: str, attacks: str, active_item: str, semantics: str
-):
-    if active_item != "Evaluation":
-        raise PreventUpdate
-
-    arg_framework = read_argumentation_framework(arguments, attacks)
-    frozen_extensions = get_argumentation_framework_extensions(arg_framework, semantics)
-    extensions = [set(frozen_ext) for frozen_ext in frozen_extensions]
-
-    # Build extension buttons
-    extension_buttons = []
-    for extension in sorted(extensions):
-        out_arguments = {
-            attacked
-            for attacked in arg_framework.arguments
-            if any(
-                arg in arg_framework.get_incoming_defeat_arguments(attacked)
-                for arg in extension
-            )
-        }
-        undecided_arguments = {
-            argument
-            for argument in arg_framework.arguments
-            if argument not in extension and argument not in out_arguments
-        }
-        extension_readable_str = (
-            "{" + ", ".join(arg.name for arg in sorted(extension)) + "}"
-        )
-        extension_in_str = "+".join(arg.name for arg in sorted(extension))
-        extension_out_str = "+".join(arg.name for arg in sorted(out_arguments))
-        extension_undecided_str = "+".join(
-            arg.name for arg in sorted(undecided_arguments)
-        )
-        extension_long_str = "|".join(
-            [extension_in_str, extension_undecided_str, extension_out_str]
-        )
-
-        extension_buttons.append(
-            dbc.Button(
-                [extension_readable_str],
-                color="secondary",
-                id={"type": "extension-button-abstract", "index": extension_long_str},
-            )
-        )
-    # Compute accepted arguments
-    strategy = "Skeptical" #or Credulous
-    acceptance_strategy = get_acceptance_strategy(strategy)
-    accepted_arguments = get_accepted_arguments(frozen_extensions, acceptance_strategy)
-    gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(arg_framework)
-
-    # Build accepted argument buttons
-    all_argument_buttons = [
-        dbc.Button(
-            arg,
-            outline=True,
-            color=(
-                "danger" if gr_status_by_arg[arg] == "defeated" else
-                "primary" if gr_status_by_arg[arg] == "accepted" else "warning"
-            ),
-            id={"type": "argument-button-abstract", "index": arg},
-            style={"margin": "5px"}  # Add margin to make buttons sparse
-        )
-        for arg in sorted(arguments.split("\n"))
-    ]
-
-    semantics_div = html.Div(
-        [
-            html.B("The extension(s):"),
-            html.Br(),
-            html.I("Click on an extension to display it in the graph."),
-            html.Div(extension_buttons),
-            html.Br(),
-        ]
-    )
-    arguments_div = html.Div(
-        [
-            html.B("All argument(s):"),
-            html.Br(),
-            html.I("Click on an argument to display it in the graph."),
-            html.Div(all_argument_buttons),
-        ]
-    )
-
-    return semantics_div, arguments_div
-
-
-@callback(
-    Output("selected-argument-store-abstract", "data"),
-    Input({"type": "extension-button-abstract", "index": ALL}, "n_clicks"),
-    Input({"type": "argument-button-abstract", "index": ALL}, "n_clicks"),
-    Input("abstract-arguments", "value"),
-    Input("abstract-attacks", "value"),
-)
-def mark_extension_or_argument_in_graph(
-    _nr_of_clicks_extension_values, _nr_of_clicks_argument_values, _arguments, _attacks
-):
-    # Clear selection if arguments/attacks change
-    if dash.ctx.triggered_id in ["abstract-arguments", "abstract-attacks"]:
-        return []
-
-    button_clicked_id = dash.callback_context.triggered[0]["prop_id"].split(".")[0]
-    if not button_clicked_id:
-        return []
-
-    button_clicked_id_content = json.loads(button_clicked_id)
-    button_type = button_clicked_id_content["type"]
-    button_index = button_clicked_id_content["index"]
-
-    if button_type == "extension-button-abstract":
-        in_part, undecided_part, out_part = button_index.split("|", 3)
-        return {
-            "green": in_part.split("+") if in_part else [],
-            "yellow": undecided_part.split("+") if undecided_part else [],
-            "red": out_part.split("+") if out_part else [],
-        }
-    elif button_type == "argument-button-abstract":
-        return {"red": [button_index]}
-
-    return []
-
-
-@callback(
-    Output("abstract-explanation-function", "options"),
-    Output("abstract-explanation-function", "value"),
-    [Input("abstract-explanation-type", "value")],
-)
-def setting_choice(choice: str):
-    return EXPLANATION_FUNCTION_OPTIONS[choice], EXPLANATION_FUNCTION_OPTIONS[choice][
-        0
-    ]["value"]
-
-
-@callback(
-    Output("abstract-explanation", "children"),
-    Input("abstract-evaluation-accordion", "active_item"),
-    State("abstract-arguments", "value"),
-    State("abstract-attacks", "value"),
-    State("abstract-evaluation-semantics", "value"),
-    Input("abstract-explanation-function", "value"),
-    Input("abstract-explanation-type", "value"),
-    prevent_initial_call=True,
-)
-def derive_explanations_abstract_argumentation_framework(
-    active_item,
-    arguments: str,
-    attacks: str,
-    semantics: str,
-    explanation_function: str,
-    explanation_type: str,
-):
-    if active_item != "Explanation":
-        raise PreventUpdate
-
-    arg_framework = read_argumentation_framework(arguments, attacks)
-    frozen_extensions = get_argumentation_framework_extensions(arg_framework, semantics)
-    extensions = [set(frozen_extension) for frozen_extension in frozen_extensions]
-    explanation_strategy = "Skeptical"  # or Credulous
-    acceptance_strategy = get_acceptance_strategy(explanation_strategy)
-    accepted_arguments = get_accepted_arguments(frozen_extensions, acceptance_strategy)
-
-    explanations = get_argumentation_framework_explanations(
-        arg_framework,
-        extensions,
-        accepted_arguments,
-        explanation_function,
-        explanation_type,
-    )
-
-    # Display the explanations
-    return html.Div(
-        [html.Div(html.B("Explanation(s) by argument:"))]
-        + [
-            html.Div(
-                [
-                    html.B(arg_name),
-                    html.Ul(
-                        [
-                            html.Li(str(expl).replace("set()", "{}"))
-                            for expl in explanation_list
-                        ]
+            # Ensure function always returns three outputs
+            if triggered_id == "21-dot-download-button":
+                return (
+                    dict(
+                        content=settings + "\n" + download_dot_source,
+                        filename="output.gv",
                     ),
-                ]
-            )
-            for arg_name, explanation_list in explanations.items()
-        ]
-    )
+                    dot_source,
+                    selected_arguments_changed,
+                )
+
+        return None, dot_source, selected_arguments_changed
