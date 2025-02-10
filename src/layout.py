@@ -34,7 +34,7 @@ def get_abstract_setting_specification_div():
                                 dcc.Dropdown(
                                     id="examples-dropdown",
                                     className="w-100",
-                                    placeholder="Select an example",
+                                    placeholder="Example",
                                 )
                             ),
                         ],
