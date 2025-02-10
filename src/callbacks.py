@@ -19,7 +19,6 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import os
 import subprocess
-import time
 import shutil
 
 # Check where 'dot' is located
@@ -695,77 +694,79 @@ def create_abstract_argumentation_framework(
             dot_source = generate_plain_dot_string(arg_framework, dot_layout)
             selected_arguments_changed = False  # Reset state
         else:
-            # Correctly detect when `selected-argument-store-abstract` is triggered
-            if (
-                triggered_id == "selected-argument-store-abstract"
-                and not selected_arguments_changed
-            ):
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                )
-                selected_arguments_changed = True  # Set flag so it doesn't re-trigger
-                with open("temp/layout.dot", "w") as dot_file:
-                    dot_file.write(dot_source)
-                subprocess.run(
-                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
-                    check=True,
-                )
+            if triggered_id == "abstract-evaluation-accordion":
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout) # only switch accordion will trigger
+            if triggered_id == "selected-argument-store-abstract" and selected_arguments == {}:
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout) # only switch accordion will trigger
+            else:
 
-            elif (
-                triggered_id == "selected-argument-store-abstract"
-                and selected_arguments_changed
-            ):
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    layout_file="temp/layout.txt",
-                )
+                # Correctly detect when `selected-argument-store-abstract` is triggered
+                if (
+                    triggered_id == "selected-argument-store-abstract"
+                    and not selected_arguments_changed
+                ):
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                    )
+                    selected_arguments_changed = True  # Set flag so it doesn't re-trigger
+                    with open("temp/layout.dot", "w") as dot_file:
+                        dot_file.write(dot_source)
+                    subprocess.run(
+                        ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                        check=True,
+                    )
 
-            elif triggered_id in [
-                "21-abstract-graph-layout",
-                "21-abstract-graph-rank",
-                "21-abstract-graph-special-handling",
-            ]:
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                )
-                with open("temp/layout.dot", "w") as dot_file:
-                    dot_file.write(dot_source)
-                subprocess.run(
-                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
-                    check=True,
-                )
+                elif (
+                    triggered_id == "selected-argument-store-abstract"
+                    and selected_arguments_changed
+                ):
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        layout_file="temp/layout.txt",
+                    )
 
-            # Sleep to ensure files are written before returning
-            time.sleep(0.1)
-
-            download_dot_source = generate_dot_string(
-                arg_framework,
-                selected_arguments,
-                True,
-                dot_layout,
-                dot_rank,
-                special_handling,
-                layout_freeze,
-            )
-            # Define graph settings for output
+                elif triggered_id in [
+                    "21-abstract-graph-layout",
+                    "21-abstract-graph-rank",
+                    "21-abstract-graph-special-handling",
+                ]:
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                    )
+                    with open("temp/layout.dot", "w") as dot_file:
+                        dot_file.write(dot_source)
+                    subprocess.run(
+                        ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                        check=True,
+                    )
+                # download_dot_source = generate_dot_string(
+                #     arg_framework,
+                #     selected_arguments,
+                #     True,
+                #     dot_layout,
+                #     dot_rank,
+                #     special_handling,
+                #     layout_freeze,
+                # )
+                # Define graph settings for output
             rank_dict = {
                 "NR": "Attacks",
                 "MR": "Unchallenged Arguments",
@@ -782,7 +783,7 @@ def create_abstract_argumentation_framework(
             if triggered_id == "21-dot-download-button":
                 return (
                     dict(
-                        content=settings + "\n" + download_dot_source,
+                        content=settings + "\n" + dot_source,
                         filename="output.gv",
                     ),
                     dot_source,
