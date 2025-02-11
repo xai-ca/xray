@@ -63,7 +63,7 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
             style={
                 "margin": "5px",
                 "backgroundColor": determine_hex_color(arg),  # Set background color
-                "border": f"4px solid {determine_hex_color(arg)}",  # Border matches color
+                "border": "1px solid gray",  # Border matches color
                 "color": "black",  # Text color
             },
         )
