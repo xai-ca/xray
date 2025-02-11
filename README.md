@@ -1,9 +1,8 @@
 
-<p align="center">
+<div align="center">
     <img src="./assets/logo.png" alt="WESE Logo" width="150">
-    <br>
-    <strong style="font-size: 36px;">WESE</strong>
-</p>
+    <h1 align="center">WESE</h1>
+</div>
 
 # Introduction
 
