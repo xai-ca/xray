@@ -15,8 +15,8 @@ $$
 # Usage 
 
 ## Website
-You can directly visit the following website to use the tool
-https://wese-app.onrender.com
+You can access the tool by visiting the following website (https://wese.onrender.com) directly. Please note that it may take some time to load, as the service automatically shuts down after long periods of inactivity.
+
 
 ## Locally Development
 Install the necessary package
