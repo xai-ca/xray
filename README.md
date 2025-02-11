@@ -1,10 +1,11 @@
+<h1>WESE <a href="https://wese.onrender.com/"><img align="right" alt="WESE Logo" src="./assets/logo.png" width="40" height="36"></a></h1>
 
-<div align="center">
-    <img src="./assets/logo.png" alt="WESE Logo" width="150">
-    <h1 align="center">WESE</h1>
-</div>
+[![deploy](https://github.com/idaks/wese-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/idaks/wese-app/actions/workflows/deploy.yml)
 
-# Introduction
+
+![alt text](./assets/demo.png)
+
+# Overview
 
 WESE (Well-founded Explanations for Stable Extensions in Abstract Argumentation Framework) is a tool designed to explain stable extensions using provenance tracking and visualization techniques. It helps users understand how stable extensions are derived based on the following logical rule under stable semantics:
 
