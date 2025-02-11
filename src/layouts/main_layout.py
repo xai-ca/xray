@@ -2,6 +2,8 @@
 
 import dash_bootstrap_components as dbc
 from dash import html
+from dash_iconify import DashIconify
+
 from layouts.accordian_layout import left_column
 from layouts.visualization_layout import right_column
 
@@ -75,6 +77,20 @@ layout = html.Div(
                                 html.P(
                                     "Released under MIT License. Copyright © 2025 - Present UIUC CIRSS",
                                     className="text-center text-muted small",
+                                ),
+                                html.Div(
+                                    [
+                                        html.A(
+                                            DashIconify(
+                                                icon="ion:logo-github",
+                                                width=30,
+                                            ),
+                                            href="https://github.com/idaks/wese-app",
+                                            target="_blank",
+                                            className="text-decoration-none",
+                                        ),
+                                    ],
+                                    className="d-flex justify-content-center",
                                 ),
                             ],
                             className="py-3",

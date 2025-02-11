@@ -16,7 +16,7 @@ from callbacks import visualization_callbacks  # noqa: F401 (necessary for callb
 app = dash.Dash(
     __name__,
     server=server,
-    external_stylesheets=[dbc.themes.BOOTSTRAP]
+    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME]
 )
 
 # Assign the layout from layout.py
