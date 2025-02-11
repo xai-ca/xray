@@ -26,7 +26,7 @@ not_defended(X) :- att(Y,X), not defeated(Y).
 % as follows
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-lt(X,Y) :- arg(X),arg(Y), X<Y, not input_error.
+lt(X,Y) :- arg(X),arg(Y), X<Y.
 nsucc(X,Z) :- lt(X,Y), lt(Y,Z).
 succ(X,Y) :- lt(X,Y), not nsucc(X,Y).
 ninf(X) :- lt(Y,X).
@@ -84,6 +84,7 @@ outN(X) :- spoil, arg(X).
 
 %% do the final spoil-thing ...
 :- not spoil.
+
 
 %in(X)?
 #show in/1.

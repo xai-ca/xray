@@ -7,9 +7,11 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
 
 from server import server
-from layout import layout
-import callbacks  # noqa: F401 (necessary for callbacks to register)
-
+from layouts.main_layout import layout
+from callbacks import abstract_framework_callbacks  # noqa: F401 (necessary for callbacks to register)
+from callbacks import solution_callbacks  # noqa: F401 (necessary for callbacks to register)
+from callbacks import explanation_callbacks  # noqa: F401 (necessary for callbacks to register)
+from callbacks import visualization_callbacks  # noqa: F401 (necessary for callbacks to register)
 
 app = dash.Dash(
     __name__,
@@ -21,5 +23,5 @@ app = dash.Dash(
 app.layout = layout
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8050, debug=False)
+    app.run(host="0.0.0.0", port=8050, debug=True)
 

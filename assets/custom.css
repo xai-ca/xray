@@ -30,3 +30,12 @@
 }
 
 /* Removed any margin between consecutive .btn-secondary buttons */
+
+.hover-button {
+    background-color: transparent !important;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.hover-button:hover {
+    background-color: var(--hover-bg) !important;
+}
