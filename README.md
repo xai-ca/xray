@@ -1,4 +1,8 @@
-<h1>WESE <a href="https://wese.onrender.com/"><img align="right" alt="WESE Logo" src="./assets/logo.png" width="40" height="36"></a></h1>
+<div align="center">
+    <img src="./assets/logo.png" alt="WESE Logo" width="150">
+    <h1 align="center">WESE</h1>
+    <h3> Well-founded Explanations for Stable Extensions in Abstract Argumentation Framework </h3>
+</div>
 
 [![deploy](https://github.com/idaks/wese-app/actions/workflows/deploy.yml/badge.svg)](https://github.com/idaks/wese-app/actions/workflows/deploy.yml)
 
