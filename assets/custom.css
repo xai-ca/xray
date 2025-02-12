@@ -30,11 +30,10 @@
 }
 
 /* Removed any margin between consecutive .btn-secondary buttons */
-
 .hover-button {
     border: 4px solid transparent;
-    /* Keeps border width consistent */
-    transition: border-color 0.2s ease-in-out, outline-width 0.2s ease-in-out;
+    /* Keeps border width consistent if needed for layout */
+    transition: box-shadow 0.2s ease-in-out;
     box-sizing: border-box;
     /* Prevents padding/border from shifting layout */
 }
@@ -42,8 +41,6 @@
 /* Applies when hovered or when the button is marked as selected */
 .hover-button:hover,
 .hover-button.selected {
-    border-color: black !important;
-    /* Changes border color */
-    outline: 3px solid black;
-    /* Adds extra thickness */
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5);
+    /* A stronger shadow effect */
 }
