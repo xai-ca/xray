@@ -4,7 +4,7 @@ import base64
 import json
 import os
 import shutil
-from dash import callback, Input, Output, State, callback_context
+from dash import callback, Input, Output, State, callback_context, no_update
 from dash.exceptions import PreventUpdate
 
 # Import PyArg functions and readers/writers
@@ -131,19 +131,19 @@ def update_examples_dropdown(_):
 @callback(
     Output("abstract-arguments", "value"),
     Output("abstract-attacks", "value"),
+    Output("examples-dropdown", "value"),  # Added extra output to clear the selection when needed
     Input("generate-random-af-button", "n_clicks"),
     Input("upload-af", "contents"),
     Input("examples-dropdown", "value"),
     State("upload-af", "filename"),
 )
-def load_argumentation_framework(
-    _nr_clicks_random, af_content, selected_example, af_filename
-):
+def load_argumentation_framework(_nr_clicks_random, af_content, selected_example, af_filename):
     ctx = callback_context
     if not ctx.triggered:
         raise PreventUpdate
 
     if ctx.triggered_id == "generate-random-af-button":
+        # When clicking the generate button, generate a random AF.
         from py_arg.abstract_argumentation.generators.abstract_argumentation_framework_generator import AbstractArgumentationFrameworkGenerator
         random_af = AbstractArgumentationFrameworkGenerator(8, 8, True).generate()
         abstract_arguments_value = "\n".join(str(arg) for arg in random_af.arguments)
@@ -151,17 +151,19 @@ def load_argumentation_framework(
             f"({str(defeat.from_argument)},{str(defeat.to_argument)})"
             for defeat in random_af.defeats
         )
-        return abstract_arguments_value, abstract_attacks_value
+        # Clear the examples dropdown selection.
+        return abstract_arguments_value, abstract_attacks_value, None
 
     elif ctx.triggered_id == "upload-af":
-        # Reading from uploaded file
+        # Reading from an uploaded file.
         content_type, content_str = af_content.split(",")
         decoded = base64.b64decode(content_str)
         name = af_filename.split(".")[0]
 
         if af_filename.upper().endswith(".JSON"):
+            # Decode bytes to a string before loading JSON.
             opened_af = ArgumentationFrameworkFromJsonReader().from_json(
-                json.loads(decoded)
+                json.loads(decoded.decode())
             )
         elif af_filename.upper().endswith(".TGF"):
             opened_af = ArgumentationFrameworkFromTrivialGraphFormatReader.from_tgf(
@@ -183,24 +185,25 @@ def load_argumentation_framework(
             f"({str(defeat.from_argument)},{str(defeat.to_argument)})"
             for defeat in opened_af.defeats
         )
-        return abstract_arguments_value, abstract_attacks_value
-
+        # Clear the examples dropdown when opening a file.
+        return abstract_arguments_value, abstract_attacks_value, None
+    
     elif ctx.triggered_id == "examples-dropdown" and selected_example:
+        # Reading from an example file.
         example_path = os.path.join(EXAMPLES_FOLDER, selected_example)
         try:
             with open(example_path, "r", encoding="utf-8") as file:
                 file_content = file.read()
-            opened_af = ArgumentationFrameworkFromJsonReader().from_json(
-                json.loads(file_content)
-            )
+            opened_af = ArgumentationFrameworkFromJsonReader().from_json(json.loads(file_content))
             abstract_arguments_value = "\n".join(str(arg) for arg in opened_af.arguments)
             abstract_attacks_value = "\n".join(
                 f"({str(defeat.from_argument)},{str(defeat.to_argument)})"
                 for defeat in opened_af.defeats
             )
-            return abstract_arguments_value, abstract_attacks_value
+            # When selecting an example, we leave the dropdown selection unchanged.
+            return abstract_arguments_value, abstract_attacks_value, no_update
         except Exception as e:
             print(f"Error reading example file {selected_example}: {e}")
-            return "", ""
+            return "", "", no_update
 
-    return "", ""
+    return "", "", no_update
