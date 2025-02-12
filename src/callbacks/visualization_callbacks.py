@@ -63,15 +63,18 @@ def create_visualization(
         selected_arguments_changed = False
     # Determine whether Tab "Explanation" is active
     elif active_item == "Explanation":
-        dot_source = generate_dot_string(
-            arg_framework,
-            selected_arguments,
-            True,
-            dot_layout,
-            dot_rank,
-            special_handling,
-            layout_freeze,
-        )
+        if selected_arguments == {}:
+            dot_source = current_dot_source
+        else:
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,
+                True,
+                dot_layout,
+                dot_rank,
+                special_handling,
+                layout_freeze,
+            )
     # Determine whether Tab "Solution" is active
     else:
         if triggered_id == "abstract-evaluation-accordion":
