@@ -74,9 +74,8 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
     # Build and return the complete Div.
     arguments_div = html.Div(
         [
-            html.B("Argument Provenance:"),
             html.Br(),
-            html.I("Click on an argument to display it in the graph."),
+            html.I("Click on an argument to display its provenance."),
             html.Div(all_argument_buttons),
         ]
     )

@@ -151,11 +151,11 @@ left_column = dbc.Col(
                 item_id="ArgumentationFramework",
             ),
             dbc.AccordionItem(
-                get_abstract_evaluation_div(), title="Solutions", item_id="Evaluation"
+                get_abstract_evaluation_div(), title="Extensions(Solutions)", item_id="Evaluation"
             ),
             dbc.AccordionItem(
                 get_abstract_explanation_div(),
-                title="Explanation",
+                title="Argument Provenance",
                 item_id="Explanation",
             ),
         ],
