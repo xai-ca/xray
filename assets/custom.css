@@ -33,15 +33,17 @@
 
 .hover-button {
     border: 4px solid transparent;
-    /* Ensures border width remains consistent */
+    /* Keeps border width consistent */
     transition: border-color 0.2s ease-in-out, outline-width 0.2s ease-in-out;
     box-sizing: border-box;
-    /* Ensures padding/border doesn't affect layout */
+    /* Prevents padding/border from shifting layout */
 }
 
-.hover-button:hover {
+/* Applies when hovered or when the button is marked as selected */
+.hover-button:hover,
+.hover-button.selected {
     border-color: black !important;
-    /* Keeps border width, only changes color */
+    /* Changes border color */
     outline: 3px solid black;
-    /* Adds thickness without shifting layout */
+    /* Adds extra thickness */
 }

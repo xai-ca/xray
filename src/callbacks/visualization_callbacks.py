@@ -28,6 +28,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("abstract-evaluation-accordion", "active_item"),
     Input("layout-freeze-switch", "value"),
     State("selected_arguments_changed", "data"),
+    State("explanation-graph", "dot_source"),
     prevent_initial_call=True,
 )
 def create_visualization(
@@ -41,12 +42,11 @@ def create_visualization(
     active_item,
     layout_freeze,
     selected_arguments_changed,
+    current_dot_source,
 ):
     if not arguments or not attacks:
         raise PreventUpdate
 
-    if selected_arguments == {}:
-        selected_arguments = None
     if not isinstance(selected_arguments, dict):
         selected_arguments = {}
 
@@ -57,9 +57,11 @@ def create_visualization(
     arg_framework = read_argumentation_framework(arguments, attacks)
     triggered_id = ctx.triggered_id
 
+    # Determine whether Tab "ArgumentationFramework" is active
     if active_item == "ArgumentationFramework":
         dot_source = generate_plain_dot_string(arg_framework, dot_layout)
         selected_arguments_changed = False
+    # Determine whether Tab "Explanation" is active
     elif active_item == "Explanation":
         dot_source = generate_dot_string(
             arg_framework,
@@ -70,9 +72,11 @@ def create_visualization(
             special_handling,
             layout_freeze,
         )
+    # Determine whether Tab "Solution" is active
     else:
         if triggered_id == "abstract-evaluation-accordion":
             dot_source = generate_plain_dot_string(arg_framework, dot_layout)
+
         if (
             triggered_id == "selected-argument-store-abstract"
             and selected_arguments == {}
@@ -135,26 +139,27 @@ def create_visualization(
                     ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
                     check=True,
                 )
-    rank_dict = {
-        "NR": "Attacks",
-        "MR": "Unchallenged Arguments",
-        "AR": "Length of Arguments",
-    }
-    settings = f"""
-    // Input AF: {str(arg_framework)}
-    // Layer by: {rank_dict.get(dot_rank, "Unknown")}
-    // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
-    // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
-    """.strip()
 
-    if triggered_id == "21-dot-download-button":
-        return (
-            dict(
-                content=settings + "\n" + dot_source,
-                filename="output.gv",
-            ),
-            dot_source,
-            selected_arguments_changed,
-        )
+        # Determine whether Download button is pressed
+        if triggered_id == "21-dot-download-button":
+            rank_dict = {
+                "NR": "Attacks",
+                "MR": "Unchallenged Arguments",
+                "AR": "Length of Arguments",
+            }
+            settings = f"""
+            // Input AF: {str(arg_framework)}
+            // Layer by: {rank_dict.get(dot_rank, "Unknown")}
+            // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
+            // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
+            """.strip()
+            return (
+                dict(
+                    content=settings + "\n" + current_dot_source,
+                    filename="output.gv",
+                ),
+                dot_source,
+                selected_arguments_changed,
+            )
 
     return None, dot_source, selected_arguments_changed
