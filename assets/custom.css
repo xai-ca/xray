@@ -44,3 +44,50 @@
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5);
     /* A stronger shadow effect */
 }
+
+/* 1) Remove the default radio styling */
+input[type="radio"] {
+    appearance: none;
+    /* For Chrome/Safari/Edge */
+    -moz-appearance: none;
+    /* For Firefox */
+    -webkit-appearance: none;
+    /* For older Safari/Chrome */
+
+    /* 2) Size and shape */
+    width: 20px;
+    height: 20px;
+    border: 2px solid #505050;
+    /* Unchecked outer ring (black) */
+    border-radius: 50%;
+    /* Make it a circle */
+    cursor: pointer;
+    position: relative;
+    /* So we can absolutely position the fill */
+    margin-right: 8px;
+    /* Spacing between the radio and label */
+    vertical-align: middle;
+    /* Keep it aligned with text */
+}
+
+/* 3) When checked, change the outer ring’s color */
+input[type="radio"]:checked {
+    border-color: #0064f7;
+    /* Purple border when checked */
+}
+
+/* 4) Add the inner fill for the checked state using a pseudo-element */
+input[type="radio"]:checked::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    /* Centers the circle vertically */
+    left: 3px;
+    /* Centers the circle horizontally */
+    width: 10px;
+    /* Inner circle’s diameter */
+    height: 10px;
+    background: #ffffff;
+    border-radius: 50%;
+    /* Make it a circle */
+}
