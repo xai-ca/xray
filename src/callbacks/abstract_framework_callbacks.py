@@ -147,6 +147,7 @@ def update_examples_dropdown(_):
     Output("abstract-arguments", "value"),
     Output("abstract-attacks", "value"),
     Output("examples-dropdown", "value"),  # Added extra output to clear the selection when needed
+    Output("21-af-filename", "value"),
     Input("generate-random-af-button", "n_clicks"),
     Input("upload-af", "contents"),
     Input("examples-dropdown", "value"),
@@ -167,7 +168,7 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             for defeat in random_af.defeats
         )
         # Clear the examples dropdown selection.
-        return abstract_arguments_value, abstract_attacks_value, None
+        return abstract_arguments_value, abstract_attacks_value, None, no_update
 
     elif ctx.triggered_id == "upload-af":
         # Reading from an uploaded file.
@@ -200,8 +201,9 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             f"({str(defeat.from_argument)},{str(defeat.to_argument)})"
             for defeat in opened_af.defeats
         )
+        file_name = af_filename.split(".")[0]  # Remove the file extension
         # Clear the examples dropdown when opening a file.
-        return abstract_arguments_value, abstract_attacks_value, None
+        return abstract_arguments_value, abstract_attacks_value, None, file_name
     
     elif ctx.triggered_id == "examples-dropdown" and selected_example:
         # Reading from an example file.
@@ -215,10 +217,11 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
                 f"({str(defeat.from_argument)},{str(defeat.to_argument)})"
                 for defeat in opened_af.defeats
             )
+            file_name = selected_example.split(".")[0]  # Remove the file extension
             # When selecting an example, we leave the dropdown selection unchanged.
-            return abstract_arguments_value, abstract_attacks_value, no_update
+            return abstract_arguments_value, abstract_attacks_value, selected_example, file_name
         except Exception as e:
             print(f"Error reading example file {selected_example}: {e}")
-            return "", "", no_update
+            return "", "", no_update, no_update
 
-    return "", "", no_update
+    return "", "", no_update, no_update

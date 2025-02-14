@@ -13,5 +13,5 @@ class ArgumentationFrameworkToASPARTIXFormatWriter:
             sentence.write('arg(' + '"' + argument.name + '"' + ').\n')
         for defeat in argumentation_framework.defeats:
             sentence.write('att(' + '"' + defeat.from_argument.name + '"' + ',' +
-                           defeat.to_argument.name + ').\n')
+                           '"' + defeat.to_argument.name + '"' + ').\n')
         return sentence.getvalue()
