@@ -44,7 +44,7 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
             elif arg in selected_extension.get("yellow", []):
                 return "#FEFE62"  # yellow for undefined
             else:
-                return "#cccccc"  # fallback color
+                return "#FFFFFF"  # fallback color
         else:
             if arg in selected_extension.get("green", []):
                 return "#40cfff"  # green
@@ -53,7 +53,7 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
             elif arg in selected_extension.get("red", []):
                 return "#ffb763"  # red
             else:
-                return "#cccccc"  # fallback color
+                return "#FFFFFF"  # fallback color
 
     # Create a button for each argument with colored background and hover border effect
     all_argument_buttons = [

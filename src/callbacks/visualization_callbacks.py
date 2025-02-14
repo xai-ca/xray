@@ -27,6 +27,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("21-abstract-graph-special-handling", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
     Input("layout-freeze-switch", "value"),
+    Input("21-af-filename", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     prevent_initial_call=True,
@@ -41,6 +42,7 @@ def create_visualization(
     special_handling,
     active_item,
     layout_freeze,
+    selected_file_name,
     selected_arguments_changed,
     current_dot_source,
 ):
@@ -159,7 +161,7 @@ def create_visualization(
             return (
                 dict(
                     content=settings + "\n" + current_dot_source,
-                    filename="output.gv",
+                    filename="{}.gv".format(selected_file_name.split(".")[0]),
                 ),
                 dot_source,
                 selected_arguments_changed,
