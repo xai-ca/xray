@@ -59,9 +59,11 @@ def show_hide_element(accordion_value):
 
 
 # -- Callback for downloading a generated abstract argumentation framework --
+
 @callback(
     Output("21-af-download", "data"),
     Input("21-af-download-button", "n_clicks"),
+    Input("examples-dropdown", "value"),
     State("abstract-arguments", "value"),
     State("abstract-attacks", "value"),
     State("21-af-filename", "value"),
@@ -69,9 +71,22 @@ def show_hide_element(accordion_value):
     prevent_initial_call=True,
 )
 def download_generated_abstract_argumentation_framework(
-    _nr_clicks, arguments_text, defeats_text, filename, extension
+    n_clicks, example_name, arguments_text, defeats_text, filename, extension
 ):
+    ctx = callback_context  # Get the callback context
+    triggered_inputs = {t["prop_id"].split(".")[0] for t in ctx.triggered}
+
+    # Ensure that both button and dropdown were triggered together
+    if "21-af-download-button" not in triggered_inputs:
+        return no_update  # Do nothing if only one is triggered
+
     argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
+    
+    if example_name:
+        filename = example_name.split(".")[0]  # Remove the file extension
+    else:
+        filename = "edited_af"
+
     if extension == "JSON":
         argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
             argumentation_framework
