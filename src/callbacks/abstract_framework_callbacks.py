@@ -168,7 +168,7 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             for defeat in random_af.defeats
         )
         # Clear the examples dropdown selection.
-        return abstract_arguments_value, abstract_attacks_value, None, no_update
+        return abstract_arguments_value, abstract_attacks_value, None, "edited_af"
 
     elif ctx.triggered_id == "upload-af":
         # Reading from an uploaded file.
