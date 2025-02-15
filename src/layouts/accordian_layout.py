@@ -123,6 +123,12 @@ def get_abstract_evaluation_div():
                             dbc.RadioItems(id="extension-radioitems-stable"),
                             dbc.RadioItems(id="extension-radioitems-preferred"),
                             dbc.RadioItems(id="extension-radioitems-other"),
+                            dcc.Store(id="store-extension-grounded"),
+                            dcc.Store(id="store-extension-stable"),
+                            dcc.Store(id="store-extension-preferred"),
+                            dcc.Store(id="store-extension-other"),
+                            dcc.Store(id="store-radio-trigger-id"),
+
                         ],
                         style={"display": "none"},
                     ),

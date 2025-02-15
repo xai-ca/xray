@@ -24,6 +24,10 @@ from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string impor
     prevent_initial_call=True,
 )
 def generate_explanations(arguments, attacks, active_item, selected_extension):
+    
+    if selected_extension is None:
+        selected_extension = {}
+
     if active_item != "Explanation":
         raise PreventUpdate
 
