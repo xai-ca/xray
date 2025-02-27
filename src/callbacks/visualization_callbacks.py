@@ -28,6 +28,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("abstract-evaluation-accordion", "active_item"),
     Input("layout-freeze-switch", "value"),
     Input("21-af-filename", "value"),
+    Input("prov-button-value-output", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     prevent_initial_call=True,
@@ -43,6 +44,7 @@ def create_visualization(
     active_item,
     layout_freeze,
     selected_file_name,
+    prov_arg,
     selected_arguments_changed,
     current_dot_source,
 ):

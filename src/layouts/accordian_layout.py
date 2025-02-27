@@ -142,8 +142,10 @@ def get_abstract_evaluation_div():
 
 # --- Explanation Panel ---
 def get_abstract_explanation_div():
-    return html.Div(
+    return html.Div([
         dbc.Row(id="21-abstract-evaluation-all-args"),
+        dcc.Store(id="prov-button-value-output")
+    ]
     )
 
 

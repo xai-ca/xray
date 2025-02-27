@@ -87,29 +87,21 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
 
 
 @callback(
-    Output({"type": "argument-button-abstract", "index": ALL}, "className"),
-    Input({"type": "argument-button-abstract", "index": ALL}, "n_clicks"),
-    State({"type": "argument-button-abstract", "index": ALL}, "id"),
+    Output("prov-button-value-output", "value"),
+    Input({"type": "argument-button-abstract","index":ALL}, "n_clicks"),
     prevent_initial_call=True,
 )
-def update_selected_button(n_clicks_list, id_list):
-    ctx = callback_context
-    # If no button has been clicked yet, return the default class for all buttons.
-    if not ctx.triggered:
-        return ["hover-button" for _ in id_list]
+def display_button_value(n_clicks_list):
+    # Only proceed if a click has occurred.
+    if not any(n_clicks_list):
+        raise PreventUpdate
 
-    # Identify the button that was clicked.
-    triggered_prop = ctx.triggered[0]["prop_id"]
-    # The triggered id comes in as a JSON string, so decode it.
-    triggered_id = json.loads(triggered_prop.split(".")[0])
+    # Identify which button was clicked
+    triggered = callback_context.triggered[0]
+    triggered_prop_id = triggered["prop_id"].split(".")[0]
+    # The triggered_prop_id is a JSON string of the button's id dictionary
+    button_info = json.loads(triggered_prop_id)
+    button_value = button_info["index"]
 
-    # Build the new className list:
-    # The clicked button gets "hover-button selected"; all others remain "hover-button".
-    new_class_names = []
-    for btn_id in id_list:
-        if btn_id["index"] == triggered_id["index"]:
-            new_class_names.append("hover-button selected")
-        else:
-            new_class_names.append("hover-button")
-
-    return new_class_names
+    # Optionally, return a message to update the layout on the UI
+    return button_value
