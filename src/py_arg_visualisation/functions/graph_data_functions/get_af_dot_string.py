@@ -1,7 +1,7 @@
 import pathlib
 from collections import defaultdict
 import clingo
-import time
+import re
 
 from py_arg_visualisation.functions.graph_data_functions.get_color import get_color
 
@@ -19,7 +19,7 @@ def generate_plain_dot_string(argumentation_framework, layout=any):
         dot_string += f'    "{argument.name}" [fontsize=14]\n'
 
     # Adding edge information
-    dot_string += f"    edge[labeldistance=1.5 fontsize=12]\n"
+    dot_string += "    edge[labeldistance=1.5 fontsize=12]\n"
     for attack in argumentation_framework.defeats:
         dot_string += f'    "{attack.from_argument}" -> "{attack.to_argument}"\n'
     dot_string += "}"
@@ -142,7 +142,7 @@ def generate_dot_string(
         dot_string += f'    "{argument_name}" [fontsize=14]\n'
 
     # Adding edge information
-    dot_string += f"    edge[labeldistance=1.5 fontsize=12]\n"
+    dot_string += "    edge[labeldistance=1.5 fontsize=12]\n"
     for attack in argumentation_framework.defeats:
         if is_extension_representation:
             from_argument_grounded_state = gr_status_by_arg[attack.from_argument.name]
@@ -371,3 +371,139 @@ def set_constraint_con(bool, con_type):
         return 'constraint="false"'
     else:
         return ""
+
+
+def get_provenance(arg_framework, prov_type: str, node: str):
+    """Executes a Clingo-based algorithm with given facts and a specific provenance type for a node.
+
+    Args:
+        facts (str): Facts to be loaded into Clingo.
+        prov_type (str): Provenance type, one of {"PO", "AC", "PR"}.
+        node (str): Target node for the algorithm.
+    Returns:
+        tuple: A tuple containing:
+            - list of edges as "source,target" strings.
+            - list of nodes as plain strings.
+    """
+    # Map provenance type to the corresponding prefix and edge predicate
+    facts = "\n".join(
+            [
+                f'move("{attack.to_argument}","{attack.from_argument}").'
+                for attack in arg_framework.defeats
+            ]
+        )
+    
+    prov_map = {
+        "PO": ("pot_prov", "pot_edge"),
+        "AC": ("act_prov", "act_edge"),
+        "PR": ("pr_prov", "pr_edge")
+    }
+    
+    if prov_type not in prov_map:
+        raise ValueError(f"Invalid provenance type '{prov_type}'. Expected one of {list(prov_map.keys())}.")
+    
+    prov_prefix, prov_edges = prov_map[prov_type]
+    
+    
+    # Initialize Clingo control with specific options
+    ctl = clingo.Control(["--warn=none", "--opt-mode=optN"])
+    ctl.configuration.solve.models = 0
+
+    # Load facts and the algorithm into Clingo
+    ctl.add("base", [], facts)
+    ctl.add("base", [], f'start("{node}").')
+    ctl.load(str(PATH_TO_ENCODINGS / "provenance_calculation.dl"))
+
+    # Ground the program
+    ctl.ground([("base", [])])
+    edges = []
+    nodes = set()
+
+    # Callback function to extract relevant predicates and nodes
+    def collect_results(model):
+        for atom in model.symbols(atoms=True):
+            if atom.name == prov_prefix and len(atom.arguments) == 2:
+                source, target = atom.arguments
+                edges.append(f"({target},{source})")  # Format edge as "source,target"
+                nodes.add(str(source))
+                nodes.add(str(target))
+    
+    nodes.add(f'"{node}"')# Solve and extract results
+    ctl.solve(on_model=collect_results)
+    
+    return edges, list(nodes)
+
+def highlight_dot_source(dot_source, highlight_nodes, prov_arg):
+    """
+    Processes a DOT source string and returns a modified version in which:
+    - Nodes whose quoted names are NOT in highlight_nodes are styled with a light gray fillcolor.
+    - Edges whose source and target nodes are NOT both in highlight_nodes are re-colored light gray.
+    Other parts of the DOT source remain unchanged.
+
+    Parameters:
+        dot_source (str): Original DOT graph.
+        highlight_nodes (list of str): List of nodes to keep unchanged, e.g.
+                                        ['"A1"', '"B1"', '"C1"'].
+        light_gray (str): Hex color for non-highlighted items (default "#d3d3d3").
+
+    Returns:
+        str: Modified DOT source.
+    """
+    lines = dot_source.split("\n")
+    modified_lines = []
+    light_gray="#d3d3d3"
+
+    def is_highlighted_node(line):
+        """Check if a line defines a highlighted node."""
+        match = re.match(r'^\s*"([^"]+)"\s*\[', line)
+        if match:
+            node_name = f'"{match.group(1)}"'
+            return node_name in highlight_nodes
+        return False
+
+    def is_highlighted_edge(line):
+        """Check if a line defines a highlighted edge."""
+        edge_match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', line)
+        if edge_match:
+            src, dst = f'"{edge_match.group(1)}"', f'"{edge_match.group(2)}"'
+            return src in highlight_nodes and dst in highlight_nodes
+        return False
+
+    for line in lines:
+        stripped_line = line.strip()
+
+        # Process node definitions
+        if '->' not in stripped_line and '[' in stripped_line:
+            if is_highlighted_node(stripped_line):
+                if f'"{prov_arg}"' in line:
+                    line = line.replace('[', '[penwidth="5", ', 1)
+                modified_lines.append(line)
+            else:
+                # Add a check for the prov_arg node and include penwidth=5
+                new_line = re.sub(r'fillcolor="[^"]*"', f'fillcolor="{light_gray}"', line)
+                if 'fillcolor=' not in new_line:
+                    new_line = new_line.replace('[', f'[fillcolor="{light_gray}", ', 1)
+                if 'style=' not in new_line:
+                    new_line = new_line.replace('[', '[style="filled", ', 1)
+                elif 'filled' not in new_line:
+                    new_line = re.sub(r'style="([^"]*)"', r'style="\1, filled"', new_line)
+                modified_lines.append(new_line)
+        # Process edge definitions
+        elif '->' in stripped_line:
+            if is_highlighted_edge(stripped_line):
+                modified_lines.append(line)
+            else:
+                # Ensure 'color' and 'fontcolor' are light gray
+                new_line = re.sub(r'color="[^"]*"', f'color="{light_gray}"', line)
+                new_line = re.sub(r'fontcolor="[^"]*"', f'fontcolor="{light_gray}"', new_line)
+                if 'color=' not in new_line:
+                    new_line = new_line.replace('[', f'[color="{light_gray}", ', 1)
+                if 'fontcolor=' not in new_line:
+                    new_line = new_line.replace('[', f'[fontcolor="{light_gray}", ', 1)
+                modified_lines.append(new_line)
+
+        # Leave all other lines unchanged
+        else:
+            modified_lines.append(line)
+
+    return "\n".join(modified_lines)

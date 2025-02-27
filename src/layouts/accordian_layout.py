@@ -143,6 +143,16 @@ def get_abstract_evaluation_div():
 # --- Explanation Panel ---
 def get_abstract_explanation_div():
     return html.Div([
+        html.I("Click on an argument to display its"),
+        dcc.Dropdown(
+            options=[
+                {'label': 'Potential Provenance', 'value': 'PO'},
+                {'label': 'Actual Provenance', 'value': 'AC'},
+                {'label': 'Primary Provenance', 'value': 'PR'},
+            ],
+            value='PO',
+            id='prov-type-dropdown',
+            ),
         dbc.Row(id="21-abstract-evaluation-all-args"),
         dcc.Store(id="prov-button-value-output")
     ]
@@ -164,7 +174,7 @@ left_column = dbc.Col(
             dbc.AccordionItem(
                 get_abstract_explanation_div(),
                 title="Argument Provenance",
-                item_id="Explanation",
+                item_id="Provenance",
             ),
         ],
         id="abstract-evaluation-accordion",

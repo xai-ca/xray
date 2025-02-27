@@ -28,7 +28,7 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
     if selected_extension is None:
         selected_extension = {}
 
-    if active_item != "Explanation":
+    if active_item != "Provenance":
         raise PreventUpdate
 
     # Read the argumentation framework and compute grounded status.
@@ -79,7 +79,6 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
     arguments_div = html.Div(
         [
             html.Br(),
-            html.I("Click on an argument to display its provenance."),
             html.Div(all_argument_buttons),
         ]
     )

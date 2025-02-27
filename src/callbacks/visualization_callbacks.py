@@ -7,6 +7,8 @@ from dash.exceptions import PreventUpdate
 from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string import (
     generate_plain_dot_string,
     generate_dot_string,
+    get_provenance,
+    highlight_dot_source,
 )
 from py_arg_visualisation.functions.import_functions.read_argumentation_framework_functions import (
     read_argumentation_framework,
@@ -29,6 +31,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("layout-freeze-switch", "value"),
     Input("21-af-filename", "value"),
     Input("prov-button-value-output", "value"),
+    Input("prov-type-dropdown", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     prevent_initial_call=True,
@@ -45,6 +48,7 @@ def create_visualization(
     layout_freeze,
     selected_file_name,
     prov_arg,
+    prov_type,
     selected_arguments_changed,
     current_dot_source,
 ):
@@ -66,13 +70,31 @@ def create_visualization(
         dot_source = generate_plain_dot_string(arg_framework, dot_layout)
         selected_arguments_changed = False
     # Determine whether Tab "Explanation" is active
-    elif active_item == "Explanation":
-        dot_source = current_dot_source
+    elif active_item == "Provenance":
+        if selected_arguments:
+            dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+            )
+            if prov_arg:
+                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
+                print(hl_edges)
+                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg)
+            else:
+                raise PreventUpdate
+        else:
+            dot_source = current_dot_source
+        
     # Determine whether Tab "Solution" is active
     else:
         # if triggered_id == "abstract-evaluation-accordion":
         #     dot_source = generate_plain_dot_string(arg_framework, dot_layout)
-            
+
         if (
             triggered_id == "selected-argument-store-abstract"
             and selected_arguments == {}
