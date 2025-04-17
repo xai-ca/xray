@@ -19,7 +19,7 @@ def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any)
     for arg in argumentation_framework.arguments:
         name = arg.name
         meta = arg_meta.get(name, {})
-        attrs = [f'label="{name}"', "fontsize=14"]
+        attrs = [f'label="{name}"', "fontsize=14",'target="_blank"']
         if meta.get("annotation"):
             # tooltip shows on hover in many viewers
             tip = meta["annotation"].replace('"', '\\"')
@@ -153,7 +153,8 @@ def generate_dot_string(
                     f'label="{argument_label}" '
                     f'fontsize=14 {pos_attr} '
                     f'tooltip="{tip}" '
-                    f'URL="{url}"]\n'
+                    f'URL="{url}"'
+                    f'target="_blank"\n]'
                 )
                 dot_string += node
 
