@@ -24,8 +24,14 @@ You can access the tool by visiting the following website (https://wese.onrender
 
 
 ## Locally Development
+> [!TIP]
+> It is recommended to use a Conda environment.
+
 Install the necessary package
+
 ```bash
+conda create -n wese-app python=3.10
+conda install anaconda::graphviz
 pip install -r requirements.txt
 python app.py
 ```
