@@ -10,6 +10,7 @@ def get_abstract_setting_specification_div():
         children=[
             dcc.Store(id="selected-argument-store-abstract"),
             dcc.Store(id="selected_arguments_changed", data=None),
+            dcc.Store(id="raw-json", data=None),
             dbc.Col(
                 [
                     dbc.Row(
@@ -71,11 +72,12 @@ def get_abstract_setting_specification_div():
                                 [
                                     dbc.InputGroupText("Filename"),
                                     dbc.Input(value="edited_af", id="21-af-filename"),
+                                    
                                     dbc.InputGroupText("."),
                                     dbc.Select(
                                         options=[
                                             {"label": ext, "value": ext}
-                                            for ext in ["JSON", "TGF", "APX", "ICCMA23"]
+                                            for ext in ["JSON"]
                                         ],
                                         value="JSON",
                                         id="21-af-extension",

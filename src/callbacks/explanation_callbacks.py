@@ -86,7 +86,7 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
 
 
 @callback(
-    Output("prov-button-value-output", "value"),
+    Output("prov-button-value-output", "data"),
     Input({"type": "argument-button-abstract","index":ALL}, "n_clicks"),
     prevent_initial_call=True,
 )

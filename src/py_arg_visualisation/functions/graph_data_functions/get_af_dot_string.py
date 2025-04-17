@@ -8,21 +8,32 @@ from py_arg_visualisation.functions.graph_data_functions.get_color import get_co
 PATH_TO_ENCODINGS = pathlib.Path(__file__).parent / "encodings"
 
 
-def generate_plain_dot_string(argumentation_framework, layout=any):
+def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any):
     dot_string = "digraph {\n"
     dot_string += 'node [fontname = "helvetica" , shape=circle, fixedsize=true, width=0.8, height=0.8] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
         "BT"
     )
+    arg_meta = {n["id"]: n for n in raw_json.get("arguments", [])}
 
     # Adding node information
-    for argument in argumentation_framework.arguments:
-        dot_string += f'    "{argument.name}" [fontsize=14]\n'
+    for arg in argumentation_framework.arguments:
+        name = arg.name
+        meta = arg_meta.get(name, {})
+        attrs = [f'label="{name}"', "fontsize=14"]
+        if meta.get("annotation"):
+            # tooltip shows on hover in many viewers
+            tip = meta["annotation"].replace('"', '\\"')
+            attrs.append(f'tooltip="{tip}"')
+        if meta.get("url"):
+            attrs.append(f'URL="{meta["url"]}"')
+        dot_string += (f'  "{name}" [{", ".join(attrs)}]')
 
     # Adding edge information
     dot_string += "    edge[labeldistance=1.5 fontsize=12]\n"
     for attack in argumentation_framework.defeats:
         dot_string += f'    "{attack.from_argument}" -> "{attack.to_argument}"\n'
     dot_string += "}"
+
     return dot_string
 
 
@@ -66,7 +77,10 @@ def generate_dot_string(
     special_handling=any,
     layout_freeze=False,
     layout_file=None,
+    raw_json=None,
 ):
+    # print(raw_json)
+    arg_meta = {n["id"]: n for n in raw_json.get("arguments", [])}
     gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(
         argumentation_framework
     )
@@ -129,11 +143,17 @@ def generate_dot_string(
                     if argument_name in node_positions and layout_freeze
                     else ""
                 )
+                meta = arg_meta.get(argument_name, {})
+                tip = meta["annotation"].replace('"', '\\"')
+                url = meta["url"]
+                # print(tip, url)
                 node = (
                     f'    "{argument_name}" [style="filled" '
                     f'fillcolor="{argument_color}" '
                     f'label="{argument_label}" '
-                    f"fontsize=14 {pos_attr}]\n"
+                    f'fontsize=14 {pos_attr} '
+                    f'tooltip="{tip}" '
+                    f'URL="{url}"]\n'
                 )
                 dot_string += node
 

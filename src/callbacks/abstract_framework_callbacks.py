@@ -75,6 +75,7 @@ def download_generated_abstract_argumentation_framework(
 ):
     ctx = callback_context  # Get the callback context
     triggered_inputs = {t["prop_id"].split(".")[0] for t in ctx.triggered}
+    
 
     # Ensure that both button and dropdown were triggered together
     if "21-af-download-button" not in triggered_inputs:
@@ -148,10 +149,12 @@ def update_examples_dropdown(_):
     Output("abstract-attacks", "value"),
     Output("examples-dropdown", "value"),  # Added extra output to clear the selection when needed
     Output("21-af-filename", "value"),
+    Output("raw-json", "data"),
     Input("generate-random-af-button", "n_clicks"),
     Input("upload-af", "contents"),
     Input("examples-dropdown", "value"),
     State("upload-af", "filename"),
+    
 )
 def load_argumentation_framework(_nr_clicks_random, af_content, selected_example, af_filename):
     ctx = callback_context
@@ -211,6 +214,7 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
         try:
             with open(example_path, "r", encoding="utf-8") as file:
                 file_content = file.read()
+            raw_json = json.loads(file_content)
             opened_af = ArgumentationFrameworkFromJsonReader().from_json(json.loads(file_content))
             abstract_arguments_value = "\n".join(str(arg) for arg in opened_af.arguments)
             abstract_attacks_value = "\n".join(
@@ -219,9 +223,9 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             )
             file_name = selected_example.split(".")[0]  # Remove the file extension
             # When selecting an example, we leave the dropdown selection unchanged.
-            return abstract_arguments_value, abstract_attacks_value, selected_example, file_name
+            return abstract_arguments_value, abstract_attacks_value, selected_example, file_name, raw_json
         except Exception as e:
             print(f"Error reading example file {selected_example}: {e}")
-            return "", "", no_update, no_update
+            return "", "", no_update, no_update, no_update
 
     return "", "", no_update, no_update

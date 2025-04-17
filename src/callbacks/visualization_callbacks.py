@@ -30,10 +30,11 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("abstract-evaluation-accordion", "active_item"),
     Input("layout-freeze-switch", "value"),
     Input("21-af-filename", "value"),
-    Input("prov-button-value-output", "value"),
+    Input("prov-button-value-output", "data"),
     Input("prov-type-dropdown", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
+    State("raw-json", "data"),
     prevent_initial_call=True,
 )
 def create_visualization(
@@ -51,6 +52,7 @@ def create_visualization(
     prov_type,
     selected_arguments_changed,
     current_dot_source,
+    raw_json
 ):
     if not arguments or not attacks:
         raise PreventUpdate
@@ -67,7 +69,7 @@ def create_visualization(
 
     # Determine whether Tab "ArgumentationFramework" is active
     if active_item == "ArgumentationFramework":
-        dot_source = generate_plain_dot_string(arg_framework, dot_layout)
+        dot_source = generate_plain_dot_string(arg_framework, dot_layout,raw_json)
         selected_arguments_changed = False
     # Determine whether Tab "Explanation" is active
     elif active_item == "Provenance":
@@ -80,10 +82,11 @@ def create_visualization(
                     dot_rank,
                     special_handling,
                     layout_freeze,
+                    raw_json = raw_json
             )
             if prov_arg:
                 hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
-                print(hl_edges)
+                # print(hl_edges)
                 dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg)
             else:
                 raise PreventUpdate
@@ -113,6 +116,7 @@ def create_visualization(
                     dot_rank,
                     special_handling,
                     layout_freeze,
+                    raw_json = raw_json
                 )
                 selected_arguments_changed = True
                 os.makedirs("temp", exist_ok=True)
@@ -135,6 +139,7 @@ def create_visualization(
                     special_handling,
                     layout_freeze,
                     layout_file="temp/layout.txt",
+                    raw_json = raw_json
                 )
             elif triggered_id in [
                 "21-abstract-graph-layout",
@@ -149,6 +154,7 @@ def create_visualization(
                     dot_rank,
                     special_handling,
                     layout_freeze,
+                    raw_json= raw_json
                 )
                 os.makedirs("temp", exist_ok=True)
                 with open("temp/layout.dot", "w") as dot_file:

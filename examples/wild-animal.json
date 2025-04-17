@@ -1,125 +1,125 @@
 {
-  "name": "AF",
+  "name": "wild_animal",
   "arguments": [
     {
       "id": "A",
-      "annotation": "",
+      "annotation": "Pursuer had right to animal",
       "url": ""
     },
     {
       "id": "B",
-      "annotation": "",
+      "annotation": "Pursuer not in possession",
       "url": ""
     },
     {
       "id": "C",
-      "annotation": "",
+      "annotation": "Owns the land so possesses animals",
       "url": ""
     },
     {
       "id": "D",
-      "annotation": "",
+      "annotation": "Animals not confined by owner",
       "url": ""
     },
     {
       "id": "E",
-      "annotation": "",
+      "annotation": "Effort promising success made to secure animal made by pursuer",
       "url": ""
     },
     {
       "id": "F",
-      "annotation": "",
+      "annotation": "Pursuer has right to pursue livelihood",
       "url": ""
     },
     {
       "id": "G",
-      "annotation": "",
+      "annotation": "Interferer was trespassing",
       "url": ""
     },
     {
       "id": "H",
-      "annotation": "",
+      "annotation": "Pursuer was trespassing",
       "url": ""
     },
     {
       "id": "I",
-      "annotation": "",
+      "annotation": "Pursuit not enough (JUSTINIAN)",
       "url": ""
     },
     {
       "id": "J",
-      "annotation": "",
+      "annotation": "Animal was taken (JUSTINIAN)",
       "url": ""
     },
     {
       "id": "K",
-      "annotation": "",
+      "annotation": "Animal was mortally wounded (Puffendorf)",
       "url": ""
     },
     {
       "id": "L",
-      "annotation": "",
+      "annotation": "Bodily seizure is not necessary (Barbeyrac), interpreted as animal was brought within certain control (TOMPKINS)",
       "url": ""
     },
     {
       "id": "M",
-      "annotation": "",
+      "annotation": "Mere pursuit is not enough(TOMPKINS)",
       "url": ""
     },
     {
       "id": "N",
-      "annotation": "",
+      "annotation": "Justinian is too old an authority (LIVINGSTON)",
       "url": ""
     },
     {
       "id": "O",
-      "annotation": "",
-      "url": ""
+      "annotation": "Bodily seizure is not necessary (Barbeyrac), interpreted as reasonable prospect of capture is enough (LIVINGSTON)",
+      "url": "https://en.wikipedia.org/wiki/Pierson_v._Post"
     },
     {
       "id": "Q",
-      "annotation": "",
+      "annotation": "The land was open",
       "url": ""
     },
     {
       "id": "S",
-      "annotation": "",
+      "annotation": "Defendant in competition with the plaintiff",
       "url": ""
     },
     {
       "id": "T",
-      "annotation": "",
+      "annotation": "Competition was unfair",
       "url": ""
     },
     {
       "id": "U",
-      "annotation": "",
+      "annotation": "Not for courts to regulate competition",
       "url": ""
     },
     {
       "id": "V",
-      "annotation": "",
-      "url": ""
+      "annotation": "The iron holds the whale is an established convention of whaling",
+      "url": "https://en.wikipedia.org/wiki/Ghen_v._Rich"
     },
     {
       "id": "W",
-      "annotation": "",
+      "annotation": "Owners of domesticated animals have a right to regain possession",
       "url": ""
     },
     {
       "id": "X",
-      "annotation": "",
+      "annotation": "Unbranded animals living on land belong to owner of land",
       "url": ""
     },
     {
       "id": "Y",
-      "annotation": "",
+      "annotation": "Branding establishes title",
       "url": ""
     },
     {
       "id": "Z",
-      "annotation": "",
-      "url": ""
+      "annotation": "Physical presence (straying) insufficient to confer title on owner",
+      "url": "https://en.wikipedia.org/wiki/Kleppe_v._New_Mexico"
     }
   ],
   "defeats": [
