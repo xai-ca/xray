@@ -1,39 +1,287 @@
 {
-    "name": "AF",
-    "arguments": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "Q", "S", "T", "U", "V", "W", "X", "Y", "Z"],
-    "defeats": [
-      ["B", "A"],
-      ["B", "T"],
-      ["C", "B"],
-      ["D", "C"],
-      ["E", "B"],
-      ["E", "D"],
-      ["F", "B"],
-      ["G", "S"],
-      ["H", "F"],
-      ["I", "E"],
-      ["J", "I"],
-      ["K", "I"],
-      ["L", "I"],
-      ["M", "E"],
-      ["M", "O"],
-      ["M", "N"],
-      ["N", "J"],
-      ["O", "I"],
-      ["O", "M"],
-      ["Q", "G"],
-      ["Q", "H"],
-      ["Q", "C"],
-      ["S", "E"],
-      ["S", "F"],
-      ["T", "S"],
-      ["U", "T"],
-      ["V", "B"],
-      ["V", "U"],
-      ["W", "B"],
-      ["X", "D"],
-      ["Y", "B"],
-      ["Z", "C"]
-    ]
-  }
-  
+  "name": "AF",
+  "arguments": [
+    {
+      "id": "A",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "B",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "C",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "D",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "E",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "F",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "G",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "H",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "I",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "J",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "K",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "L",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "M",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "N",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "O",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "Q",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "S",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "T",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "U",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "V",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "W",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "X",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "Y",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "Z",
+      "annotation": "",
+      "url": ""
+    }
+  ],
+  "defeats": [
+    {
+      "from": "B",
+      "to": "A",
+      "annotation": ""
+    },
+    {
+      "from": "B",
+      "to": "T",
+      "annotation": ""
+    },
+    {
+      "from": "C",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "D",
+      "to": "C",
+      "annotation": ""
+    },
+    {
+      "from": "E",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "E",
+      "to": "D",
+      "annotation": ""
+    },
+    {
+      "from": "F",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "G",
+      "to": "S",
+      "annotation": ""
+    },
+    {
+      "from": "H",
+      "to": "F",
+      "annotation": ""
+    },
+    {
+      "from": "I",
+      "to": "E",
+      "annotation": ""
+    },
+    {
+      "from": "J",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "K",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "L",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "M",
+      "to": "E",
+      "annotation": ""
+    },
+    {
+      "from": "M",
+      "to": "O",
+      "annotation": ""
+    },
+    {
+      "from": "M",
+      "to": "N",
+      "annotation": ""
+    },
+    {
+      "from": "N",
+      "to": "J",
+      "annotation": ""
+    },
+    {
+      "from": "O",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "O",
+      "to": "M",
+      "annotation": ""
+    },
+    {
+      "from": "Q",
+      "to": "G",
+      "annotation": ""
+    },
+    {
+      "from": "Q",
+      "to": "H",
+      "annotation": ""
+    },
+    {
+      "from": "Q",
+      "to": "C",
+      "annotation": ""
+    },
+    {
+      "from": "S",
+      "to": "E",
+      "annotation": ""
+    },
+    {
+      "from": "S",
+      "to": "F",
+      "annotation": ""
+    },
+    {
+      "from": "T",
+      "to": "S",
+      "annotation": ""
+    },
+    {
+      "from": "U",
+      "to": "T",
+      "annotation": ""
+    },
+    {
+      "from": "V",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "V",
+      "to": "U",
+      "annotation": ""
+    },
+    {
+      "from": "W",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "X",
+      "to": "D",
+      "annotation": ""
+    },
+    {
+      "from": "Y",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "Z",
+      "to": "C",
+      "annotation": ""
+    }
+  ]
+}

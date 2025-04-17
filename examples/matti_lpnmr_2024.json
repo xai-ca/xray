@@ -1,40 +1,67 @@
 {
   "name": "AF",
   "arguments": [
-    "a",
-    "b",
-    "c",
-    "d",
-    "e"
+    {
+      "id": "a",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "b",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "c",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "d",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "e",
+      "annotation": "",
+      "url": ""
+    }
   ],
   "defeats": [
-    [
-      "e",
-      "b"
-    ],
-    [
-      "e",
-      "c"
-    ],
-    [
-      "e",
-      "e"
-    ],
-    [
-      "d",
-      "a"
-    ],
-    [
-      "a",
-      "d"
-    ],
-    [
-      "d",
-      "c"
-    ],
-    [
-      "c",
-      "d"
-    ]
+    {
+      "from": "e",
+      "to": "b",
+      "annotation": ""
+    },
+    {
+      "from": "e",
+      "to": "c",
+      "annotation": ""
+    },
+    {
+      "from": "e",
+      "to": "e",
+      "annotation": ""
+    },
+    {
+      "from": "d",
+      "to": "a",
+      "annotation": ""
+    },
+    {
+      "from": "a",
+      "to": "d",
+      "annotation": ""
+    },
+    {
+      "from": "d",
+      "to": "c",
+      "annotation": ""
+    },
+    {
+      "from": "c",
+      "to": "d",
+      "annotation": ""
+    }
   ]
 }

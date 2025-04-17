@@ -1,1 +1,102 @@
-{"name": "AF", "arguments": ["A", "B", "C", "D", "E", "F", "G", "H"], "defeats": [["A", "B"], ["B", "A"], ["A", "C"], ["C", "F"], ["F", "C"], ["C", "D"], ["D", "E"], ["E", "D"], ["E", "F"], ["E", "H"], ["G", "H"]]}
+{
+    "name": "AF",
+    "arguments": [
+        {
+            "id": "A",
+            "annotation": "",
+            "url": ""
+        },
+        {
+            "id": "B",
+            "annotation": "",
+            "url": ""
+        },
+        {
+            "id": "C",
+            "annotation": "",
+            "url": ""
+        },
+        {
+            "id": "D",
+            "annotation": "",
+            "url": ""
+        },
+        {
+            "id": "E",
+            "annotation": "",
+            "url": ""
+        },
+        {
+            "id": "F",
+            "annotation": "",
+            "url": ""
+        },
+        {
+            "id": "G",
+            "annotation": "",
+            "url": ""
+        },
+        {
+            "id": "H",
+            "annotation": "",
+            "url": ""
+        }
+    ],
+    "defeats": [
+        {
+            "from": "A",
+            "to": "B",
+            "annotation": ""
+        },
+        {
+            "from": "B",
+            "to": "A",
+            "annotation": ""
+        },
+        {
+            "from": "A",
+            "to": "C",
+            "annotation": ""
+        },
+        {
+            "from": "C",
+            "to": "F",
+            "annotation": ""
+        },
+        {
+            "from": "F",
+            "to": "C",
+            "annotation": ""
+        },
+        {
+            "from": "C",
+            "to": "D",
+            "annotation": ""
+        },
+        {
+            "from": "D",
+            "to": "E",
+            "annotation": ""
+        },
+        {
+            "from": "E",
+            "to": "D",
+            "annotation": ""
+        },
+        {
+            "from": "E",
+            "to": "F",
+            "annotation": ""
+        },
+        {
+            "from": "E",
+            "to": "H",
+            "annotation": ""
+        },
+        {
+            "from": "G",
+            "to": "H",
+            "annotation": ""
+        }
+    ]
+}

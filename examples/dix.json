@@ -1,26 +1,42 @@
 {
   "name": "AF",
   "arguments": [
-    "a",
-    "b",
-    "c"
+    {
+      "id": "a",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "b",
+      "annotation": "",
+      "url": ""
+    },
+    {
+      "id": "c",
+      "annotation": "",
+      "url": ""
+    }
   ],
   "defeats": [
-    [
-      "b",
-      "a"
-    ],
-    [
-      "c",
-      "a"
-    ],
-    [
-      "c",
-      "b"
-    ],
-    [
-      "b",
-      "c"
-    ]
+    {
+      "from": "b",
+      "to": "a",
+      "annotation": ""
+    },
+    {
+      "from": "c",
+      "to": "a",
+      "annotation": ""
+    },
+    {
+      "from": "c",
+      "to": "b",
+      "annotation": ""
+    },
+    {
+      "from": "b",
+      "to": "c",
+      "annotation": ""
+    }
   ]
 }
