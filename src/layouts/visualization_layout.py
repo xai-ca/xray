@@ -66,7 +66,7 @@ right_column = dbc.Col(
                                                                             {"label": "Unattacked Arguments", "value": "MR"},
                                                                             {"label": "Length of Arguments", "value": "AR"},
                                                                         ],
-                                                                        value="NR",
+                                                                        value="AR",
                                                                         id="21-abstract-graph-rank",
                                                                     ),
                                                                 ),
