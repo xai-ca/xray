@@ -476,7 +476,9 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg):
 
     def is_highlighted_node(line):
         """Check if a line defines a highlighted node."""
-        match = re.match(r'^\s*"([^"]+)"\s*\[', line)
+        # print(line)
+        match = re.search(r'"([^"]+)"\s*\[', line)
+        # print(match)
         if match:
             node_name = f'"{match.group(1)}"'
             return node_name in highlight_nodes
