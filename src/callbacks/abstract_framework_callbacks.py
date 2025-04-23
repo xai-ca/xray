@@ -158,7 +158,7 @@ def update_examples_dropdown(_):
 )
 def load_argumentation_framework(_nr_clicks_random, af_content, selected_example, af_filename):
     ctx = callback_context
-    print(ctx.triggered_id)
+    # print(ctx.triggered_id)
     if not ctx.triggered:
         raise PreventUpdate
 

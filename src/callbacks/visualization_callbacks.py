@@ -102,7 +102,7 @@ def create_visualization(
             triggered_id == "selected-argument-store-abstract"
             and selected_arguments == {}
         ):
-            dot_source = generate_plain_dot_string(arg_framework, dot_layout)
+            dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         else:
             if (
                 triggered_id == "selected-argument-store-abstract"
@@ -177,6 +177,8 @@ def create_visualization(
             // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
             // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
             """.strip()
+            if current_dot_source is None:
+                current_dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
             return (
                 dict(
                     content=settings + "\n" + current_dot_source,
