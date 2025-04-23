@@ -30,15 +30,18 @@ You can access the tool by visiting the following website (https://wese.onrender
 Install the necessary package
 
 ```bash
+git clone https://github.com/idaks/wese-app
 conda create -n wese-app python=3.10
+conda activate wese-app
 conda install anaconda::graphviz
+cd wese-app
 pip install -r requirements.txt
 python app.py
 ```
-before deployment, you need to test by running
+<!-- before deployment, you can test by running
 ```bash
 gunicorn app:server
-```
+``` -->
 
 ## Docker Manually Deployment
 Rebuild the Docker Image
