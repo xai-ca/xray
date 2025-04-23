@@ -158,6 +158,7 @@ def update_examples_dropdown(_):
 )
 def load_argumentation_framework(_nr_clicks_random, af_content, selected_example, af_filename):
     ctx = callback_context
+    print(ctx.triggered_id)
     if not ctx.triggered:
         raise PreventUpdate
 
@@ -170,8 +171,10 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             f"({str(defeat.from_argument)},{str(defeat.to_argument)})"
             for defeat in random_af.defeats
         )
+        # Convert the generated AF to JSON format for raw JSON output.
+        raw_json = ArgumentationFrameworkToJSONWriter().to_dict(random_af)
         # Clear the examples dropdown selection.
-        return abstract_arguments_value, abstract_attacks_value, None, "edited_af"
+        return abstract_arguments_value, abstract_attacks_value, None, "edited_af", raw_json
 
     elif ctx.triggered_id == "upload-af":
         # Reading from an uploaded file.
@@ -205,8 +208,9 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             for defeat in opened_af.defeats
         )
         file_name = af_filename.split(".")[0]  # Remove the file extension
+        raw_json = json.loads(decoded.decode())
         # Clear the examples dropdown when opening a file.
-        return abstract_arguments_value, abstract_attacks_value, None, file_name
+        return abstract_arguments_value, abstract_attacks_value, None, file_name, raw_json
     
     elif ctx.triggered_id == "examples-dropdown" and selected_example:
         # Reading from an example file.
@@ -228,4 +232,4 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             print(f"Error reading example file {selected_example}: {e}")
             return "", "", no_update, no_update, no_update
 
-    return "", "", no_update, no_update
+    return "", "", no_update, no_update, no_update

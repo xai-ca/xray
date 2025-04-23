@@ -71,7 +71,7 @@ def get_abstract_setting_specification_div():
                             dbc.InputGroup(
                                 [
                                     dbc.InputGroupText("Filename"),
-                                    dbc.Input(value="edited_af", id="21-af-filename"),
+                                    dbc.Input(value="edited_af", id="21-af-filename", style={"width": "100px"},),
                                     
                                     dbc.InputGroupText("."),
                                     dbc.Select(
