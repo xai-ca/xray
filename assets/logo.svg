@@ -1,0 +1,21 @@
+
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowhead-blue" markerWidth="6" markerHeight="5"
+      refX="2.5" refY="2.5" orient="auto">
+      <polygon points="0 0, 6 2.5, 0 5" fill="#2196F3" />
+    </marker>
+  </defs>
+
+  <g class="scan-frame-group">
+    <circle cx="30" cy="70" r="7" fill="#2196F3" />
+    <circle cx="70" cy="70" r="7" fill="#FF9800" />
+
+    <line x1="37" y1="70" x2="58" y2="70" stroke="#2196F3" stroke-width="1.5" marker-end="url(#arrowhead-blue)" />
+
+    <path d="M 20 60 Q 20 50 30 50" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 80 60 Q 80 50 70 50" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 20 80 Q 20 90 30 90" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 80 80 Q 80 90 70 90" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

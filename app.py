@@ -16,12 +16,13 @@ from callbacks import visualization_callbacks  # noqa: F401 (necessary for callb
 app = dash.Dash(
     __name__,
     server=server,
-    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME]
+    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME],
+    title="AF-XRAY"
 )
 
 # Assign the layout from layout.py
 app.layout = layout
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8050, debug=True)
+    app.run(host="0.0.0.0", port=8050, debug=False)
 
