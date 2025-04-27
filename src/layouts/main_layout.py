@@ -2,7 +2,6 @@
 
 import dash_bootstrap_components as dbc
 from dash import html
-from dash_iconify import DashIconify
 
 from layouts.accordian_layout import left_column
 from layouts.visualization_layout import right_column
@@ -15,44 +14,38 @@ layout = html.Div(
     [
         dbc.Container(
             [
-                # Header Section
+                # Header and Description Section Combined
                 dbc.Row(
-                    [
-                        dbc.Col(
-                            html.Div(
-                                [
-                                    html.Img(
-                                        src="/assets/logo.png",
-                                        height="60px",
-                                        className="me-3",
-                                    ),
-                                    html.Span(
-                                        "WESE",
-                                        style={
-                                            "font-weight": "bold",
-                                            "color": "#333333",
-                                            "font-size": "2rem",
-                                        },
-                                    ),
-                                ],
-                                className="d-flex align-items-center justify-content-center mt-1",
-                            ),
-                            width=12,
-                        )
-                    ]
-                ),
-                # Description Section
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.P(
-                                "Well-founded Explanations for Stable Extensions in Abstract Argumentation Framework",
-                                className="lead text-center",
-                            ),
-                            width=10,
-                            className="mx-auto",
-                        )
-                    ],
+                    dbc.Col(
+                        html.Div(
+                            [
+                                html.Img(
+                                    src="/assets/logo.png",
+                                    height="70px",
+                                    className="me-3",
+                                ),
+                                html.Span(
+                                    "AF-XRAY",
+                                    style={
+                                        "font-weight": "bold",
+                                        "color": "#333333",
+                                        "font-size": "2rem",
+                                    },
+                                    className="me-3",
+                                ),
+                                html.Span(
+                                    "eXplanation, Reframing, and Analysis of Abstract Argumentation Frameworks with Python",
+                                    style={
+                                        "color": "#333333",
+                                        "font-size": "1.3rem",
+                                    },
+                                    className="lead",
+                                ),
+                            ],
+                            className="d-flex align-items-center text-start ms-3",  # Added ms-3 for left spacing
+                        ),
+                        width=12,
+                    ),
                     className="mb-4",
                 ),
                 # Main Content Section
@@ -62,45 +55,37 @@ layout = html.Div(
                             layout_abstract,
                             width=12,
                             className="shadow p-4 bg-light rounded flex-grow-1",
+                            style={"height": "750px"},  # Adjust the height as needed
                         )
                     ]
                 ),
-                # Footer Section
-                dbc.Row(
-                    dbc.Col(
-                        html.Footer(
-                            [
-                                html.P(
-                                    "WESE is built upon PyArg",
-                                    className="mb-0 text-center text-muted",
-                                ),
-                                html.P(
-                                    "Released under MIT License. Copyright © 2025 - Present UIUC CIRSS",
-                                    className="text-center text-muted small",
-                                ),
-                                html.Div(
-                                    [
-                                        html.A(
-                                            DashIconify(
-                                                icon="ion:logo-github",
-                                                width=30,
-                                            ),
-                                            href="https://github.com/idaks/wese-app",
-                                            target="_blank",
-                                            className="text-decoration-none",
-                                        ),
-                                    ],
-                                    className="d-flex justify-content-center",
-                                ),
-                            ],
-                            className="py-3",
-                        ),
-                        width=12,
-                    ),
-                ),
             ],
             fluid=True,
-            className="p-4 d-flex flex-column min-vh-100",
-        )
-    ]
+            className="p-4 d-flex flex-column flex-grow-1",
+        ),
+        # Footer Section
+        html.Footer(
+            dbc.Container(
+                dbc.Row(
+                    dbc.Col(
+                        html.P(
+                            [
+                                "Released under MIT License. Copyright © 2025 - Present University of Illinois Urbana-Champaign ",
+                                html.A(
+                                    "CIRSS",
+                                    href="https://cirss.ischool.illinois.edu/",
+                                    target="_blank",
+                                    className="text-decoration-underline text-muted",
+                                ),
+                            ],
+                            className="text-center text-muted small",
+                        ),
+                    )
+                ),
+                fluid=True,
+            ),
+            className="py-3 mt-auto bg-white",
+        ),
+    ],
+    className="d-flex flex-column min-vh-100",
 )

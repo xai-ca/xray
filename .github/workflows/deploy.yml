@@ -31,7 +31,7 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: seanyl/wese:app
+          tags: seanyl/xray:app
 
   deploy-to-render:
     needs: build-and-push  # Ensure this runs only after the Docker image is pushed

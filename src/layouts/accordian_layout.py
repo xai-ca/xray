@@ -175,7 +175,7 @@ left_column = dbc.Col(
             ),
             dbc.AccordionItem(
                 get_abstract_explanation_div(),
-                title="Argument Provenance",
+                title="Argument Status Provenance",
                 item_id="Provenance",
             ),
         ],
