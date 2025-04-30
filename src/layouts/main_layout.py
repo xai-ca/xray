@@ -20,7 +20,7 @@ layout = html.Div(
                         html.Div(
                             [
                                 html.Img(
-                                    src="/assets/logo.png",
+                                    src="/assets/logo.svg",
                                     height="70px",
                                     className="me-3",
                                 ),

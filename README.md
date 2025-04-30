@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./assets/logo.png" alt="AF-XRAY Logo" width="150">
+    <img src="./assets/logo.svg" alt="AF-XRAY Logo" width="150">
     <h1 align="center">AF-XRAY</h1>
     <h3> eXplanation, Reframing, and Analysis of Abstract Argumentation Frameworks with Python </h3>
 </div>
