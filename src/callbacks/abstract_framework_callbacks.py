@@ -47,15 +47,15 @@ if dot_path is None:
 
 
 # -- Example Callback: Show/hide visualization panel based on accordion state --
-@callback(
-    Output("layered-vis-param", "style"),
-    Input("abstract-evaluation-accordion", "active_item"),
-)
-def show_hide_element(accordion_value):
-    if accordion_value == "Evaluation":
-        return {"display": "block"}
-    else:
-        return {"display": "none"}
+# @callback(
+#     Output("layered-vis-param", "style"),
+#     Input("abstract-evaluation-accordion", "active_item"),
+# )
+# def show_hide_element(accordion_value):
+#     if accordion_value == "Evaluation":
+#         return {"display": "block"}
+#     else:
+#         return {"display": "block"}
 
 
 # -- Callback for downloading a generated abstract argumentation framework --

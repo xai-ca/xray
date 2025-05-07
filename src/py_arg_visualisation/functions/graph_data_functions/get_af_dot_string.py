@@ -11,7 +11,7 @@ PATH_TO_ENCODINGS = pathlib.Path(__file__).parent / "encodings"
 def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any):
     dot_string = "digraph {\n"
     dot_string += 'node [fontname = "helvetica" , shape=circle, fixedsize=true, width=0.8, height=0.8] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
-        "BT"
+        layout
     )
     arg_meta = {n["id"]: n for n in raw_json.get("arguments", [])}
 
@@ -26,7 +26,7 @@ def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any)
             attrs.append(f'tooltip="{tip}"')
         if meta.get("url"):
             attrs.append(f'URL="{meta["url"]}"')
-        dot_string += (f'  "{name}" [{", ".join(attrs)}]')
+        dot_string += (f'  "{name}" [{", ".join(attrs)}]\n')
 
     # Adding edge information
     dot_string += "    edge[labeldistance=1.5 fontsize=12]\n"

@@ -24,40 +24,82 @@ right_column = dbc.Col(
                                                             [
                                                                 dbc.Col(
                                                                     html.B("Layout Direction"),
-                                                                    width=5,
+                                                                    id="layout-direction-label",
+                                                                    className="d-flex align-items-center",
                                                                 ),
                                                                 dbc.Col(
-                                                                    dbc.Select(
+                                                                    dbc.RadioItems(
                                                                         options=[
-                                                                            {
-                                                                                "label": "Left to right",
-                                                                                "value": "LR",
-                                                                            },
-                                                                            {
-                                                                                "label": "Right to left",
-                                                                                "value": "RL",
-                                                                            },
-                                                                            {
-                                                                                "label": "Bottom to top",
-                                                                                "value": "BT",
-                                                                            },
-                                                                            {
-                                                                                "label": "Top to bottom",
-                                                                                "value": "TB",
-                                                                            },
+                                                                            {"label": "BT", "value": "BT"},
+                                                                            {"label": "LR", "value": "LR"},
                                                                         ],
                                                                         value="BT",
                                                                         id="21-abstract-graph-layout",
+                                                                        inline=True,
+                                                                        className="d-flex align-items-center",
                                                                     ),
+                                                                    className="d-flex align-items-center",
                                                                 ),
-                                                            ]
+                                                            ],
+                                                            className="h-100 align-items-center",
                                                         ),
-                                                        html.Div(style={"height": "5px"}),
+                                                    ],
+                                                    width=3,
+                                                ),
+                                                
+                                                dbc.Col(
+                                                    [
+                                                        dbc.Label(
+                                                            "Freeze Layout",
+                                                            id="layout-freeze-label",
+                                                            className="me-2 fw-bold mb-0",
+                                                            style={"line-height": "40px"},
+                                                        ),
+                                                        daq.ToggleSwitch(
+                                                            id="layout-freeze-switch",
+                                                            value=False,
+                                                            color="#007BFF",
+                                                        ),
+                                                    ],
+                                                    className="d-flex justify-content-center align-items-center gap-2",
+                                                    width=3,
+                                                ),
+                                                dbc.Col(
+                                                    [
+                                                        dbc.Label(
+                                                            "Global View",
+                                                            id="global-view-label",
+                                                            className="me-2 fw-bold mb-0",
+                                                            style={"line-height": "40px"},
+                                                        ),
+                                                        daq.ToggleSwitch(
+                                                            id="global-local-switch",
+                                                            value=False,
+                                                            color="#007BFF",
+                                                        ),
+                                                    ],
+                                                    className="d-flex justify-content-center align-items-center gap-2",
+                                                    width=3,
+                                                ),
+                                                dbc.Col(
+                                                    [
+                                                        dbc.Button(
+                                                            "Download DOT",
+                                                            id="21-dot-download-button",
+                                                            style={"width": "150px","height": "40px"},
+                                                        ),
+                                                        dcc.Download(id="21-dot-download"),
+                                                    ],
+                                                    className="d-flex justify-content-center align-items-center",
+                                                    width=3,
+                                                ),
+
+                                                # html.Div(style={"height": "5px"}),
                                                         dbc.Row(
                                                             [
                                                                 dbc.Col(
                                                                     html.B("Layer By"),
-                                                                    width=5,
+                                                                    # width=5,
                                                                 ),
                                                                 dbc.Col(
                                                                     dbc.Select(
@@ -70,14 +112,15 @@ right_column = dbc.Col(
                                                                         id="21-abstract-graph-rank",
                                                                     ),
                                                                 ),
-                                                            ]
+                                                            ],
+                                                        style={"display": "none"},
                                                         ),
-                                                        html.Div(style={"height": "5px"}),
+                                                        # html.Div(style={"height": "5px"}),
                                                         dbc.Row(
                                                             [
                                                                 dbc.Col(
                                                                     html.B("Special Handling"),
-                                                                    width=5,
+                                                                    # width=5,
                                                                 ),
                                                                 dbc.Col(
                                                                     dbc.Checklist(
@@ -90,40 +133,11 @@ right_column = dbc.Col(
                                                                         id="21-abstract-graph-special-handling",
                                                                     ),
                                                                 ),
-                                                            ]
+                                                            ],
+                                                            style={"display": "none"}
                                                         ),
-                                                    ],
-                                                    width=7,
-                                                ),
-                                                dbc.Col(
-                                                    [
-                                                        dbc.Button(
-                                                            "Download DOT File",
-                                                            id="21-dot-download-button",
-                                                            style={
-                                                                "width": "140px",
-                                                                "marginTop": "-15px",
-                                                                "marginLeft": "30px",
-                                                            },
-                                                        ),
-                                                        dcc.Download(id="21-dot-download"),
-                                                    ],
-                                                    className="d-flex flex-column justify-content-center align-items-center",
-                                                    width=2,
-                                                ),
-                                                dbc.Col(
-                                                    [
-                                                        dbc.Label("Freeze Layout", className="me-2 fw-bold"),
-                                                        daq.ToggleSwitch(
-                                                            id="layout-freeze-switch",
-                                                            value=False,
-                                                            color="#007BFF",
-                                                        ),
-                                                    ],
-                                                    className="d-flex flex-column justify-content-center align-items-center",
-                                                    width=2,
-                                                    style={"marginTop": "-15px"},
-                                                ),
+                                                        
+                                                
                                             ]
                                         ),
                                     ],

@@ -34,7 +34,7 @@ layout = html.Div(
                                     className="me-3",
                                 ),
                                 html.Span(
-                                    "eXplanation, Reframing, and Analysis of Abstract Argumentation Frameworks with Python",
+                                    "Argumentation Framework eXplanation, Reasoning, and AnalYsis",
                                     style={
                                         "color": "#333333",
                                         "font-size": "1.3rem",

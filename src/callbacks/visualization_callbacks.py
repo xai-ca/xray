@@ -67,9 +67,39 @@ def create_visualization(
     arg_framework = read_argumentation_framework(arguments, attacks)
     triggered_id = ctx.triggered_id
 
-    # Determine whether Tab "ArgumentationFramework" is active
+    # If it's a download request, ensure we have a dot_source first
+    if triggered_id == "21-dot-download-button":
+        # If we don't have a current dot source, generate a plain one
+        if current_dot_source is None:
+            dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+        else:
+            dot_source = current_dot_source
+
+        rank_dict = {
+            "NR": "Attacks",
+            "MR": "Unchallenged Arguments",
+            "AR": "Length of Arguments",
+        }
+        settings = f"""
+        // Input AF: {str(arg_framework)}
+        """.strip()
+
+        # // Layer by: {rank_dict.get(dot_rank, "Unknown")}
+        # // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
+        # // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
+        
+        return (
+            dict(
+                content=settings + "\n" + dot_source,
+                filename="{}.gv".format(selected_file_name.split(".")[0]),
+            ),
+            dot_source,
+            selected_arguments_changed,
+        )
+
+    # Regular visualization logic continues here
     if active_item == "ArgumentationFramework":
-        dot_source = generate_plain_dot_string(arg_framework, dot_layout,raw_json)
+        dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         selected_arguments_changed = False
     # Determine whether Tab "Explanation" is active
     elif active_item == "Provenance":
@@ -88,6 +118,7 @@ def create_visualization(
                 hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
                 # print(hl_edges)
                 dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg)
+                print(dot_source)
             else:
                 raise PreventUpdate
         else:
@@ -164,28 +195,46 @@ def create_visualization(
                     check=True,
                 )
 
-        # Determine whether Download button is pressed
-        if triggered_id == "21-dot-download-button":
-            rank_dict = {
-                "NR": "Attacks",
-                "MR": "Unchallenged Arguments",
-                "AR": "Length of Arguments",
-            }
-            settings = f"""
-            // Input AF: {str(arg_framework)}
-            // Layer by: {rank_dict.get(dot_rank, "Unknown")}
-            // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
-            // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
-            """.strip()
-            if current_dot_source is None:
-                current_dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
-            return (
-                dict(
-                    content=settings + "\n" + current_dot_source,
-                    filename="{}.gv".format(selected_file_name.split(".")[0]),
-                ),
-                dot_source,
-                selected_arguments_changed,
-            )
-
     return None, dot_source, selected_arguments_changed
+
+
+@callback(
+    Output("21-abstract-graph-layout", "style"),
+    Output("global-local-switch", "disabled"),
+    Output("layout-direction-label", "style"),
+    Output("global-view-label", "style"),
+    Output("layout-freeze-switch", "disabled"),
+    Output("layout-freeze-label", "style"),
+    Input("layout-freeze-switch", "value"),
+    Input("abstract-evaluation-accordion", "active_item"),
+)
+def toggle_controls_state(layout_freeze, active_item):
+    """
+    Controls the disabled state and styling of layout-related controls based on:
+    1. Whether the layout is frozen (affects all controls except in ArgumentationFramework tab)
+    2. Whether we're in the ArgumentationFramework tab (only disables freeze layout and global view)
+    """
+    disabled_style = {"pointer-events": "none", "opacity": "0.5"}
+    enabled_style = {}
+    
+    # In ArgumentationFramework tab
+    if active_item == "ArgumentationFramework":
+        return (
+            enabled_style,     # layout control style (enabled)
+            True,             # global-local switch (disabled)
+            enabled_style,    # direction label style (enabled)
+            disabled_style,   # view label style (disabled)
+            True,            # layout freeze switch (disabled)
+            disabled_style   # layout freeze label style (disabled)
+        )
+    
+    # Otherwise, controls are disabled only if layout is frozen
+    return (
+        disabled_style if layout_freeze else enabled_style,  # layout control style
+        layout_freeze,                                       # global-local switch disabled
+        disabled_style if layout_freeze else enabled_style,  # direction label style
+        disabled_style if layout_freeze else enabled_style,  # view label style
+        False,                                              # layout freeze switch disabled
+        disabled_style if layout_freeze else enabled_style   # layout freeze label style
+    )
+
