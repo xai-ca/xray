@@ -100,11 +100,11 @@ def create_visualization(
             selected_arguments_changed,
         )
 
-    # Regular visualization logic continues here
+    # ========================== Argumentation Framework Session ==========================
     if active_item == "ArgumentationFramework":
         dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         selected_arguments_changed = False
-    # Determine whether Tab "Explanation" is active
+    # ========================== Provenance Session ==========================
     elif active_item == "Provenance":
         if selected_arguments:
             dot_source = generate_dot_string(
@@ -127,15 +127,11 @@ def create_visualization(
         else:
             dot_source = current_dot_source
 
-    # Determine whether Tab "Solution" is active
+    # ========================== Semantics Session ==========================
     else:
-        # if triggered_id == "abstract-evaluation-accordion":
-        #     dot_source = generate_plain_dot_string(arg_framework, dot_layout)
-
         if (
-            triggered_id == "selected-argument-store-abstract"
-            and selected_arguments == {}
-            or triggered_id == "21-abstract-graph-layout"
+            selected_arguments == {}
+            # or triggered_id == "21-abstract-graph-layout"
         ):
             dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         else:
@@ -224,12 +220,13 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
     """
     Controls the disabled state and styling of layout-related controls based on:
     1. Whether the layout is frozen (affects all controls except in ArgumentationFramework tab)
-    2. Whether we're in the ArgumentationFramework tab (only disables freeze layout and global view)
+    2. Active tab (ArgumentationFramework, Evaluation, or Provenance)
     3. Whether there's any graph data
     """
     disabled_style = {"pointer-events": "none", "opacity": "0.5"}
     enabled_style = {}
-    # If no graph data, disable all controls except download button
+
+    # If no graph data, disable all controls
     if not (arguments and attacks):
         return (
             disabled_style,  # direction label style
@@ -240,12 +237,9 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             True,  # global-local switch
             disabled_style,  # download button
         )
-    
-    # print(selected_arguments_changed is False)
-    # In ArgumentationFramework tab
-    if (
-        active_item == "ArgumentationFramework" or not selected_extensions
-    ):
+
+    # Handle different tabs
+    if active_item == "ArgumentationFramework":
         return (
             enabled_style,  # direction label style
             enabled_style,  # layout control style
@@ -255,24 +249,51 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             True,  # global-local switch
             enabled_style,  # download button
         )
-
-    if active_item == "Provenance":
+    
+    elif active_item == "Provenance":
+        # layout_freeze = False
         return (
             disabled_style,  # direction label style
             disabled_style,  # layout control style
-            disabled_style,
-            True,  # layout freeze label style
+            disabled_style,  # layout freeze label style
+            True,  # layout freeze switch
             enabled_style,  # view label style
+            False,  # global-local switch
             enabled_style,  # download button
         )
+    
+    elif active_item == "Evaluation":
+        if not selected_extensions:
+            return (
+                enabled_style,  # direction label style
+                enabled_style,  # layout control style
+                disabled_style,  # layout freeze label style
+                True,  # layout freeze switch
+                disabled_style,  # view label style
+                True,  # global-local switch
+                enabled_style,  # download button
+            )
+        
+        # Controls are disabled if layout is frozen
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                disabled_style,  # view label style
+                True,  # global-local switch
+                enabled_style,  # download button
+            )
+        else:
+            return (
+                enabled_style,  # direction label style
+                enabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                disabled_style,  # view label style
+                True,  # global-local switch
+                enabled_style,  # download button
+            )
 
-    # Otherwise, controls are disabled only if layout is frozen
-    return (
-        enabled_style,  # direction label style
-        enabled_style,  # layout control style
-        enabled_style,  # layout freeze label style
-        False,  # layout freeze switch
-        disabled_style,  # view label style
-        True,  # global-local switch
-        enabled_style,  # download button
-    )
+    return (enabled_style,) * 6 + (enabled_style,)

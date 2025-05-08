@@ -67,7 +67,7 @@ right_column = dbc.Col(
                                                 dbc.Col(
                                                     [
                                                         dbc.Label(
-                                                            "Global View",
+                                                            "Local View",
                                                             id="global-view-label",
                                                             className="me-2 fw-bold mb-0",
                                                             style={"line-height": "40px"},
