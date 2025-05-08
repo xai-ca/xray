@@ -80,7 +80,7 @@ def generate_dot_string(
     raw_json=None,
 ):
     # print(raw_json)
-    arg_meta = {n["id"]: n for n in raw_json.get("arguments", [])}
+    arg_meta = {n["id"]: n for n in raw_json.get("arguments", [])} if raw_json else {}
     gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(
         argumentation_framework
     )
@@ -107,7 +107,6 @@ def generate_dot_string(
     # Adding node information
     is_extension_representation = False
     argument_extension_state = {}
-    # undefined_arguments = []
     unselected_arguments = {arg.name for arg in argumentation_framework.arguments}
     for color, arguments in selected_arguments.items():
         if color in ["green", "red", "yellow"]:
@@ -118,8 +117,6 @@ def generate_dot_string(
             status = "defeated"
         elif color == "yellow":
             status = "undefined"
-            # if len(arguments)!=0:
-            #     undefined_arguments=arguments
         else:
             status = "other"
         for argument_name in arguments:
@@ -144,18 +141,22 @@ def generate_dot_string(
                     else ""
                 )
                 meta = arg_meta.get(argument_name, {})
-                tip = meta["annotation"].replace('"', '\\"')
-                url = meta["url"]
-                # print(tip, url)
+                tip = meta.get("annotation", "").replace('"', '\\"')
+                url = meta.get("url", "")
+                
                 node = (
                     f'    "{argument_name}" [style="filled" '
                     f'fillcolor="{argument_color}" '
                     f'label="{argument_label}" '
-                    f'fontsize=14 {pos_attr} '
-                    f'tooltip="{tip}" '
-                    f'URL="{url}"'
-                    f'target="_blank"\n]'
+                    f'fontsize=14 {pos_attr}'
                 )
+                
+                if tip:
+                    node += f' tooltip="{tip}"'
+                if url:
+                    node += f' URL="{url}" target="_blank"'
+                
+                node += "\n]"
                 dot_string += node
 
                 unselected_arguments.remove(argument_name)
@@ -454,7 +455,7 @@ def get_provenance(arg_framework, prov_type: str, node: str):
     
     return edges, list(nodes)
 
-def highlight_dot_source(dot_source, highlight_nodes, prov_arg):
+def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local_view):
     """
     Processes a DOT source string and returns a modified version in which:
     - Nodes whose quoted names are NOT in highlight_nodes are styled with a light gray fillcolor.

@@ -32,6 +32,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("21-af-filename", "value"),
     Input("prov-button-value-output", "data"),
     Input("prov-type-dropdown", "value"),
+    Input("global-local-switch", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     State("raw-json", "data"),
@@ -53,9 +54,19 @@ def create_visualization(
     selected_arguments_changed,
     current_dot_source,
     raw_json,
+    local_view,
 ):
     if not arguments or not attacks:
         raise PreventUpdate
+
+    if raw_json is None:
+        raw_json = {"arguments": []}
+    elif isinstance(raw_json, str):
+        try:
+            import json
+            raw_json = json.loads(raw_json)
+        except json.JSONDecodeError:
+            raw_json = {"arguments": []}
 
     if not isinstance(selected_arguments, dict):
         selected_arguments = {}
@@ -120,7 +131,7 @@ def create_visualization(
             if prov_arg:
                 hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
                 # print(hl_edges)
-                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg)
+                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view)
                 # print(dot_source)
             else:
                 raise PreventUpdate
