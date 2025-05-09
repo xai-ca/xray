@@ -207,13 +207,13 @@ def generate_dot_string(
                 from_argument_grounded_state == "accepted"
                 and to_argument_grounded_state == "defeated"
             ):
-                full_color = get_color("green", color_blind_mode)
+                full_color = get_color("edge-green", color_blind_mode)
             # Defeated -> Accepted
             elif (
                 from_argument_grounded_state == "defeated"
                 and to_argument_grounded_state == "accepted"
             ):
-                full_color = get_color("red", color_blind_mode)
+                full_color = get_color("edge-red", color_blind_mode)
             else:
                 # handle the stable extensions
                 # Stable Accepted -> Defeated (Grounded Undefined)
@@ -221,7 +221,7 @@ def generate_dot_string(
                     from_argument_extension_state == "accepted"
                     and to_argument_extension_state == "defeated"
                 ):
-                    extension_edge_color = get_color("green", color_blind_mode)
+                    extension_edge_color = get_color("edge-green", color_blind_mode)
                     full_color = f"{extension_edge_color}"
                     label = ""
                 # Stable Defeated -> Accepted(Grounded Undefined)
@@ -229,7 +229,7 @@ def generate_dot_string(
                     from_argument_extension_state == "defeated"
                     and to_argument_extension_state == "accepted"
                 ):
-                    extension_edge_color = get_color("red", color_blind_mode)
+                    extension_edge_color = get_color("edge-red", color_blind_mode)
                     full_color = f"{extension_edge_color}"
                     label = ""
                 # Undefined -> Undefined
