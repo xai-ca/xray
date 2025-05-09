@@ -21,9 +21,11 @@ from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string impor
     State("abstract-attacks", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
     Input("selected-argument-store-abstract", "data"),
+    Input("prov-type-dropdown", "value"),
     prevent_initial_call=True,
 )
-def generate_explanations(arguments, attacks, active_item, selected_extension):
+def generate_explanations(arguments, attacks, active_item, selected_extension, prov_type):
+    # print(prov_type)
     
     if selected_extension is None:
         selected_extension = {}
@@ -67,7 +69,7 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
             className="hover-button",  # Removed btn-secondary
             style={
                 "margin": "5px",
-                "backgroundColor": determine_hex_color(arg),
+                "backgroundColor": "#FFFFFF" if prov_type=="PO" else determine_hex_color(arg),
                 "border": "1px solid gray",
                 "color": "black",
             },
