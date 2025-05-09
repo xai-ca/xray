@@ -64,12 +64,12 @@ def generate_explanations(arguments, attacks, active_item, selected_extension):
         dbc.Button(
             arg,
             id={"type": "argument-button-abstract", "index": arg},
-            className="hover-button",  # Custom class for hover effect
+            className="hover-button",  # Removed btn-secondary
             style={
                 "margin": "5px",
-                "backgroundColor": determine_hex_color(arg),  # Set background color
-                "border": "1px solid gray",  # Border matches color
-                "color": "black",  # Text color
+                "backgroundColor": determine_hex_color(arg),
+                "border": "1px solid gray",
+                "color": "black",
             },
         )
         for arg in sorted(arguments.split("\n"))
@@ -104,3 +104,25 @@ def display_button_value(n_clicks_list):
 
     # Optionally, return a message to update the layout on the UI
     return button_value
+
+
+@callback(
+    [Output({"type": "argument-button-abstract", "index": ALL}, "style")],
+    [Input({"type": "argument-button-abstract", "index": ALL}, "n_clicks")],
+    [State({"type": "argument-button-abstract", "index": ALL}, "id")],
+    [State({"type": "argument-button-abstract", "index": ALL}, "style")],
+    prevent_initial_call=True
+)
+def update_active_button(n_clicks, ids, current_styles):
+    ctx = callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+        
+    button_id = json.loads(ctx.triggered[0]['prop_id'].split('.')[0])
+    clicked_index = button_id['index']
+    
+    return [[
+        {**style, "border": "3px solid black"} if id_dict['index'] == clicked_index 
+        else {**style, "border": "1px solid gray"}
+        for id_dict, style in zip(ids, current_styles)
+    ]]

@@ -156,7 +156,7 @@ def generate_dot_string(
                 if url:
                     node += f' URL="{url}" target="_blank"'
                 
-                node += "\n]"
+                node += "]\n"
                 dot_string += node
 
                 unselected_arguments.remove(argument_name)
@@ -457,36 +457,31 @@ def get_provenance(arg_framework, prov_type: str, node: str):
 
 def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local_view):
     """
-    Processes a DOT source string and returns a modified version in which:
-    - Nodes whose quoted names are NOT in highlight_nodes are styled with a light gray fillcolor.
-    - Edges whose source and target nodes are NOT both in highlight_nodes are re-colored light gray.
-    Other parts of the DOT source remain unchanged.
-
+    Processes a DOT source string and returns a modified version based on provenance type.
+    
     Parameters:
         dot_source (str): Original DOT graph.
-        highlight_nodes (list of str): List of nodes to keep unchanged, e.g.
-                                        ['"A1"', '"B1"', '"C1"'].
-        light_gray (str): Hex color for non-highlighted items (default "#d3d3d3").
+        highlight_nodes (list of str): List of nodes to keep unchanged.
+        prov_arg (str): The provenance argument.
+        prov_type (str): Type of provenance ("PO", "PR", "AR").
+        local_view (bool): Whether to use local view.
 
     Returns:
         str: Modified DOT source.
     """
     lines = dot_source.split("\n")
     modified_lines = []
-    light_gray="#d3d3d3"
+    light_gray = "#d3d3d3"
+    gray = "#bebebe"
 
     def is_highlighted_node(line):
-        """Check if a line defines a highlighted node."""
-        # print(line)
         match = re.search(r'"([^"]+)"\s*\[', line)
-        # print(match)
         if match:
             node_name = f'"{match.group(1)}"'
             return node_name in highlight_nodes
         return False
 
     def is_highlighted_edge(line):
-        """Check if a line defines a highlighted edge."""
         edge_match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', line)
         if edge_match:
             src, dst = f'"{edge_match.group(1)}"', f'"{edge_match.group(2)}"'
@@ -498,35 +493,76 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
 
         # Process node definitions
         if '->' not in stripped_line and '[' in stripped_line:
-            if is_highlighted_node(stripped_line):
-                if f'"{prov_arg}"' in line:
-                    line = line.replace('[', '[penwidth="5", ', 1)
-                modified_lines.append(line)
+            if prov_type == "PO":
+                # For PO, modify node labels to remove numbers and infinite symbols
+                line = re.sub(r'"([^"]+)\.(?:\d+|∞)"', r'"\1"', line)
+                
+                if is_highlighted_node(stripped_line):
+                    # Highlighted nodes in PO should be gray
+                    new_line = re.sub(r'fillcolor="[^"]*"', f'fillcolor="{gray}"', line)
+                    if 'fillcolor=' not in new_line:
+                        new_line = new_line.replace('[', f'[fillcolor="{gray}", ', 1)
+                    if 'style=' not in new_line:
+                        new_line = new_line.replace('[', '[style="filled", ', 1)
+                    # Add penwidth for the chosen argument
+                    if f'"{prov_arg}"' in new_line:
+                        if 'penwidth=' not in new_line:
+                            new_line = new_line.replace('[', '[penwidth="5", ', 1)
+                    modified_lines.append(new_line)
+                else:
+                    # Non-highlighted nodes should be white with light gray border
+                    new_line = re.sub(r'fillcolor="[^"]*"', 'fillcolor="white" color="#cccccc"', line)
+                    modified_lines.append(new_line)
+            elif prov_type == "AC":
+                # Remove node labels and numbers/infinite symbols
+                line = re.sub(r'"([^"]+)\.(?:\d+|∞)"', r'"\1"', line)
+                
+                if is_highlighted_node(stripped_line):
+                    # Keep original colors for highlighted nodes
+                    if f'"{prov_arg}"' in line:
+                        if 'penwidth=' not in line:
+                            line = line.replace('[', '[penwidth="5", ', 1)
+                    modified_lines.append(line)
+                else:
+                    # Make non-highlighted nodes white
+                    new_line = re.sub(r'fillcolor="[^"]*"', 'fillcolor="white" color="#cccccc"', line)
+                    modified_lines.append(new_line)
             else:
-                # Add a check for the prov_arg node and include penwidth=5
-                new_line = re.sub(r'fillcolor="[^"]*"', f'fillcolor="{light_gray}"', line)
-                if 'fillcolor=' not in new_line:
-                    new_line = new_line.replace('[', f'[fillcolor="{light_gray}", ', 1)
-                if 'style=' not in new_line:
-                    new_line = new_line.replace('[', '[style="filled", ', 1)
-                elif 'filled' not in new_line:
-                    new_line = re.sub(r'style="([^"]*)"', r'style="\1, filled"', new_line)
-                modified_lines.append(new_line)
+                # Original PR behavior
+                if is_highlighted_node(stripped_line):
+                    if f'"{prov_arg}"' in line:
+                        line = line.replace('[', '[penwidth="5", ', 1)
+                    modified_lines.append(line)
+                else:
+                    new_line = re.sub(r'fillcolor="[^"]*"', 'fillcolor="white" color="#cccccc"', line)
+                    modified_lines.append(new_line)
+
         # Process edge definitions
         elif '->' in stripped_line:
-            if is_highlighted_edge(stripped_line):
-                modified_lines.append(line)
-            else:
-                # Ensure 'color' and 'fontcolor' are light gray
-                new_line = re.sub(r'color="[^"]*"', f'color="{light_gray}"', line)
-                new_line = re.sub(r'fontcolor="[^"]*"', f'fontcolor="{light_gray}"', new_line)
-                if 'color=' not in new_line:
-                    new_line = new_line.replace('[', f'[color="{light_gray}", ', 1)
-                if 'fontcolor=' not in new_line:
-                    new_line = new_line.replace('[', f'[fontcolor="{light_gray}", ', 1)
+            if prov_type == "PO":
+                # For PO, remove edge styles and labels, use solid filled vee arrows
+                new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
+                if is_highlighted_edge(stripped_line):
+                    new_line = new_line.strip() + f' [color="black", arrowhead_style="filled"]\n'
+                else:
+                    new_line = new_line.strip() + f' [color="{light_gray}"]\n'
                 modified_lines.append(new_line)
-
-        # Leave all other lines unchanged
+            elif prov_type == "AC":
+                # Remove edge styles and keep only color for highlighted edges
+                new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
+                if is_highlighted_edge(stripped_line):
+                    new_line = new_line.strip() + ' [color="black"]\n'
+                else:
+                    new_line = new_line.strip() + f' [color="{light_gray}"]\n'
+                modified_lines.append(new_line)
+            else:
+                # Original PR behavior
+                if is_highlighted_edge(stripped_line):
+                    modified_lines.append(line)
+                else:
+                    new_line = re.sub(r'color="[^"]*"', f'color="{light_gray}"', line)
+                    new_line = re.sub(r'fontcolor="[^"]*"', f'fontcolor="{light_gray}"', new_line)
+                    modified_lines.append(new_line)
         else:
             modified_lines.append(line)
 

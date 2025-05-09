@@ -51,10 +51,10 @@ def create_visualization(
     selected_file_name,
     prov_arg,
     prov_type,
+    local_view,
     selected_arguments_changed,
     current_dot_source,
     raw_json,
-    local_view,
 ):
     if not arguments or not attacks:
         raise PreventUpdate
@@ -83,12 +83,13 @@ def create_visualization(
 
     # If it's a download request, ensure we have a dot_source first
     if triggered_id == "21-dot-download-button":
+        
         # If we don't have a current dot source, generate a plain one
         if current_dot_source is None:
             dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         else:
             dot_source = current_dot_source
-
+        # print(current_dot_source)
         # rank_dict = {
         #     "NR": "Attacks",
         #     "MR": "Unchallenged Arguments",
@@ -101,7 +102,7 @@ def create_visualization(
         # // Layer by: {rank_dict.get(dot_rank, "Unknown")}
         # // Use Blunders: {"Yes" if "BU" in special_handling else "No"}
         # // Use Re-Derivations: {"Yes" if "RD" in special_handling else "No"}
-
+        # print(dot_source)
         return (
             dict(
                 content=settings + "\n" + dot_source,
