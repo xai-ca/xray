@@ -9,8 +9,8 @@ PATH_TO_ENCODINGS = pathlib.Path(__file__).parent / "encodings"
 
 
 def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any):
-    dot_string = "digraph {\n"
-    dot_string += 'node [fontname = "helvetica" , shape=circle, fixedsize=true, width=0.8, height=0.8] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
+    dot_string = "digraph {\n "
+    dot_string += 'rankdir={}  \n \n node [fontname = "helvetica" , shape=circle, fixedsize=true, width=0.8, height=0.8] \n '.format(
         layout
     )
     arg_meta = {n["id"]: n for n in raw_json.get("arguments", [])}
@@ -29,7 +29,7 @@ def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any)
         dot_string += (f'  "{name}" [{", ".join(attrs)}]\n')
 
     # Adding edge information
-    dot_string += "    edge[labeldistance=1.5 fontsize=12]\n"
+    dot_string += '\n edge[labeldistance=1.5 fontsize=12 fontname="helvetica"]\n'
     for attack in argumentation_framework.defeats:
         dot_string += f'    "{attack.from_argument}" -> "{attack.to_argument}"\n'
     dot_string += "}"
@@ -100,7 +100,7 @@ def generate_dot_string(
 
     # creating the dot string
     dot_string = f"digraph {{\n{graph_layout} \n"
-    dot_string += 'node [fontname = "helvetica"  shape=circle fixedsize=true width=0.8, height=0.8] \n  edge [fontname = "helvetica"] \n rankdir={}  // Node defaults can be set here if needed\n'.format(
+    dot_string += 'rankdir={} \n \n node [fontname = "helvetica"  shape=circle fixedsize=true width=0.8, height=0.8] \n'.format(
         layout
     )
 
@@ -164,7 +164,7 @@ def generate_dot_string(
         dot_string += f'    "{argument_name}" [fontsize=14]\n'
 
     # Adding edge information
-    dot_string += "    edge[labeldistance=1.5 fontsize=12]\n"
+    dot_string += '\n edge[labeldistance=1.5 fontsize=12 fontname="helvetica"]\n'
     for attack in argumentation_framework.defeats:
         if is_extension_representation:
             from_argument_grounded_state = gr_status_by_arg[attack.from_argument.name]
@@ -305,6 +305,7 @@ def generate_dot_string(
             edge = f'"{attack.from_argument.name}" -> "{attack.to_argument.name}"\n'
         dot_string += "    " + edge
 
+    dot_string += "\n"
     # Enable Ranks
     number_by_argument = {k: v for k, v in number_by_argument.items() if v != "∞"}
     if rank == "NR":
@@ -455,7 +456,57 @@ def get_provenance(arg_framework, prov_type: str, node: str):
     
     return edges, list(nodes)
 
-def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local_view):
+
+def get_local_view_rank(arg_framework, prov_arg):
+    """
+    Calculates the local view rank for a given argument.
+
+    Args:
+        arg_framework (ArgumentationFramework): The argumentation framework.
+        prov_arg (str): The provenance argument.
+
+    Returns:
+        tuple: (rank_dict, rank_str) where rank_dict maps arguments to their ranks
+               and rank_str is the formatted graphviz rank string
+    """
+    facts = "\n".join(
+            [
+                f'attacks("{attack.from_argument}","{attack.to_argument}").'
+                for attack in arg_framework.defeats
+            ]
+        )
+
+    ctl = clingo.Control(["--warn=none", "--opt-mode=optN"])
+    ctl.configuration.solve.models = 0
+
+    ctl.add("base", [], facts)
+    ctl.add("base", [], f'target("{prov_arg.capitalize()}").')
+    ctl.load(str(PATH_TO_ENCODINGS / "local_view_rank.dl"))
+    ctl.ground([("base", [])])
+    models = []
+    ctl.solve(on_model=lambda m: models.append(m.symbols(shown=True)))
+    
+    rank_dict = {}
+    atoms = models[0]
+    for atom in atoms:
+        if atom.name == "min_distance":
+            arg = str(atom.arguments[0])
+            rank = int(str(atom.arguments[1]))
+            rank_dict[arg] = rank
+    
+    # Group nodes by their rank, excluding the target node (rank 0)
+    rank_groups = {}
+    for arg, rank in rank_dict.items():
+        if rank > 0:  # Skip the target node
+            if rank not in rank_groups:
+                rank_groups[rank] = []
+            rank_groups[rank].append(arg)
+    
+
+    return rank_groups
+
+
+def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local_view, local_view_rank=None):
     """
     Processes a DOT source string and returns a modified version based on provenance type.
     
@@ -463,23 +514,25 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
         dot_source (str): Original DOT graph.
         highlight_nodes (list of str): List of nodes to keep unchanged.
         prov_arg (str): The provenance argument.
-        prov_type (str): Type of provenance ("PO", "PR", "AR").
+        prov_type (str): Type of provenance ("PO", "PR", "AC").
         local_view (bool): Whether to use local view.
+        local_view_rank (dict, optional): Dictionary mapping ranks to lists of nodes.
+                                        Example: {1: ['"D"', '"E"'], 2: ['"F"', '"G"']}
 
     Returns:
         str: Modified DOT source.
     """
-    lines = dot_source.split("\n")
-    modified_lines = []
-    light_gray = "#d3d3d3"
-    gray = "#bebebe"
-
+    COLORS = {
+        'light_gray': '#d3d3d3',
+        'gray': '#bebebe',
+        'border_gray': '#cccccc',
+        'white': 'white',
+        'black': 'black'
+    }
+    print(local_view_rank)
     def is_highlighted_node(line):
         match = re.search(r'"([^"]+)"\s*\[', line)
-        if match:
-            node_name = f'"{match.group(1)}"'
-            return node_name in highlight_nodes
-        return False
+        return match and f'"{match.group(1)}"' in highlight_nodes
 
     def is_highlighted_edge(line):
         edge_match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', line)
@@ -488,103 +541,86 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
             return src in highlight_nodes and dst in highlight_nodes
         return False
 
-    for line in lines:
+    def process_node_line(line, stripped_line):
+        # Remove numbers and infinite symbols for PO and AC
+        if prov_type in ["PO", "AC"]:
+            line = re.sub(r'"([^"]+)\.(?:\d+|∞)"', r'"\1"', line)
+        
+        if not is_highlighted_node(stripped_line):
+            return re.sub(r'fillcolor="[^"]*"', f'fillcolor="{COLORS["white"]}" color="{COLORS["border_gray"]}"', line)
+        
+        if prov_type == "PO":
+            new_line = re.sub(r'fillcolor="[^"]*"', f'fillcolor="{COLORS["gray"]}"', line)
+            if 'fillcolor=' not in new_line:
+                new_line = new_line.replace('[', f'[fillcolor="{COLORS["gray"]}", ', 1)
+            if 'style=' not in new_line:
+                new_line = new_line.replace('[', '[style="filled", ', 1)
+        else:
+            new_line = line
+
+        # Add penwidth for the chosen argument
+        if f'"{prov_arg}"' in new_line and 'penwidth=' not in new_line:
+            new_line = new_line.replace('[', '[penwidth="5", ', 1)
+            
+        return new_line
+
+    def process_edge_line(line):
+        # Check for dir=back in original line
+        dir_back = 'dir=back' in line
+        new_line = re.sub(r'\[.*?\]', '', line).strip()  # Remove all edge attributes
+        
+        if not is_highlighted_edge(line):
+            attrs = [f'color="{COLORS["light_gray"]}"']
+            if dir_back:
+                attrs.append('dir=back')
+            return new_line + f' [{", ".join(attrs)}]'
+            
+        if prov_type == "PO":
+            attrs = ['color="black"']
+            if dir_back:
+                attrs.append('dir=back')
+        elif prov_type == "AC":
+            color_match = re.search(r'color="([^"]*)"', line)
+            color = color_match.group(1) if color_match else COLORS["black"]
+            attrs = [f'color="{color}"']
+            if dir_back:
+                attrs.append('dir=back')
+        else:  # PR
+            return line.rstrip()
+            
+        return new_line + f' [{", ".join(attrs)}]'
+
+    modified_lines = []
+    in_rank_section = False
+    rank_section_added = False
+    
+    for line in dot_source.split('\n'):
         stripped_line = line.strip()
 
-        # Process node definitions
-        if '->' not in stripped_line and '[' in stripped_line:
-            if prov_type == "PO":
-                # For PO, modify node labels to remove numbers and infinite symbols
-                line = re.sub(r'"([^"]+)\.(?:\d+|∞)"', r'"\1"', line)
-                
-                if is_highlighted_node(stripped_line):
-                    # Highlighted nodes in PO should be gray
-                    new_line = re.sub(r'fillcolor="[^"]*"', f'fillcolor="{gray}"', line)
-                    if 'fillcolor=' not in new_line:
-                        new_line = new_line.replace('[', f'[fillcolor="{gray}", ', 1)
-                    if 'style=' not in new_line:
-                        new_line = new_line.replace('[', '[style="filled", ', 1)
-                    # Add penwidth for the chosen argument
-                    if f'"{prov_arg}"' in new_line:
-                        if 'penwidth=' not in new_line:
-                            new_line = new_line.replace('[', '[penwidth="5", ', 1)
-                    modified_lines.append(new_line)
-                else:
-                    # Non-highlighted nodes should be white with light gray border
-                    new_line = re.sub(r'fillcolor="[^"]*"', 'fillcolor="white" color="#cccccc"', line)
-                    modified_lines.append(new_line)
-            elif prov_type == "AC":
-                # Remove node labels and numbers/infinite symbols
-                line = re.sub(r'"([^"]+)\.(?:\d+|∞)"', r'"\1"', line)
-                
-                if is_highlighted_node(stripped_line):
-                    # Keep original colors for highlighted nodes
-                    if f'"{prov_arg}"' in line:
-                        if 'penwidth=' not in line:
-                            line = line.replace('[', '[penwidth="5", ', 1)
-                    modified_lines.append(line)
-                else:
-                    # Make non-highlighted nodes white
-                    new_line = re.sub(r'fillcolor="[^"]*"', 'fillcolor="white" color="#cccccc"', line)
-                    modified_lines.append(new_line)
-            else:
-                # Original PR behavior
-                if is_highlighted_node(stripped_line):
-                    if f'"{prov_arg}"' in line:
-                        line = line.replace('[', '[penwidth="5", ', 1)
-                    modified_lines.append(line)
-                else:
-                    new_line = re.sub(r'fillcolor="[^"]*"', 'fillcolor="white" color="#cccccc"', line)
-                    modified_lines.append(new_line)
+        # Skip existing rank definitions when local_view is True
+        if local_view and "rank =" in line:
+            in_rank_section = True
+            continue
+        
+        if in_rank_section:
+            if not any(keyword in line for keyword in ["rank =", "}"]):
+                continue
+            if "}" in line:
+                in_rank_section = False
+                if not rank_section_added and local_view_rank:
+                    # Add new rank definitions
+                    for rank, nodes in sorted(local_view_rank.items()):
+                        node_str = ' '.join(nodes)  # nodes are already in correct format ('"D"', '"E"', etc.)
+                        modified_lines.append(f'    {{rank = same {node_str}}}')
+                    rank_section_added = True
 
-        # Process edge definitions
-        elif '->' in stripped_line:
-            if prov_type == "PO":
-                # For PO, preserve dir=back if present, but remove other attributes
-                dir_back = 'dir=back' if 'dir=back' in line else ''
-                new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
-                if is_highlighted_edge(stripped_line):
-                    attrs = ['color="black"', 'arrowhead_style="filled"']
-                    if dir_back:
-                        attrs.append(dir_back)
-                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
-                else:
-                    attrs = [f'color="{light_gray}"']
-                    if dir_back:
-                        attrs.append(dir_back)
-                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
-                modified_lines.append(new_line)
-            elif prov_type == "AC":
-                if is_highlighted_edge(stripped_line):
-                    # Extract original color and dir=back if present
-                    dir_back = 'dir=back' if 'dir=back' in line else ''
-                    color_match = re.search(r'color="([^"]*)"', line)
-                    color = color_match.group(1) if color_match else 'black'
-                    
-                    new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
-                    attrs = [f'color="{color}"']
-                    if dir_back:
-                        attrs.append(dir_back)
-                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
-                    modified_lines.append(new_line)
-                else:
-                    # For non-highlighted edges, preserve dir=back but make them light gray
-                    dir_back = 'dir=back' if 'dir=back' in line else ''
-                    new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
-                    attrs = [f'color="{light_gray}"']
-                    if dir_back:
-                        attrs.append(dir_back)
-                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
-                    modified_lines.append(new_line)
+        # Process non-rank lines
+        if not in_rank_section:
+            if '->' not in stripped_line and '[' in stripped_line:
+                modified_lines.append(process_node_line(line, stripped_line))
+            elif '->' in stripped_line:
+                modified_lines.append(process_edge_line(line))
             else:
-                # Original PR behavior
-                if is_highlighted_edge(stripped_line):
-                    modified_lines.append(line)
-                else:
-                    new_line = re.sub(r'color="[^"]*"', f'color="{light_gray}"', line)
-                    new_line = re.sub(r'fontcolor="[^"]*"', f'fontcolor="{light_gray}"', new_line)
-                    modified_lines.append(new_line)
-        else:
-            modified_lines.append(line)
+                modified_lines.append(line)
 
     return "\n".join(modified_lines)

@@ -9,6 +9,7 @@ from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string impor
     generate_dot_string,
     get_provenance,
     highlight_dot_source,
+    get_local_view_rank,
 )
 from py_arg_visualisation.functions.import_functions.read_argumentation_framework_functions import (
     read_argumentation_framework,
@@ -130,10 +131,16 @@ def create_visualization(
                 raw_json=raw_json,
             )
             if prov_arg:
-                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
-                # print(hl_edges)
-                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view)
-                # print(dot_source)
+                #local view information calculation
+                if local_view:
+                    hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
+                    local_view_rank = get_local_view_rank(arg_framework, prov_arg)
+                    dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view, local_view_rank)
+                else:
+                    hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
+                    # print(hl_edges)
+                    dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view)
+                    # print(dot_source)
             else:
                 raise PreventUpdate
         else:
