@@ -540,21 +540,42 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
         # Process edge definitions
         elif '->' in stripped_line:
             if prov_type == "PO":
-                # For PO, remove edge styles and labels, use solid filled vee arrows
+                # For PO, preserve dir=back if present, but remove other attributes
+                dir_back = 'dir=back' if 'dir=back' in line else ''
                 new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
                 if is_highlighted_edge(stripped_line):
-                    new_line = new_line.strip() + f' [color="black", arrowhead_style="filled"]\n'
+                    attrs = ['color="black"', 'arrowhead_style="filled"']
+                    if dir_back:
+                        attrs.append(dir_back)
+                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
                 else:
-                    new_line = new_line.strip() + f' [color="{light_gray}"]\n'
+                    attrs = [f'color="{light_gray}"']
+                    if dir_back:
+                        attrs.append(dir_back)
+                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
                 modified_lines.append(new_line)
             elif prov_type == "AC":
-                # Remove edge styles and keep only color for highlighted edges
-                new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
                 if is_highlighted_edge(stripped_line):
-                    new_line = new_line.strip() + ' [color="black"]\n'
+                    # Extract original color and dir=back if present
+                    dir_back = 'dir=back' if 'dir=back' in line else ''
+                    color_match = re.search(r'color="([^"]*)"', line)
+                    color = color_match.group(1) if color_match else 'black'
+                    
+                    new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
+                    attrs = [f'color="{color}"']
+                    if dir_back:
+                        attrs.append(dir_back)
+                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
+                    modified_lines.append(new_line)
                 else:
-                    new_line = new_line.strip() + f' [color="{light_gray}"]\n'
-                modified_lines.append(new_line)
+                    # For non-highlighted edges, preserve dir=back but make them light gray
+                    dir_back = 'dir=back' if 'dir=back' in line else ''
+                    new_line = re.sub(r'\[.*?\]', '', line)  # Remove all edge attributes
+                    attrs = [f'color="{light_gray}"']
+                    if dir_back:
+                        attrs.append(dir_back)
+                    new_line = new_line.strip() + f' [{", ".join(attrs)}]\n'
+                    modified_lines.append(new_line)
             else:
                 # Original PR behavior
                 if is_highlighted_edge(stripped_line):
