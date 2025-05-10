@@ -566,8 +566,47 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
 
     def process_edge_line(line):
         # Check for dir=back in original line
-        dir_back = 'dir=back' in line
+        dir_back = False  # Initialize dir_back to False for all cases
         new_line = re.sub(r'\[.*?\]', '', line).strip()  # Remove all edge attributes
+        
+        # Extract source and target nodes
+        match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', new_line)
+        if not match:
+            return line
+        
+        src, dst = match.group(1), match.group(2)
+        
+        # Always apply rank-based handling when local_view is True, regardless of prov_type
+        if local_view:
+            # If original line had dir=back, normalize the direction first
+            if 'dir=back' in line:
+                src, dst = dst, src
+                new_line = f'"{src}" -> "{dst}"'
+            
+            # Handle edge direction based on local_view_rank
+            if local_view_rank:
+                # Find ranks for source and target nodes
+                src_rank = next((r for r, nodes in local_view_rank.items() if f'"{src}"' in nodes), None)
+                dst_rank = next((r for r, nodes in local_view_rank.items() if f'"{dst}"' in nodes), None)
+                
+                # Handle special case for provenance argument (rank 0)
+                if dst == prov_arg.strip('"'):
+                    dst_rank = 0
+                    
+                # Keep dir=back only for edges from lower rank to higher rank
+                # Only consider rank comparison if neither node is the provenance argument
+                if src_rank is not None and dst_rank is not None and src != prov_arg.strip('"'):
+                    if src_rank < dst_rank:
+                        # Lower to higher rank: use dir=back and swap nodes
+                        new_line = f'"{dst}" -> "{src}"'
+                        dir_back = True
+                    else:
+                        # Ensure we use normal direction for all other cases
+                        new_line = f'"{src}" -> "{dst}"'
+                        dir_back = False
+        else:
+            # If not in local_view mode, preserve original dir=back
+            dir_back = 'dir=back' in line
         
         if not is_highlighted_edge(line):
             attrs = [f'color="{COLORS["light_gray"]}"']
@@ -586,7 +625,29 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
             if dir_back:
                 attrs.append('dir=back')
         else:  # PR
-            return line.rstrip()
+            # For PR, preserve all attributes except dir=back
+            color_match = re.search(r'color="([^"]*)"', line)
+            style_match = re.search(r'style="([^"]*)"', line)
+            fontcolor_match = re.search(r'fontcolor="([^"]*)"', line)
+            arrowtail_match = re.search(r'arrowtail="([^"]*)"', line)
+            arrowhead_match = re.search(r'arrowhead="([^"]*)"', line)
+            label_match = re.search(r'(tail|head)label="([^"]*)"', line)
+            
+            attrs = []
+            if color_match:
+                attrs.append(f'color="{color_match.group(1)}"')
+            if style_match:
+                attrs.append(f'style="{style_match.group(1)}"')
+            if fontcolor_match:
+                attrs.append(f'fontcolor="{fontcolor_match.group(1)}"')
+            if arrowtail_match:
+                attrs.append(f'arrowtail="{arrowtail_match.group(1)}"')
+            if arrowhead_match:
+                attrs.append(f'arrowhead="{arrowhead_match.group(1)}"')
+            if label_match:
+                attrs.append(f'{label_match.group(1)}label="{label_match.group(2)}"')
+            if dir_back:
+                attrs.append('dir=back')
             
         return new_line + f' [{", ".join(attrs)}]'
 
