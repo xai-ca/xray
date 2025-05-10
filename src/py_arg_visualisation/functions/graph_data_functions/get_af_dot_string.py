@@ -494,14 +494,13 @@ def get_local_view_rank(arg_framework, prov_arg):
             rank = int(str(atom.arguments[1]))
             rank_dict[arg] = rank
     
-    # Group nodes by their rank, excluding the target node (rank 0)
-    rank_groups = {}
+    # Group nodes by their rank, including the target node at rank 0
+    rank_groups = {0: [f'"{prov_arg}"']}  # Initialize with provenance argument at rank 0
     for arg, rank in rank_dict.items():
-        if rank > 0:  # Skip the target node
+        if rank > 0:  # Skip the target node since we already added it
             if rank not in rank_groups:
                 rank_groups[rank] = []
             rank_groups[rank].append(arg)
-    
 
     return rank_groups
 
@@ -595,7 +594,7 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
                     
                 # Keep dir=back only for edges from lower rank to higher rank
                 # Only consider rank comparison if neither node is the provenance argument
-                if src_rank is not None and dst_rank is not None and src != prov_arg.strip('"'):
+                if src_rank is not None and dst_rank is not None:
                     if src_rank < dst_rank:
                         # Lower to higher rank: use dir=back and swap nodes
                         new_line = f'"{dst}" -> "{src}"'
