@@ -119,33 +119,28 @@ def create_visualization(
         selected_arguments_changed = False
     # ========================== Provenance Session ==========================
     elif active_item == "Provenance":
-        if selected_arguments:
-            dot_source = generate_dot_string(
-                arg_framework,
-                selected_arguments,
-                True,
-                dot_layout,
-                dot_rank,
-                special_handling,
-                layout_freeze,
-                raw_json=raw_json,
-            )
-            if prov_arg:
-                #local view information calculation
-                if local_view:
-                    hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
-                    local_view_rank = get_local_view_rank(arg_framework, prov_arg)
-                    dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view, local_view_rank)
-                else:
-                    hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
-                    # print(hl_edges)
-                    dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view)
-                    # print(dot_source)
+        # Generate dot source regardless of selected arguments
+        dot_source = generate_dot_string(
+            arg_framework,
+            selected_arguments or {},  # Use empty dict if no selection
+            True,
+            dot_layout,
+            dot_rank,
+            special_handling,
+            layout_freeze,
+            raw_json=raw_json,
+        )
+        if prov_arg:
+            #local view information calculation
+            if local_view:
+                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
+                local_view_rank = get_local_view_rank(arg_framework, prov_arg)
+                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view, local_view_rank)
             else:
-                raise PreventUpdate
+                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
+                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view)
         else:
-            dot_source = current_dot_source
-
+            raise PreventUpdate
     # ========================== Semantics Session ==========================
     else:
         if (
@@ -348,3 +343,25 @@ def reset_switches(active_item, current_freeze_value):
         return current_freeze_value, False
     # Keep existing values in Provenance tab
     raise PreventUpdate
+
+
+@callback(
+    Output("prov-type-dropdown", "options"),
+    Output("prov-type-dropdown", "value"),
+    Input("selected-argument-store-abstract", "data"),
+)
+def update_provenance_dropdown_options(selected_arguments):
+    """
+    Updates the provenance dropdown options based on argument selection:
+    - If no arguments are selected: only show 'Potential Provenance'
+    - If arguments are selected: show all provenance types
+    """
+    if not selected_arguments:
+        return [{"label": "Potential Provenance", "value": "PO"}], "PO"
+    
+    # Return all options when arguments are selected
+    return [
+        {"label": "Potential Provenance", "value": "PO"},
+        {"label": "Actual Provenance", "value": "AC"},
+        {"label": "Primary Provenance", "value": "PR"}
+    ], "PO"

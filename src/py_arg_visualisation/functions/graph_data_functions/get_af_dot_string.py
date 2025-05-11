@@ -475,7 +475,7 @@ def get_local_view_rank(arg_framework, prov_arg):
                 for attack in arg_framework.defeats
             ]
         )
-    print(facts)
+    # print(facts)
     ctl = clingo.Control(["--warn=none", "--opt-mode=optN"])
     ctl.configuration.solve.models = 0
 
@@ -534,7 +534,7 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
         'white': 'white',
         'black': 'black'
     }
-    print(local_view_rank)
+    # print(local_view_rank)
     def is_highlighted_node(line):
         match = re.search(r'"([^"]+)"\s*\[', line)
         return match and f'"{match.group(1)}"' in highlight_nodes
