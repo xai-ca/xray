@@ -270,7 +270,16 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "Provenance":
-        # layout_freeze = False
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                disabled_style,  # view label style
+                True,  # global-local switch
+                enabled_style,  # download button
+            )
         return (
             disabled_style,  # direction label style
             disabled_style,  # layout control style
@@ -316,3 +325,26 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             )
 
     return (enabled_style,) * 6 + (enabled_style,)
+
+
+@callback(
+    Output("layout-freeze-switch", "value"),
+    Output("global-local-switch", "value"),
+    Input("abstract-evaluation-accordion", "active_item"),
+    State("layout-freeze-switch", "value"),
+)
+def reset_switches(active_item, current_freeze_value):
+    """
+    Reset switches based on tab:
+    - ArgumentationFramework: both switches False
+    - Evaluation: only local view False, freeze layout keeps current value
+    - Provenance: keep existing values
+    """
+    if active_item == "ArgumentationFramework":
+        return False, False
+    elif active_item == "Evaluation":
+        return current_freeze_value, False
+    elif active_item == "Provenance":
+        return current_freeze_value, False
+    # Keep existing values in Provenance tab
+    raise PreventUpdate

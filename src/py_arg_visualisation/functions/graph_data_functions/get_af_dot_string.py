@@ -528,7 +528,7 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
         'white': 'white',
         'black': 'black'
     }
-    print(local_view_rank)
+    # print(local_view_rank)
     def is_highlighted_node(line):
         match = re.search(r'"([^"]+)"\s*\[', line)
         return match and f'"{match.group(1)}"' in highlight_nodes
