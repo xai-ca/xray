@@ -481,11 +481,12 @@ def get_local_view_rank(arg_framework, prov_arg):
 
     ctl.add("base", [], facts)
     # Match case of prov_arg with the original argument
-    if any(str(attack.from_argument) == prov_arg and str(attack.from_argument).isupper() 
+    if any(str(attack.from_argument).isupper() 
            for attack in arg_framework.defeats):
         target_arg = prov_arg.upper()
     else:
         target_arg = prov_arg.lower()
+    # print(target_arg)
     ctl.add("base", [], f'target("{target_arg}").')
     ctl.load(str(PATH_TO_ENCODINGS / "local_view_rank.dl"))
     ctl.ground([("base", [])])

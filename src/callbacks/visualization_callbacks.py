@@ -119,17 +119,20 @@ def create_visualization(
         selected_arguments_changed = False
     # ========================== Provenance Session ==========================
     elif active_item == "Provenance":
-        # Generate dot source regardless of selected arguments
-        dot_source = generate_dot_string(
-            arg_framework,
-            selected_arguments or {},  # Use empty dict if no selection
-            True,
-            dot_layout,
-            dot_rank,
-            special_handling,
-            layout_freeze,
-            raw_json=raw_json,
-        )
+        # Always use generate_dot_string but adjust dot_rank based on selection
+        if selected_arguments:
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,  # Use empty dict if no selection
+                True,
+                dot_layout,
+                dot_rank,  # Set rank to None if no selection
+                special_handling,
+                layout_freeze,
+                raw_json=raw_json,
+            )
+        else:
+            dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         if prov_arg:
             #local view information calculation
             if local_view:
