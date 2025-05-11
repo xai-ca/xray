@@ -548,13 +548,30 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
         return False
 
     def process_node_line(line, stripped_line):
+        # Skip the default node attributes line
+        if 'node [fontname' in line:
+            return line
+            
         # Remove numbers and infinite symbols for PO and AC
         if prov_type in ["PO", "AC"]:
             line = re.sub(r'"([^"]+)\.(?:\d+|∞)"', r'"\1"', line)
         
         if not is_highlighted_node(stripped_line):
-            return re.sub(r'fillcolor="[^"]*"', f'fillcolor="{COLORS["white"]}" color="{COLORS["border_gray"]}"', line)
+            new_line = line
+            # If color exists, replace it
+            if 'color=' in new_line:
+                new_line = re.sub(r'color="[^"]*"', f'color="{COLORS["border_gray"]}"', new_line)
+            else:
+                # Add color if it doesn't exist
+                new_line = new_line.replace('[', f'[color="{COLORS["border_gray"]}", ', 1)
+                
+            # Replace fillcolor if it exists
+            if 'fillcolor=' in new_line:
+                new_line = re.sub(r'fillcolor="[^"]*"', f'fillcolor="{COLORS["white"]}"', new_line)
+            
+            return new_line
         
+        # For highlighted nodes, keep original line
         if prov_type == "PO":
             new_line = re.sub(r'fillcolor="[^"]*"', f'fillcolor="{COLORS["gray"]}"', line)
             if 'fillcolor=' not in new_line:
