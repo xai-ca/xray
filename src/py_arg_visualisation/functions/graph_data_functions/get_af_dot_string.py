@@ -475,12 +475,18 @@ def get_local_view_rank(arg_framework, prov_arg):
                 for attack in arg_framework.defeats
             ]
         )
-
+    print(facts)
     ctl = clingo.Control(["--warn=none", "--opt-mode=optN"])
     ctl.configuration.solve.models = 0
 
     ctl.add("base", [], facts)
-    ctl.add("base", [], f'target("{prov_arg.capitalize()}").')
+    # Match case of prov_arg with the original argument
+    if any(str(attack.from_argument) == prov_arg and str(attack.from_argument).isupper() 
+           for attack in arg_framework.defeats):
+        target_arg = prov_arg.upper()
+    else:
+        target_arg = prov_arg.lower()
+    ctl.add("base", [], f'target("{target_arg}").')
     ctl.load(str(PATH_TO_ENCODINGS / "local_view_rank.dl"))
     ctl.ground([("base", [])])
     models = []
@@ -528,7 +534,7 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
         'white': 'white',
         'black': 'black'
     }
-    # print(local_view_rank)
+    print(local_view_rank)
     def is_highlighted_node(line):
         match = re.search(r'"([^"]+)"\s*\[', line)
         return match and f'"{match.group(1)}"' in highlight_nodes
