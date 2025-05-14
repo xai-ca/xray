@@ -145,8 +145,8 @@ def create_visualization(
             else:
                 hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
                 dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view)
-        else:
-            raise PreventUpdate
+        # else:
+        #     raise PreventUpdate
     # ========================== Critical Attacks Session ==========================
     elif active_item == "CriticalAttacks":
         dot_source = generate_dot_string(
@@ -163,7 +163,7 @@ def create_visualization(
         # Add highlighting for selected fixes
         if selected_fix:
             dot_source = highlight_critical_edges(dot_source, selected_fix)
-        print(dot_source)
+        # print(dot_source)
     # ========================== Semantics Session ==========================
     else:
         if (
@@ -290,7 +290,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
     """
     Controls the disabled state and styling of layout-related controls based on:
     1. Whether the layout is frozen (affects all controls except in ArgumentationFramework tab)
-    2. Active tab (ArgumentationFramework, Evaluation, or Provenance)
+    2. Active tab (ArgumentationFramework, Evaluation, Provenance, or CriticalAttacks)
     3. Whether there's any graph data
     """
     disabled_style = {"pointer-events": "none", "opacity": "0.5"}
@@ -298,15 +298,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
 
     # If no graph data, disable all controls
     if not (arguments and attacks):
-        return (
-            disabled_style,  # direction label style
-            disabled_style,  # layout control style
-            disabled_style,  # layout freeze label style
-            True,  # layout freeze switch
-            disabled_style,  # view label style
-            True,  # global-local switch
-            disabled_style,  # download button
-        )
+        return (disabled_style,) * 6 + (disabled_style,)
 
     # Handle different tabs
     if active_item == "ArgumentationFramework":
@@ -315,6 +307,27 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             enabled_style,  # layout control style
             disabled_style,  # layout freeze label style
             True,  # layout freeze switch
+            disabled_style,  # view label style
+            True,  # global-local switch
+            enabled_style,  # download button
+        )
+    
+    elif active_item == "CriticalAttacks":
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                disabled_style,  # view label style
+                True,  # global-local switch
+                enabled_style,  # download button
+            )
+        return (
+            enabled_style,  # direction label style
+            enabled_style,  # layout control style
+            enabled_style,  # layout freeze label style
+            False,  # layout freeze switch
             disabled_style,  # view label style
             True,  # global-local switch
             enabled_style,  # download button

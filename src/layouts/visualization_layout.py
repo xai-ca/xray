@@ -53,12 +53,18 @@ right_column = dbc.Col(
                                                             "Freeze Layout",
                                                             id="layout-freeze-label",
                                                             className="me-2 fw-bold mb-0",
-                                                            style={"line-height": "40px"},
+                                                            style={
+                                                                "line-height": "40px",
+                                                                "font-size": "16px",
+                                                            },
                                                         ),
-                                                        daq.ToggleSwitch(
+                                                        dbc.Switch(
                                                             id="layout-freeze-switch",
                                                             value=False,
-                                                            color="#007BFF",
+                                                            style={
+                                                                "transform": "scale(1.5)",
+                                                                "margin-top": "3px",
+                                                            },
                                                         ),
                                                     ],
                                                     className="d-flex justify-content-center align-items-center gap-2",
@@ -70,12 +76,18 @@ right_column = dbc.Col(
                                                             "Local View",
                                                             id="global-view-label",
                                                             className="me-2 fw-bold mb-0",
-                                                            style={"line-height": "40px"},
+                                                            style={
+                                                                "line-height": "40px",
+                                                                "font-size": "16px",
+                                                            },
                                                         ),
-                                                        daq.ToggleSwitch(
+                                                        dbc.Switch(
                                                             id="global-local-switch",
                                                             value=False,
-                                                            color="#007BFF",
+                                                            style={
+                                                                "transform": "scale(1.5)",
+                                                                "margin-top": "3px",
+                                                            },
                                                         ),
                                                     ],
                                                     className="d-flex justify-content-center align-items-center gap-2",

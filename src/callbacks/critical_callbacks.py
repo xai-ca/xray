@@ -8,7 +8,10 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
 
 
 @callback(
-    Output("selected-extension-display", "children"),
+    [
+        Output("selected-extension-display", "children"),
+        Output("possible-fixes-radio", "value", allow_duplicate=True),  # Add radio reset output
+    ],
     [
         Input("selected-argument-store-abstract", "data"),
         Input("abstract-evaluation-accordion", "active_item"),
@@ -25,24 +28,24 @@ def update_selected_extension_display(selected_arguments, active_item):
         
     if not selected_arguments:
         print("No arguments selected")  # Debug print
-        return "No extension selected"
+        return "No extension selected", None  # Return None to reset radio
     
     try:
         # Ensure selected_arguments is a dictionary
         if not isinstance(selected_arguments, dict):
-            return "Invalid extension data"
+            return "Invalid extension data", None
             
         # Get only the green arguments
         green_arguments = selected_arguments.get('green', [])
         if not green_arguments:  # Check if green arguments list is empty
-            return "No green arguments selected"
+            return "No green arguments selected", None
             
         result = f"{{ {', '.join(green_arguments)} }}"
         # print(f"Returning result: {result}")  # Debug print
-        return result
+        return result, None  # Return None to reset radio
     except Exception as e:
         print(f"Error occurred: {e}")  # Debug print
-        return "Invalid extension data"
+        return "Invalid extension data", None
 
 @callback(
     [

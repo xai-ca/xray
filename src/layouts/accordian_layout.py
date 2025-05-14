@@ -186,7 +186,7 @@ def get_critical_div():
             dbc.Row([
                 dbc.Col([
                     dbc.Button(
-                        "Apply Fix to Graph",
+                        "Recalculate and Show New Length",
                         id="apply-fix-button",
                         className="mt-3",
                         color="primary",
