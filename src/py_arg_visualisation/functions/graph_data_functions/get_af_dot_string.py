@@ -796,3 +796,58 @@ def highlight_critical_edges(dot_source, edges_to_highlight):
     
     return modified_source
 
+def recalculate_fixed_args(arg_framework, dot_source):
+    """
+    Recalculates the grounded extension of an argumentation framework and updates the DOT source.
+    
+    Args:
+        arg_framework (ArgumentationFramework): The argumentation framework to recalculate.
+        dot_source (str): The original DOT source string.
+    
+    Returns:
+        str: Modified DOT source with recalculated grounded extension.
+    """ 
+    # Get the new grounded extension and numbering
+    status_dict, numbering_dict = get_numbered_grounded_extension(arg_framework)
+    
+    # Split dot source into lines and process node labels
+    lines = dot_source.split('\n')
+    modified_lines = []
+    
+    # Process existing lines
+    for line in lines:
+        # Skip any existing rank definitions
+        if 'rank=' not in line:
+            # Look for node definitions with infinite (∞) labels
+            if '[' in line and 'label=' in line and '∞' in line:
+                # Extract argument name
+                arg_name = line.split('"')[1]
+                if arg_name in numbering_dict:
+                    # Replace "∞" with the new number
+                    new_number = numbering_dict[arg_name]
+                    line = line.replace('.∞"', f'.{new_number}"')
+            modified_lines.append(line)
+    
+    # Find the last closing brace
+    while modified_lines[-1].strip() == '}':
+        modified_lines.pop()
+    
+    # Group nodes by their numbers
+    number_groups = {}
+    for arg, number in numbering_dict.items():
+        if number not in number_groups:
+            number_groups[number] = []
+        number_groups[number].append(arg)
+    
+    # Add rank definitions before the final closing brace
+    for number, args in sorted(number_groups.items(), key=lambda x: int(x[0])):
+        if args:
+            node_list = '" "'.join(args)
+            modified_lines.append(f'    {{ rank=same; "{node_list}" }}')
+    
+    # Add back the closing brace
+    modified_lines.append('}')
+    
+    return '\n'.join(modified_lines)
+
+

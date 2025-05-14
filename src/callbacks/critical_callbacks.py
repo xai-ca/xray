@@ -201,3 +201,27 @@ def update_radio_visibility(options):
         "",  # Default styling
         {"display": "none"}  # Hide the hint
     ) 
+
+@callback(
+    [
+        Output("apply-fix-switch", "disabled"),
+        Output("apply-fix-switch", "className"),
+    ],
+    Input("available-fixes-store", "data"),
+    prevent_initial_call=True
+)
+def update_apply_fix_switch_state(available_fixes):
+    """
+    Controls the state of the apply fix switch based on available fixes.
+    Disables and grays out the switch when no fixes are available.
+    
+    Args:
+        available_fixes (list): List of available fixes
+        
+    Returns:
+        tuple: (disabled state boolean, switch className string)
+    """
+    if not available_fixes:
+        return True, "switch-secondary"  # Disabled and gray
+    return False, "switch-primary"  # Enabled and blue
+

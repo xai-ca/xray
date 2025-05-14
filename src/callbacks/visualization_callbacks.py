@@ -11,6 +11,7 @@ from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string impor
     highlight_dot_source,
     get_local_view_rank,
     highlight_critical_edges,
+    recalculate_fixed_args
 )
 from py_arg_visualisation.functions.import_functions.read_argumentation_framework_functions import (
     read_argumentation_framework,
@@ -36,6 +37,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("prov-type-dropdown", "value"),
     Input("global-local-switch", "value"),
     Input("available-fixes-store", "data"),
+    Input("apply-fix-switch", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     State("raw-json", "data"),
@@ -56,9 +58,11 @@ def create_visualization(
     prov_type,
     local_view,
     selected_fix,
+    apply_fix_switch,
     selected_arguments_changed,
     current_dot_source,
     raw_json,
+
 ):
     if not arguments or not attacks:
         raise PreventUpdate
@@ -149,6 +153,7 @@ def create_visualization(
         #     raise PreventUpdate
     # ========================== Critical Attacks Session ==========================
     elif active_item == "CriticalAttacks":
+        # Generate fresh dot source
         dot_source = generate_dot_string(
                     arg_framework,
                     selected_arguments,
@@ -159,11 +164,38 @@ def create_visualization(
                     layout_freeze,
                     raw_json=raw_json,
                 )
+        temp_dot_source = dot_source
         
         # Add highlighting for selected fixes
         if selected_fix:
             dot_source = highlight_critical_edges(dot_source, selected_fix)
-        # print(dot_source)
+            # print(triggered_id, apply_fix_switch)
+            if triggered_id == "apply-fix-switch" and apply_fix_switch:  # Switch is turned ON
+                # Convert selected_fix from list of lists to the format "(A,B)"
+                selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
+                # Remove the selected critical edges from attacks by reconstructing each attack string
+                fixed_attacks = []
+                i = 0
+                while i < len(attacks):
+                    # Each attack is in format ['(', 'A', ',', 'B', ')', '\n', ...]
+                    if i + 4 < len(attacks):  # Make sure we have enough characters
+                        attack_str = ''.join(attacks[i:i+5])  # Join '(', 'A', ',', 'B', ')'
+                        if attack_str not in selected_fix_strings:
+                            # Keep the original character-by-character format
+                            fixed_attacks.extend([c for c in attack_str])
+                            if i + 5 < len(attacks) and attacks[i + 5] == '\n':
+                                fixed_attacks.append('\n')
+                        i += 6  # Skip to next attack (including '\n')
+                    else:
+                        fixed_attacks.extend(attacks[i:])
+                        break
+                
+                # Convert fixed_attacks list to string before passing to read_argumentation_framework
+                fixed_attacks_str = ''.join(fixed_attacks)
+                fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
+                dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
+            elif triggered_id == "apply-fix-switch":  # Switch is OFF
+                dot_source = highlight_critical_edges(temp_dot_source, selected_fix)
     # ========================== Semantics Session ==========================
     else:
         if (

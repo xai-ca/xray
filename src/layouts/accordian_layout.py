@@ -71,8 +71,11 @@ def get_abstract_setting_specification_div():
                             dbc.InputGroup(
                                 [
                                     dbc.InputGroupText("Filename"),
-                                    dbc.Input(value="edited_af", id="21-af-filename", style={"width": "100px"},),
-                                    
+                                    dbc.Input(
+                                        value="edited_af",
+                                        id="21-af-filename",
+                                        style={"width": "100px"},
+                                    ),
                                     dbc.InputGroupText("."),
                                     dbc.Select(
                                         options=[
@@ -130,7 +133,6 @@ def get_abstract_evaluation_div():
                             dcc.Store(id="store-extension-preferred"),
                             dcc.Store(id="store-extension-other"),
                             dcc.Store(id="store-radio-trigger-id"),
-
                         ],
                         style={"display": "none"},
                     ),
@@ -141,65 +143,96 @@ def get_abstract_evaluation_div():
         ]
     )
 
+
 # --- Explanation Panel ---
 def get_abstract_explanation_div():
-    return html.Div([
-        html.I("Click on an argument to display its"),
-        dcc.Dropdown(
-            options=[
-                {'label': 'Potential Provenance', 'value': 'PO'},
-                {'label': 'Actual Provenance', 'value': 'AC'},
-                {'label': 'Primary Provenance', 'value': 'PR'},
-            ],
-            value='PO',
-            id='prov-type-dropdown',
+    return html.Div(
+        [
+            html.I("Click on an argument to display its"),
+            dcc.Dropdown(
+                options=[
+                    {"label": "Potential Provenance", "value": "PO"},
+                    {"label": "Actual Provenance", "value": "AC"},
+                    {"label": "Primary Provenance", "value": "PR"},
+                ],
+                value="PO",
+                id="prov-type-dropdown",
             ),
-        dbc.Row(id="21-abstract-evaluation-all-args"),
-        dcc.Store(id="prov-button-value-output")
-    ]
+            dbc.Row(id="21-abstract-evaluation-all-args"),
+            dcc.Store(id="prov-button-value-output"),
+        ]
     )
 
 
 # --- Fix Panel ---
 def get_critical_div():
-    return html.Div([
-        html.Div([
-            html.B("Selected Extension:"),
-            html.Div(id="selected-extension-display"),
-            html.Br(),
-            dbc.Row([
-                dbc.Col([
-                    html.I("Show Possible Sets of Critical Attacks:"),
-                    dbc.RadioItems(
-                        id="possible-fixes-radio",
-                        className="mt-2",
-                        style={"marginLeft": "10px"}
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.B("Selected Extension:"),
+                    html.Div(id="selected-extension-display"),
+                    html.Br(),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
+                                    html.I("Show Possible Sets of Critical Attacks:"),
+                                    dbc.RadioItems(
+                                        id="possible-fixes-radio",
+                                        className="mt-2",
+                                        style={"marginLeft": "10px"},
+                                    ),
+                                    # Add hint message that's hidden by default
+                                    html.Div(
+                                        "No critical attacks under the selected extension",
+                                        id="no-critical-attacks-hint",
+                                        style={
+                                            "display": "none",
+                                            "color": "#ff0000",
+                                            "font-style": "italic",
+                                            "margin-top": "10px",
+                                        },
+                                    ),
+                                ]
+                            ),
+                        ]
                     ),
-                    # Add hint message that's hidden by default
-                    html.Div(
-                        "No critical attacks under the selected extension",
-                        id="no-critical-attacks-hint",
-                        style={"display": "none", "color": "#ff0000", "font-style": "italic", "margin-top": "10px"}
+                    dbc.Row(
+                        [
+                            dbc.Col([
+                                dbc.Row([
+                                    dbc.Col(
+                                        html.Label(
+                                            "Apply Selected Fix",
+                                            htmlFor="apply-fix-switch",
+                                            style={"marginRight": "10px"}
+                                        ),
+                                        width="auto"
+                                    ),
+                                    dbc.Col(
+                                        dbc.Switch(
+                                            id="apply-fix-switch",
+                                            value=False,
+                                            style={
+                                                "transform": "scale(1.4)",
+                                                "transformOrigin": "left center",
+                                                "marginTop": "4px"
+                                            }
+                                        ),
+                                        width="auto"
+                                    )
+                                ], align="center"),
+                            ]),
+                        ],
+                        className="mt-4"
                     ),
-                ]),
-            ]),
-            dbc.Row([
-                dbc.Col([
-                    dbc.Button(
-                        "Recalculate and Show New Length",
-                        id="apply-fix-button",
-                        className="mt-3",
-                        color="primary",
-                    ),
-                ]),
-            ]),
-            # Store for keeping track of available fixes
-            dcc.Store(
-                id="available-fixes-store",
-                data=None
+                    # Store for keeping track of available fixes
+                    dcc.Store(id="available-fixes-store", data=None),
+                ]
             ),
-        ]),
-    ])
+        ]
+    )
 
 
 # --- Left Column (Accordion) ---
@@ -212,7 +245,9 @@ left_column = dbc.Col(
                 item_id="ArgumentationFramework",
             ),
             dbc.AccordionItem(
-                get_abstract_evaluation_div(), title="Extensions (Semantics)", item_id="Evaluation"
+                get_abstract_evaluation_div(),
+                title="Extensions (Semantics)",
+                item_id="Evaluation",
             ),
             dbc.AccordionItem(
                 get_abstract_explanation_div(),
