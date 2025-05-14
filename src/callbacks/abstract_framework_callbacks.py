@@ -83,12 +83,14 @@ def download_generated_abstract_argumentation_framework(
 
     argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
     
-    if example_name:
-        filename = example_name.split(".")[0]  # Remove the file extension
-    else:
-        filename = "edited_af"
+    # Only use example_name as filename if no custom filename is provided
+    if not filename:
+        if example_name:
+            filename = example_name.split(".")[0]  # Remove the file extension
+        else:
+            filename = "edited_af"
 
-    if extension == "JSON":
+    if extension == "json":
         argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
             argumentation_framework
         )

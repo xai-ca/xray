@@ -77,9 +77,9 @@ def get_abstract_setting_specification_div():
                                     dbc.Select(
                                         options=[
                                             {"label": ext, "value": ext}
-                                            for ext in ["JSON"]
+                                            for ext in ["json"]
                                         ],
-                                        value="JSON",
+                                        value="json",
                                         id="21-af-extension",
                                     ),
                                     dbc.Button("Download", id="21-af-download-button"),
@@ -140,6 +140,8 @@ def get_abstract_evaluation_div():
             ),
         ]
     )
+
+#
 
 
 # --- Explanation Panel ---
