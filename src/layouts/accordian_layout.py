@@ -141,9 +141,6 @@ def get_abstract_evaluation_div():
         ]
     )
 
-#
-
-
 # --- Explanation Panel ---
 def get_abstract_explanation_div():
     return html.Div([
@@ -163,6 +160,45 @@ def get_abstract_explanation_div():
     )
 
 
+# --- Fix Panel ---
+def get_critical_div():
+    return html.Div([
+        html.Div([
+            html.B("Selected Extension:"),
+            html.Div(id="selected-extension-display"),
+            html.Br(),
+            dbc.Row([
+                dbc.Col([
+                    html.I("Show Possible Sets of Critical Attacks:"),
+                    dbc.RadioItems(
+                        id="possible-fixes-radio",
+                        className="mt-2",
+                        style={"marginLeft": "10px"}
+                    ),
+                    # Add hint message that's hidden by default
+                    html.Div(
+                        "No critical attacks under the selected extension",
+                        id="no-critical-attacks-hint",
+                        style={"display": "none", "color": "#ff0000", "font-style": "italic", "margin-top": "10px"}
+                    ),
+                ]),
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Button(
+                        "Apply Fix to Graph",
+                        id="apply-fix-button",
+                        className="mt-3",
+                        color="primary",
+                    ),
+                ]),
+            ]),
+            # Store for keeping track of available fixes
+            dcc.Store(id="available-fixes-store"),
+        ]),
+    ])
+
+
 # --- Left Column (Accordion) ---
 left_column = dbc.Col(
     dbc.Accordion(
@@ -179,6 +215,11 @@ left_column = dbc.Col(
                 get_abstract_explanation_div(),
                 title="Argument Status Provenance",
                 item_id="Provenance",
+            ),
+            dbc.AccordionItem(
+                get_critical_div(),
+                title="Critical Attack(s) Analysis",
+                item_id="CriticalAttacks",
             ),
         ],
         id="abstract-evaluation-accordion",
