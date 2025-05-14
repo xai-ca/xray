@@ -172,7 +172,40 @@ def create_visualization(
         ):
             dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         else:
-            if (
+            if triggered_id == "layout-freeze-switch":
+                if layout_freeze:
+                    # When freezing, use existing layout file if it exists
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        layout_file="temp/layout.txt",
+                        raw_json=raw_json,
+                    )
+                else:
+                    # When unfreezing, generate new layout
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        raw_json=raw_json,
+                    )
+                    os.makedirs("temp", exist_ok=True)
+                    with open("temp/layout.dot", "w") as dot_file:
+                        dot_file.write(dot_source)
+                    subprocess.run(
+                        ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                        check=True,
+                    )
+            elif (
                 triggered_id == "selected-argument-store-abstract"
                 and not selected_arguments_changed
             ):
