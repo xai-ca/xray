@@ -10,6 +10,7 @@ from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string impor
     get_provenance,
     highlight_dot_source,
     get_local_view_rank,
+    highlight_critical_edges,
 )
 from py_arg_visualisation.functions.import_functions.read_argumentation_framework_functions import (
     read_argumentation_framework,
@@ -34,6 +35,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     Input("prov-button-value-output", "data"),
     Input("prov-type-dropdown", "value"),
     Input("global-local-switch", "value"),
+    Input("available-fixes-store", "data"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     State("raw-json", "data"),
@@ -53,6 +55,7 @@ def create_visualization(
     prov_arg,
     prov_type,
     local_view,
+    selected_fix,
     selected_arguments_changed,
     current_dot_source,
     raw_json,
@@ -144,6 +147,23 @@ def create_visualization(
                 dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view)
         else:
             raise PreventUpdate
+    # ========================== Critical Attacks Session ==========================
+    elif active_item == "CriticalAttacks":
+        dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    raw_json=raw_json,
+                )
+        
+        # Add highlighting for selected fixes
+        if selected_fix:
+            dot_source = highlight_critical_edges(dot_source, selected_fix)
+        print(dot_source)
     # ========================== Semantics Session ==========================
     else:
         if (

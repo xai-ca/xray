@@ -17,9 +17,6 @@ in(X) :- arg(X), out(Y) : attacks1(Y,X).
 out(X) :- attacks1(Y,X), in(Y).
 undec(X) :- arg(X), not in(X), not out(X).
 
-% Eliminate candidate solutions having UNDEC nodes
-:- undec(_).
-
 % Select solutions with fewest critical attacks
 critical_cnt(N) :- N = #count{(X,Y) : critical(X,Y)}.
 #minimize {N : critical_cnt(N)}.

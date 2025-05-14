@@ -194,7 +194,10 @@ def get_critical_div():
                 ]),
             ]),
             # Store for keeping track of available fixes
-            dcc.Store(id="available-fixes-store"),
+            dcc.Store(
+                id="available-fixes-store",
+                data=None
+            ),
         ]),
     ])
 

@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback, dash, no_update
+from dash import Input, Output, State, callback, callback_context, no_update
 from dash.exceptions import PreventUpdate
 import html
 import clingo
@@ -45,26 +45,38 @@ def update_selected_extension_display(selected_arguments, active_item):
         return "Invalid extension data"
 
 @callback(
-    Output("possible-fixes-radio", "options"),
+    [
+        Output("possible-fixes-radio", "options"),
+        Output("available-fixes-store", "data")
+    ],
     [
         Input("abstract-arguments", "value"),
         Input("abstract-attacks", "value"),
-        Input("selected-argument-store-abstract", "data")
+        Input("selected-argument-store-abstract", "data"),
+        Input("possible-fixes-radio", "value")
     ],
+    State("available-fixes-store", "data"),
     prevent_initial_call=True
 )
-def calculate_critical_attacks_clingo(arguments, attacks, selected_extension):
+def handle_critical_attacks(arguments, attacks, selected_extension, selected_radio_value, current_fixes):
     """
-    Calculates possible fixes using Clingo ASP solver.
-    
-    Args:
-        arguments (list): List of arguments in the framework
-        attacks (list): List of attack dictionaries with 'source' and 'target' keys
-        selected_extension (str): String representation of selected extension "{ arg1, arg2, ... }"
-        
-    Returns:
-        list: List of dictionaries containing fix options for radio buttons
+    Calculates possible fixes and handles radio selection using Clingo ASP solver.
     """
+    ctx = callback_context
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
+
+    # Handle radio selection
+    if triggered_id == "possible-fixes-radio":
+        if not selected_radio_value or selected_radio_value == "none":
+            return no_update, []
+        # Parse the selected value to get the critical pairs
+        # Split by '_' and skip the 'answer_N' prefix
+        parts = selected_radio_value.split("_")[2:]
+        # Group parts into pairs
+        edges = [[parts[i], parts[i+1]] for i in range(0, len(parts), 2)]
+        return no_update, edges
+
+    # Handle initial calculation
     if not all([arguments, attacks, selected_extension]):
         raise PreventUpdate
     
@@ -108,12 +120,12 @@ def calculate_critical_attacks_clingo(arguments, attacks, selected_extension):
         ctl.solve(on_model=lambda m: models.append(m.symbols(shown=True)))
         
         if not models:
-            return [{"label": "No critical attacks under the selected extension", "value": "none"}]
+            return [{"label": "No critical attacks under the selected extension", "value": "none"}], []
             
         # Process all models to extract fixes
         fixes = []
-        seen_critical_sets = set()  # Track unique sets of critical pairs
-        all_critical_sets = []  # Store all sets temporarily to find minimum size
+        seen_critical_sets = set()
+        all_critical_sets = []
         
         # First pass: collect all unique critical sets and find minimum size
         for model in models:
@@ -145,11 +157,14 @@ def calculate_critical_attacks_clingo(arguments, attacks, selected_extension):
                     )
                     fixes.append({"label": label, "value": value})
         
-        return fixes if fixes else [{"label": "No critical attacks under the selected extension", "value": "none"}]
+        return (
+            fixes if fixes else [{"label": "No critical attacks under the selected extension", "value": "none"}],
+            []  # Initialize with empty list since no selection has been made yet
+        )
         
     except Exception as e:
         print(f"Error calculating fixes with Clingo: {e}")
-        return [{"label": "Error occurred", "value": "error"}] 
+        return [{"label": "Error occurred", "value": "error"}], []
 
 @callback(
     [

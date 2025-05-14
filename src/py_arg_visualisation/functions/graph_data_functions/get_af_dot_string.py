@@ -708,3 +708,91 @@ def highlight_dot_source(dot_source, highlight_nodes, prov_arg, prov_type, local
                 modified_lines.append(line)
 
     return "\n".join(modified_lines)
+
+
+def highlight_critical_edges(dot_source, edges_to_highlight):
+    """
+    Highlights specified edges in red and dashed style in the DOT source.
+    Also ensures nodes with infinite (∞) have dashed style and penwidth=1.5.
+    
+    Args:
+        dot_source (str): The original DOT source string
+        edges_to_highlight (list): List of edges to highlight, each edge is [from_arg, to_arg]
+    
+    Returns:
+        str: Modified DOT source with highlighted edges
+    """
+    if not edges_to_highlight:
+        return dot_source
+        
+    modified_source = dot_source
+    
+    # First handle nodes with infinite symbol
+    lines = modified_source.split('\n')
+    for i, line in enumerate(lines):
+        if '.∞"' in line and '[' in line:
+            if 'style=' in line:
+                # Keep existing style attributes and add dashed if not present
+                style_match = re.search(r'style="([^"]*)"', line)
+                if style_match:
+                    current_styles = style_match.group(1).split(',')
+                    if 'dashed' not in current_styles:
+                        current_styles.append('dashed')
+                    new_style = ','.join(s.strip() for s in current_styles)
+                    lines[i] = re.sub(r'style="[^"]*"', f'style="{new_style}"', line)
+                    # Add penwidth if not present
+                    if 'penwidth=' not in lines[i]:
+                        lines[i] = lines[i].replace(']', ', penwidth=1.5]')
+            else:
+                # Add both style and penwidth attributes before the closing bracket
+                lines[i] = line.replace(']', ', style="dashed", penwidth=1.5]')
+    modified_source = '\n'.join(lines)
+    
+    # Then handle critical edges
+    for edge in edges_to_highlight:
+        from_arg, to_arg = edge
+        # Look for the edge pattern in both directions (normal and dir=back)
+        edge_patterns = [
+            f'"{from_arg}" -> "{to_arg}"',
+            f'"{to_arg}" -> "{from_arg}".*dir=back'
+        ]
+        
+        for pattern in edge_patterns:
+            edge_match = re.search(pattern, modified_source)
+            if edge_match:
+                edge_pos = edge_match.start()
+                # Find the closing bracket of the edge attributes
+                bracket_end = modified_source.find(']', edge_pos)
+                if bracket_end != -1:
+                    # Extract existing attributes
+                    attrs_start = modified_source.find('[', edge_pos)
+                    existing_attrs = modified_source[attrs_start+1:bracket_end]
+                    
+                    # Parse existing attributes
+                    attrs = {}
+                    for attr in re.findall(r'(\w+)="([^"]*)"', existing_attrs):
+                        attrs[attr[0]] = attr[1]
+                    
+                    # Update attributes
+                    attrs['color'] = '#ff0000'
+                    if 'style' in attrs:
+                        styles = attrs['style'].split(',')
+                        if 'dashed' not in styles:
+                            styles.append('dashed')
+                        attrs['style'] = ','.join(s.strip() for s in styles)
+                    else:
+                        attrs['style'] = 'dashed'
+                    
+                    # Reconstruct attributes string
+                    new_attrs = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
+                    
+                    # Replace attributes in source
+                    modified_source = (
+                        modified_source[:attrs_start+1] +
+                        new_attrs +
+                        modified_source[bracket_end:]
+                    )
+                break  # Found the edge, no need to check other pattern
+    
+    return modified_source
+
