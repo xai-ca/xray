@@ -12,6 +12,7 @@ from callbacks import abstract_framework_callbacks  # noqa: F401 (necessary for 
 from callbacks import solution_callbacks  # noqa: F401 (necessary for callbacks to register)
 from callbacks import explanation_callbacks  # noqa: F401 (necessary for callbacks to register)
 from callbacks import visualization_callbacks  # noqa: F401 (necessary for callbacks to register)
+from callbacks import critical_callbacks  # noqa: F401 (necessary for callbacks to register)
 
 app = dash.Dash(
     __name__,
