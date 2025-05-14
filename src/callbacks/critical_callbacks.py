@@ -79,23 +79,22 @@ def calculate_critical_attacks_clingo(arguments, attacks, selected_extension):
     # Parse selected extension and generate in/1, out/1, and undec/1 facts
     accepted_args = selected_extension.get('green', [])
     rejected_args = selected_extension.get('red', [])
-    # Get undecided arguments (those that are neither accepted nor rejected)
-    undec_args = selected_extension.get('yellow', [])
+    undecided_args = selected_extension.get('yellow', [])  # Add yellow arguments
     
     extension_facts = "\n".join([
-        f'in("{arg}").' for arg in accepted_args
+        f':- not in("{arg}").' for arg in accepted_args
     ] + [
-        f'out("{arg}").' for arg in rejected_args
+        f':- not out("{arg}").' for arg in rejected_args
     ] + [
-        f'undec("{arg}").' for arg in undec_args
+        f':- not undec("{arg}").' for arg in undecided_args  # Add constraints for undecided arguments
     ])
     
     # Combine all facts
     facts = attack_facts + "\n" + extension_facts
-    print(facts)
+    # print(facts)
     try:
         # Initialize Clingo control
-        ctl = clingo.Control(["--warn=none"])
+        ctl = clingo.Control(["--opt-mode=optN"])  # we can use quiet=1 get the distinct results but Clingo python doesn't support it
         
         # Add combined facts to Clingo
         ctl.add("base", [], facts)
@@ -111,17 +110,41 @@ def calculate_critical_attacks_clingo(arguments, attacks, selected_extension):
         if not models:
             return [{"label": "No critical attacks under the selected extension", "value": "none"}]
             
-        # Process the model to extract fixes
+        # Process all models to extract fixes
         fixes = []
-        for atom in models[0]:
-            if atom.name == "critical":
-                attacked_arg = str(atom.arguments[0]).strip('"')
-                attacker = str(atom.arguments[1]).strip('"')
-                fixes.append({
-                    "label": f"Critical({attacker}, {attacked_arg})", 
-                    "value": f"{attacked_arg}_{attacker}"
-                })
-                
+        seen_critical_sets = set()  # Track unique sets of critical pairs
+        all_critical_sets = []  # Store all sets temporarily to find minimum size
+        
+        # First pass: collect all unique critical sets and find minimum size
+        for model in models:
+            critical_pairs = []
+            for atom in model:
+                if atom.name == "critical":
+                    attacker = str(atom.arguments[0]).strip('"')
+                    attacked_arg = str(atom.arguments[1]).strip('"')
+                    critical_pairs.append((attacker, attacked_arg))
+            
+            if critical_pairs:
+                critical_set = frozenset(critical_pairs)
+                if critical_set not in seen_critical_sets:
+                    seen_critical_sets.add(critical_set)
+                    all_critical_sets.append(critical_pairs)
+        
+        # Find minimum size among all sets
+        if all_critical_sets:
+            min_size = min(len(s) for s in all_critical_sets)
+            
+            # Second pass: only process sets of minimum size
+            for critical_pairs in all_critical_sets:
+                if len(critical_pairs) == min_size:
+                    # Format the pairs for display
+                    formatted_pairs = [f"({a}, {b})" for a, b in critical_pairs]
+                    label = f"Set {len(fixes) + 1}: " + ", ".join(formatted_pairs)
+                    value = f"answer_{len(fixes) + 1}_" + "_".join(
+                        f"{a}_{b}" for a, b in critical_pairs
+                    )
+                    fixes.append({"label": label, "value": value})
+        
         return fixes if fixes else [{"label": "No critical attacks under the selected extension", "value": "none"}]
         
     except Exception as e:
