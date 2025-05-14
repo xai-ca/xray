@@ -824,49 +824,44 @@ def recalculate_fixed_args(arg_framework, dot_source):
                     match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', line)
                     if match:
                         source, target = match.group(1), match.group(2)
-                        source_num = numbering_dict.get(source, '∞')
-                        target_num = numbering_dict.get(target, '∞')
-                        
-                        # Convert numbers for comparison
-                        source_val = float('inf') if source_num == '∞' else int(source_num)
-                        target_val = float('inf') if target_num == '∞' else int(target_num)
+                        source_val = numbering_dict.get(source)
+                        target_val = numbering_dict.get(target)
                         
                         # Extract existing attributes
                         attrs_match = re.search(r'\[(.*)\]', line)
-                        edge_attrs = []
                         if attrs_match:
                             existing_attrs = attrs_match.group(1)
-                            # Parse all attributes
-                            for attr in existing_attrs.split(','):
-                                attr = attr.strip()
-                                # Keep color-related attributes and other non-directional attributes
-                                if any(key in attr for key in ['color=', 'fillcolor=', 'fontcolor=']):
-                                    edge_attrs.append(attr)
-                                elif not any(skip in attr for skip in ['style=', 'dir=', 'head', 'tail', 'label=']):
-                                    edge_attrs.append(attr)
-                        
-                        # Add empty labels to clear any existing labels
-                        edge_attrs.extend(['taillabel=""', 'headlabel=""'])
-                        
-                        if 'dir=back' in line:
-                            # For dir=back edges, source and target are already swapped
-                            # If source > target, make it solid, otherwise keep dashed
-                            if source_val > target_val:
-                                edge_attrs.append('style="solid"')
-                            else:
-                                edge_attrs.append('style="dashed"')
-                            edge_attrs.append('dir=back')
-                            line = f'    "{source}" -> "{target}" [{", ".join(edge_attrs)}]'
-                        else:
-                            # Check if edge goes from bigger to smaller number
-                            if source_val > target_val:
-                                # Add dashed style and dir=back
-                                edge_attrs.extend(['style="dashed"', 'dir=back'])
-                                line = f'    "{target}" -> "{source}" [{", ".join(edge_attrs)}]'
-                            else:
-                                # Keep original direction
-                                line = f'    "{source}" -> "{target}" [{", ".join(edge_attrs)}]'
                             
+                            # Replace existing labels with empty ones
+                            existing_attrs = re.sub(r'taillabel="[^"]*"', 'taillabel=""', existing_attrs)
+                            existing_attrs = re.sub(r'headlabel="[^"]*"', 'headlabel=""', existing_attrs)
+                            
+                            # For dir=back edges, the actual source is the target node
+                            has_dir_back = 'dir=back' in existing_attrs
+                            actual_source_val = target_val if has_dir_back else source_val
+                            actual_target_val = source_val if has_dir_back else target_val
+                            
+                            # Check if style is dotted
+                            is_dotted = 'style="dotted"' in existing_attrs or 'style= "dotted"' in existing_attrs
+                            if not is_dotted:
+                                is_solid = 'style="solid"' in existing_attrs or 'style= "solid"' in existing_attrs
+                                
+                                if is_solid and actual_source_val > actual_target_val:
+                                    existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', 'style="dashed"', existing_attrs)
+                                elif not is_solid and actual_source_val < actual_target_val:
+                                    existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', 'style="solid"', existing_attrs)
+                                
+                                # Handle direction based on numbers
+                                if actual_source_val > actual_target_val:
+                                    if not has_dir_back:
+                                        existing_attrs += ', dir=back'
+                                        line = f'    "{target}" -> "{source}" [{existing_attrs}]'
+                                    else:
+                                        line = f'    "{source}" -> "{target}" [{existing_attrs}]'
+                                else:
+                                    line = f'    "{source}" -> "{target}" [{existing_attrs}]'
+                            else:
+                                line = f'    "{source}" -> "{target}" [{existing_attrs}]'
                 elif 'label=' in line and '∞' in line:  # Node definition with infinite label
                     # Extract argument name
                     arg_name = line.split('"')[1]
