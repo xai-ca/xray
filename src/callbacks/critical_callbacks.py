@@ -11,6 +11,7 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     [
         Output("selected-extension-display", "children"),
         Output("possible-fixes-radio", "value", allow_duplicate=True),  # Add radio reset output
+        Output("apply-fix-switch", "value", allow_duplicate=True),  # Add switch reset output
     ],
     [
         Input("selected-argument-store-abstract", "data"),
@@ -28,24 +29,24 @@ def update_selected_extension_display(selected_arguments, active_item):
         
     if not selected_arguments:
         print("No arguments selected")  # Debug print
-        return "No extension selected", None  # Return None to reset radio
+        return "No extension selected", None, False  # Return False to reset switch
     
     try:
         # Ensure selected_arguments is a dictionary
         if not isinstance(selected_arguments, dict):
-            return "Invalid extension data", None
+            return "Invalid extension data", None, False
             
         # Get only the green arguments
         green_arguments = selected_arguments.get('green', [])
         if not green_arguments:  # Check if green arguments list is empty
-            return "No green arguments selected", None
+            return "No green arguments selected", None, False
             
         result = f"{{ {', '.join(green_arguments)} }}"
         # print(f"Returning result: {result}")  # Debug print
-        return result, None  # Return None to reset radio
+        return result, None, False  # Return False to reset switch
     except Exception as e:
         print(f"Error occurred: {e}")  # Debug print
-        return "Invalid extension data", None
+        return "Invalid extension data", None, False
 
 @callback(
     [

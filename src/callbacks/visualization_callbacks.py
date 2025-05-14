@@ -170,7 +170,7 @@ def create_visualization(
         if selected_fix:
             dot_source = highlight_critical_edges(dot_source, selected_fix)
             # print(triggered_id, apply_fix_switch)
-            if triggered_id == "apply-fix-switch" and apply_fix_switch:  # Switch is turned ON
+            if apply_fix_switch:  # Switch is turned ON
                 # Convert selected_fix from list of lists to the format "(A,B)"
                 selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
                 # Remove the selected critical edges from attacks by reconstructing each attack string
@@ -194,7 +194,7 @@ def create_visualization(
                 fixed_attacks_str = ''.join(fixed_attacks)
                 fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
                 dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
-            elif triggered_id == "apply-fix-switch":  # Switch is OFF
+            else:  # Switch is OFF
                 dot_source = highlight_critical_edges(temp_dot_source, selected_fix)
     # ========================== Semantics Session ==========================
     else:

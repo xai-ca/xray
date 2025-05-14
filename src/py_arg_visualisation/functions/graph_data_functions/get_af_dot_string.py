@@ -818,14 +818,62 @@ def recalculate_fixed_args(arg_framework, dot_source):
     for line in lines:
         # Skip any existing rank definitions
         if 'rank=' not in line:
-            # Look for node definitions with infinite (∞) labels
-            if '[' in line and 'label=' in line and '∞' in line:
-                # Extract argument name
-                arg_name = line.split('"')[1]
-                if arg_name in numbering_dict:
-                    # Replace "∞" with the new number
-                    new_number = numbering_dict[arg_name]
-                    line = line.replace('.∞"', f'.{new_number}"')
+            if '[' in line:
+                if '->' in line:  # Edge definition
+                    # Extract source and target nodes
+                    match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', line)
+                    if match:
+                        source, target = match.group(1), match.group(2)
+                        source_num = numbering_dict.get(source, '∞')
+                        target_num = numbering_dict.get(target, '∞')
+                        
+                        # Convert numbers for comparison
+                        source_val = float('inf') if source_num == '∞' else int(source_num)
+                        target_val = float('inf') if target_num == '∞' else int(target_num)
+                        
+                        # Extract existing attributes
+                        attrs_match = re.search(r'\[(.*)\]', line)
+                        edge_attrs = []
+                        if attrs_match:
+                            existing_attrs = attrs_match.group(1)
+                            # Parse all attributes
+                            for attr in existing_attrs.split(','):
+                                attr = attr.strip()
+                                # Keep color-related attributes and other non-directional attributes
+                                if any(key in attr for key in ['color=', 'fillcolor=', 'fontcolor=']):
+                                    edge_attrs.append(attr)
+                                elif not any(skip in attr for skip in ['style=', 'dir=', 'head', 'tail', 'label=']):
+                                    edge_attrs.append(attr)
+                        
+                        # Add empty labels to clear any existing labels
+                        edge_attrs.extend(['taillabel=""', 'headlabel=""'])
+                        
+                        if 'dir=back' in line:
+                            # For dir=back edges, source and target are already swapped
+                            # If source > target, make it solid, otherwise keep dashed
+                            if source_val > target_val:
+                                edge_attrs.append('style="solid"')
+                            else:
+                                edge_attrs.append('style="dashed"')
+                            edge_attrs.append('dir=back')
+                            line = f'    "{source}" -> "{target}" [{", ".join(edge_attrs)}]'
+                        else:
+                            # Check if edge goes from bigger to smaller number
+                            if source_val > target_val:
+                                # Add dashed style and dir=back
+                                edge_attrs.extend(['style="dashed"', 'dir=back'])
+                                line = f'    "{target}" -> "{source}" [{", ".join(edge_attrs)}]'
+                            else:
+                                # Keep original direction
+                                line = f'    "{source}" -> "{target}" [{", ".join(edge_attrs)}]'
+                            
+                elif 'label=' in line and '∞' in line:  # Node definition with infinite label
+                    # Extract argument name
+                    arg_name = line.split('"')[1]
+                    if arg_name in numbering_dict:
+                        # Replace "∞" with the new number and add prime
+                        new_number = numbering_dict[arg_name]
+                        line = line.replace('.∞"', f'.{new_number}′"')  # Using unicode prime symbol
             modified_lines.append(line)
     
     # Find the last closing brace
@@ -840,7 +888,7 @@ def recalculate_fixed_args(arg_framework, dot_source):
         number_groups[number].append(arg)
     
     # Add rank definitions before the final closing brace
-    for number, args in sorted(number_groups.items(), key=lambda x: int(x[0])):
+    for number, args in sorted(number_groups.items(), key=lambda x: int(x[0]) if x[0] != '∞' else float('inf')):
         if args:
             node_list = '" "'.join(args)
             modified_lines.append(f'    {{ rank=same; "{node_list}" }}')
