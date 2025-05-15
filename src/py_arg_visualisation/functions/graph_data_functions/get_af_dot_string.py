@@ -796,6 +796,70 @@ def highlight_critical_edges(dot_source, edges_to_highlight):
     
     return modified_source
 
+def fixed_process_node_line(line, numbering_dict):
+    """Process a node definition line in the DOT source."""
+    # Only process node lines with infinite labels
+    if 'label=' in line and '∞' in line:
+        # Extract argument name
+        arg_name = line.split('"')[1]
+        if arg_name in numbering_dict:
+            # Replace "∞" with the new number and add prime
+            new_number = numbering_dict[arg_name]
+            line = line.replace('.∞"', f'.{new_number}"')  # Using unicode prime symbol
+    return line
+
+def fixed_process_edge_line(line, numbering_dict):
+    """Process an edge definition line in the DOT source."""
+    # Extract source and target nodes
+    match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', line)
+    if not match:
+        return line
+        
+    source, target = match.group(1), match.group(2)
+    
+    # Extract existing attributes
+    attrs_match = re.search(r'\[(.*)\]', line)
+    if not attrs_match:
+        return line
+        
+    existing_attrs = attrs_match.group(1)
+    
+    # Check if dir=back exists and swap nodes if it does
+    has_dir_back = 'dir=back' in existing_attrs
+    if has_dir_back:
+        source, target = target, source  # Swap nodes
+        existing_attrs = re.sub(r',?\s*dir=back', '', existing_attrs)  # Remove dir=back
+    
+    source_val = numbering_dict.get(source)
+    target_val = numbering_dict.get(target)
+    
+    # Replace existing labels with empty ones
+    existing_attrs = re.sub(r'taillabel="[^"]*"', 'taillabel=""', existing_attrs)
+    existing_attrs = re.sub(r'headlabel="[^"]*"', 'headlabel=""', existing_attrs)
+    
+    # Check if style is dotted
+    is_dotted = 'style="dotted"' in existing_attrs or 'style= "dotted"' in existing_attrs
+    if not is_dotted:
+        # For non-dotted edges, always ensure larger number points to smaller
+        if source_val > target_val:
+            # Remove any existing style attribute
+            existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', '', existing_attrs)
+            # Add dir=back and dashed style
+            existing_attrs = existing_attrs.rstrip(', ')  # Remove trailing commas
+            existing_attrs += ', dir=back, style="dashed"'
+            line = f'    "{target}" -> "{source}" [{existing_attrs}]'
+        else:
+            # Remove any existing style attribute
+            existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', '', existing_attrs)
+            # Add solid style
+            existing_attrs = existing_attrs.rstrip(', ')  # Remove trailing commas
+            existing_attrs += ', style="solid"'
+            line = f'    "{source}" -> "{target}" [{existing_attrs}]'
+    else:
+        line = f'    "{source}" -> "{target}" [{existing_attrs}]'
+    
+    return line
+
 def recalculate_fixed_args(arg_framework, dot_source):
     """
     Recalculates the grounded extension of an argumentation framework and updates the DOT source.
@@ -820,55 +884,9 @@ def recalculate_fixed_args(arg_framework, dot_source):
         if 'rank=' not in line:
             if '[' in line:
                 if '->' in line:  # Edge definition
-                    # Extract source and target nodes
-                    match = re.match(r'^\s*"([^"]+)"\s*->\s*"([^"]+)"', line)
-                    if match:
-                        source, target = match.group(1), match.group(2)
-                        source_val = numbering_dict.get(source)
-                        target_val = numbering_dict.get(target)
-                        
-                        # Extract existing attributes
-                        attrs_match = re.search(r'\[(.*)\]', line)
-                        if attrs_match:
-                            existing_attrs = attrs_match.group(1)
-                            
-                            # Replace existing labels with empty ones
-                            existing_attrs = re.sub(r'taillabel="[^"]*"', 'taillabel=""', existing_attrs)
-                            existing_attrs = re.sub(r'headlabel="[^"]*"', 'headlabel=""', existing_attrs)
-                            
-                            # For dir=back edges, the actual source is the target node
-                            has_dir_back = 'dir=back' in existing_attrs
-                            actual_source_val = target_val if has_dir_back else source_val
-                            actual_target_val = source_val if has_dir_back else target_val
-                            
-                            # Check if style is dotted
-                            is_dotted = 'style="dotted"' in existing_attrs or 'style= "dotted"' in existing_attrs
-                            if not is_dotted:
-                                is_solid = 'style="solid"' in existing_attrs or 'style= "solid"' in existing_attrs
-                                
-                                if is_solid and actual_source_val > actual_target_val:
-                                    existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', 'style="dashed"', existing_attrs)
-                                elif not is_solid and actual_source_val < actual_target_val:
-                                    existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', 'style="solid"', existing_attrs)
-                                
-                                # Handle direction based on numbers
-                                if actual_source_val > actual_target_val:
-                                    if not has_dir_back:
-                                        existing_attrs += ', dir=back'
-                                        line = f'    "{target}" -> "{source}" [{existing_attrs}]'
-                                    else:
-                                        line = f'    "{source}" -> "{target}" [{existing_attrs}]'
-                                else:
-                                    line = f'    "{source}" -> "{target}" [{existing_attrs}]'
-                            else:
-                                line = f'    "{source}" -> "{target}" [{existing_attrs}]'
-                elif 'label=' in line and '∞' in line:  # Node definition with infinite label
-                    # Extract argument name
-                    arg_name = line.split('"')[1]
-                    if arg_name in numbering_dict:
-                        # Replace "∞" with the new number and add prime
-                        new_number = numbering_dict[arg_name]
-                        line = line.replace('.∞"', f'.{new_number}′"')  # Using unicode prime symbol
+                    line = fixed_process_edge_line(line, numbering_dict)
+                else:  # Node definition
+                    line = fixed_process_node_line(line, numbering_dict)
             modified_lines.append(line)
     
     # Find the last closing brace
@@ -882,11 +900,24 @@ def recalculate_fixed_args(arg_framework, dot_source):
             number_groups[number] = []
         number_groups[number].append(arg)
     
-    # Add rank definitions before the final closing brace
+    # Check existing rank definitions
+    existing_ranks = set()
+    for line in dot_source.split('\n'):
+        if 'rank=same' in line:
+            # Extract nodes from rank definition
+            nodes = re.findall(r'"([^"]+)"', line)
+            if nodes:
+                # Use frozenset to create an immutable set of nodes for comparison
+                existing_ranks.add(frozenset(nodes))
+    
+    # Add rank definitions before the final closing brace, skipping existing ones
     for number, args in sorted(number_groups.items(), key=lambda x: int(x[0]) if x[0] != '∞' else float('inf')):
         if args:
-            node_list = '" "'.join(args)
-            modified_lines.append(f'    {{ rank=same; "{node_list}" }}')
+            # Check if this group of nodes already has a rank definition
+            node_set = frozenset(args)
+            if node_set not in existing_ranks:
+                node_list = '" "'.join(args)
+                modified_lines.append(f'    {{ rank=same; "{node_list}" }}')
     
     # Add back the closing brace
     modified_lines.append('}')
