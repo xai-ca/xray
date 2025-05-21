@@ -775,13 +775,8 @@ def highlight_critical_edges(dot_source, edges_to_highlight):
                     
                     # Update attributes
                     attrs['color'] = '#ff0000'
-                    if 'style' in attrs:
-                        styles = attrs['style'].split(',')
-                        if 'dashed' not in styles:
-                            styles.append('dashed')
-                        attrs['style'] = ','.join(s.strip() for s in styles)
-                    else:
-                        attrs['style'] = 'dashed'
+                    attrs['style'] = 'dashed'  # Replace style instead of appending
+                    attrs['penwidth'] = '3'    # Set thicker penwidth for critical attacks
                     
                     # Reconstruct attributes string
                     new_attrs = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
@@ -824,6 +819,9 @@ def fixed_process_edge_line(line, numbering_dict):
         
     existing_attrs = attrs_match.group(1)
     
+    # Check if this is a critical attack (red edge)
+    is_critical = 'color="#ff0000"' in existing_attrs
+    
     # Check if dir=back exists and swap nodes if it does
     has_dir_back = 'dir=back' in existing_attrs
     if has_dir_back:
@@ -836,27 +834,34 @@ def fixed_process_edge_line(line, numbering_dict):
     # Replace existing labels with empty ones
     existing_attrs = re.sub(r'taillabel="[^"]*"', 'taillabel=""', existing_attrs)
     existing_attrs = re.sub(r'headlabel="[^"]*"', 'headlabel=""', existing_attrs)
-    
+     
     # Check if style is dotted
     is_dotted = 'style="dotted"' in existing_attrs or 'style= "dotted"' in existing_attrs
-    if not is_dotted:
-        # For non-dotted edges, always ensure larger number points to smaller
-        if source_val > target_val:
-            # Remove any existing style attribute
-            existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', '', existing_attrs)
-            # Add dir=back and dashed style
+    if source_val > target_val:
+        if is_critical:
+            # For critical edges (red), always use dotted style
+            existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', '', existing_attrs)  # Remove existing style
             existing_attrs = existing_attrs.rstrip(', ')  # Remove trailing commas
-            existing_attrs += ', dir=back, style="dashed"'
+            existing_attrs += ' dir=back style="dotted"'
             line = f'    "{target}" -> "{source}" [{existing_attrs}]'
         else:
             # Remove any existing style attribute
             existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', '', existing_attrs)
-            # Add solid style
+            # Add dir=back and dashed style
             existing_attrs = existing_attrs.rstrip(', ')  # Remove trailing commas
-            existing_attrs += ', style="solid"'
-            line = f'    "{source}" -> "{target}" [{existing_attrs}]'
+            existing_attrs += ' dir=back style="dashed"'
+            line = f'    "{target}" -> "{source}" [{existing_attrs}]'
     else:
+        # Remove any existing style attribute
+        existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', '', existing_attrs)
+        # Add solid style
+        existing_attrs = existing_attrs.rstrip(', ')  # Remove trailing commas
+        existing_attrs += ', style="solid"'
         line = f'    "{source}" -> "{target}" [{existing_attrs}]'
+
+    if is_dotted:
+        # If the line was originally dotted, restore dotted style
+        line = re.sub(r'style="[^"]*"', 'style="dotted"', line)
     
     return line
 
@@ -878,16 +883,18 @@ def recalculate_fixed_args(arg_framework, dot_source):
     lines = dot_source.split('\n')
     modified_lines = []
     
-    # Process existing lines
+    # Process existing lines, ignoring rank=same lines
     for line in lines:
-        # Skip any existing rank definitions
-        if 'rank=' not in line:
-            if '[' in line:
-                if '->' in line:  # Edge definition
-                    line = fixed_process_edge_line(line, numbering_dict)
-                else:  # Node definition
-                    line = fixed_process_node_line(line, numbering_dict)
-            modified_lines.append(line)
+        # Skip any lines containing rank=same
+        if 'same' in line:
+            continue
+        
+        if '[' in line:
+            if '->' in line:  # Edge definition
+                line = fixed_process_edge_line(line, numbering_dict)
+            else:  # Node definition
+                line = fixed_process_node_line(line, numbering_dict)
+        modified_lines.append(line)
     
     # Find the last closing brace
     while modified_lines[-1].strip() == '}':
@@ -900,24 +907,11 @@ def recalculate_fixed_args(arg_framework, dot_source):
             number_groups[number] = []
         number_groups[number].append(arg)
     
-    # Check existing rank definitions
-    existing_ranks = set()
-    for line in dot_source.split('\n'):
-        if 'rank=same' in line:
-            # Extract nodes from rank definition
-            nodes = re.findall(r'"([^"]+)"', line)
-            if nodes:
-                # Use frozenset to create an immutable set of nodes for comparison
-                existing_ranks.add(frozenset(nodes))
-    
-    # Add rank definitions before the final closing brace, skipping existing ones
+    # Add new rank definitions before the final closing brace
     for number, args in sorted(number_groups.items(), key=lambda x: int(x[0]) if x[0] != '∞' else float('inf')):
         if args:
-            # Check if this group of nodes already has a rank definition
-            node_set = frozenset(args)
-            if node_set not in existing_ranks:
-                node_list = '" "'.join(args)
-                modified_lines.append(f'    {{ rank=same; "{node_list}" }}')
+            node_list = '" "'.join(args)
+            modified_lines.append(f'    {{ rank=same; "{node_list}" }}')
     
     # Add back the closing brace
     modified_lines.append('}')
