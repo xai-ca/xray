@@ -841,8 +841,9 @@ def fixed_process_edge_line(line, numbering_dict):
         if is_critical:
             # For critical edges (red), always use dotted style
             existing_attrs = re.sub(r'style\s*=\s*"[^"]*"', '', existing_attrs)  # Remove existing style
+            existing_attrs = re.sub(r'penwidth\s*=\s*"[^"]*"', '', existing_attrs)  # Remove existing penwidth
             existing_attrs = existing_attrs.rstrip(', ')  # Remove trailing commas
-            existing_attrs += ' dir=back style="dotted"'
+            existing_attrs += ' dir=back style="dotted" penwidth="1"'  # Reset penwidth to 1
             line = f'    "{target}" -> "{source}" [{existing_attrs}]'
         else:
             # Remove any existing style attribute

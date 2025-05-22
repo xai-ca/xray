@@ -177,7 +177,7 @@ def get_critical_div():
                         [
                             dbc.Col(
                                 [
-                                    html.I("Show Possible Sets of Critical Attacks:"),
+                                    html.I("Critical Attack Sets:"),
                                     dbc.RadioItems(
                                         id="possible-fixes-radio",
                                         className="mt-2",
@@ -204,7 +204,7 @@ def get_critical_div():
                                 dbc.Row([
                                     dbc.Col(
                                         html.Label(
-                                            "Apply Selected Fix",
+                                            "Suspend Critical Attacks",
                                             htmlFor="apply-fix-switch",
                                             style={"marginRight": "10px"}
                                         ),
