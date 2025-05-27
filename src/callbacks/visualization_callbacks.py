@@ -122,7 +122,47 @@ def create_visualization(
 
     # ========================== Argumentation Framework Session ==========================
     if active_item == "ArgumentationFramework":
-        dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+        if triggered_id == "layout-freeze-switch":
+            if layout_freeze:
+                # When freezing, generate new layout and save it
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+                os.makedirs("temp", exist_ok=True)
+                with open("temp/layout.dot", "w") as dot_file:
+                    dot_file.write(dot_source)
+                subprocess.run(
+                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                    check=True,
+                )
+            else:
+                # When unfreezing, generate new layout
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+        elif triggered_id in ["21-abstract-graph-layout"]:
+            if layout_freeze:
+                # If layout is frozen, use the existing dot source
+                if current_dot_source:
+                    dot_source = current_dot_source
+                else:
+                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+            else:
+                # If not frozen, generate new layout
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+                os.makedirs("temp", exist_ok=True)
+                with open("temp/layout.dot", "w") as dot_file:
+                    dot_file.write(dot_source)
+                subprocess.run(
+                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                    check=True,
+                )
+        else:
+            if layout_freeze:
+                # If layout is frozen, use the existing dot source
+                if current_dot_source:
+                    dot_source = current_dot_source
+                else:
+                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+            else:
+                # If not frozen, generate new layout
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         selected_arguments_changed = False
     # ========================== Provenance Session ==========================
     elif active_item == "Provenance":
@@ -337,8 +377,8 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         return (
             enabled_style,  # direction label style
             enabled_style,  # layout control style
-            disabled_style,  # layout freeze label style
-            True,  # layout freeze switch
+            enabled_style,  # layout freeze label style
+            False,  # layout freeze switch
             disabled_style,  # view label style
             True,  # global-local switch
             enabled_style,  # download button
@@ -391,8 +431,8 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             return (
                 enabled_style,  # direction label style
                 enabled_style,  # layout control style
-                disabled_style,  # layout freeze label style
-                True,  # layout freeze switch
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
                 disabled_style,  # view label style
                 True,  # global-local switch
                 enabled_style,  # download button

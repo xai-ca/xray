@@ -28,14 +28,15 @@ right_column = dbc.Col(
                                                                     className="d-flex align-items-center",
                                                                 ),
                                                                 dbc.Col(
-                                                                    dbc.RadioItems(
+                                                                    dbc.Select(
                                                                         options=[
                                                                             {"label": "BT", "value": "BT"},
                                                                             {"label": "LR", "value": "LR"},
+                                                                            {"label": "TB", "value": "TB"},
+                                                                            {"label": "RL", "value": "RL"},
                                                                         ],
                                                                         value="BT",
                                                                         id="21-abstract-graph-layout",
-                                                                        inline=True,
                                                                         className="d-flex align-items-center",
                                                                     ),
                                                                     className="d-flex align-items-center",
