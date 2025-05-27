@@ -390,6 +390,17 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
 
     # Handle different tabs
     if active_item == "ArgumentationFramework":
+        # In ArgumentationFramework tab, layout direction is disabled when frozen
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                disabled_style,  # view label style
+                True,  # global-local switch
+                enabled_style,  # download button
+            )
         return (
             enabled_style,  # direction label style
             enabled_style,  # layout control style
@@ -401,6 +412,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "CriticalAttacks":
+        # In CriticalAttacks tab, layout direction is disabled when frozen
         if layout_freeze:
             return (
                 disabled_style,  # direction label style
@@ -422,6 +434,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "Provenance":
+        # In Provenance tab, layout direction is always disabled
         if layout_freeze:
             return (
                 disabled_style,  # direction label style
@@ -443,6 +456,19 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "Evaluation":
+        # In Evaluation tab, layout direction is disabled when frozen, regardless of selected_extensions
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                disabled_style,  # view label style
+                True,  # global-local switch
+                enabled_style,  # download button
+            )
+        
+        # When not frozen, enable layout direction if there are selected extensions
         if not selected_extensions:
             return (
                 enabled_style,  # direction label style
@@ -454,28 +480,17 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
                 enabled_style,  # download button
             )
         
-        # Controls are disabled if layout is frozen
-        if layout_freeze:
-            return (
-                disabled_style,  # direction label style
-                disabled_style,  # layout control style
-                enabled_style,  # layout freeze label style
-                False,  # layout freeze switch
-                disabled_style,  # view label style
-                True,  # global-local switch
-                enabled_style,  # download button
-            )
-        else:
-            return (
-                enabled_style,  # direction label style
-                enabled_style,  # layout control style
-                enabled_style,  # layout freeze label style
-                False,  # layout freeze switch
-                disabled_style,  # view label style
-                True,  # global-local switch
-                enabled_style,  # download button
-            )
+        return (
+            enabled_style,  # direction label style
+            enabled_style,  # layout control style
+            enabled_style,  # layout freeze label style
+            False,  # layout freeze switch
+            disabled_style,  # view label style
+            True,  # global-local switch
+            enabled_style,  # download button
+        )
 
+    # Default case - all controls enabled
     return (enabled_style,) * 6 + (enabled_style,)
 
 
