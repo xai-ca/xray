@@ -238,11 +238,27 @@ def create_visualization(
                 dot_source = highlight_critical_edges(temp_dot_source, selected_fix)
     # ========================== Semantics Session ==========================
     else:
-        if (
-            selected_arguments == {}
-            # or triggered_id == "21-abstract-graph-layout"
-        ):
-            dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+        if selected_arguments == {}:
+            if triggered_id == "layout-freeze-switch":
+                if layout_freeze:
+                    # When freezing, generate new layout and save it - same as ArgumentationFramework tab
+                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+                    os.makedirs("temp", exist_ok=True)
+                    with open("temp/layout.dot", "w") as dot_file:
+                        dot_file.write(dot_source)
+                    subprocess.run(
+                        ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                        check=True,
+                    )
+                else:
+                    # When unfreezing, generate new layout
+                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+            elif layout_freeze and current_dot_source:
+                # If layout is frozen, use the existing dot source
+                dot_source = current_dot_source
+            else:
+                # If not frozen or no current source, generate new layout
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
         else:
             if triggered_id == "layout-freeze-switch":
                 if layout_freeze:
