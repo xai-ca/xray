@@ -127,12 +127,14 @@ EXAMPLES_FOLDER = "examples"
 
 def get_example_files():
     if os.path.exists(EXAMPLES_FOLDER):
-        return [
+        files = [
             {"label": f[:-5], "value": f}  # Remove '.json' from label
             for f in os.listdir(EXAMPLES_FOLDER)
             if os.path.isfile(os.path.join(EXAMPLES_FOLDER, f))
             and f.lower().endswith(".json")
         ]
+        # Sort the files alphabetically by their value (filename)
+        return sorted(files, key=lambda x: x["value"])
     return []
 
 

@@ -43,3 +43,14 @@ jobs:
           curl -X POST "$RENDER_DEPLOY_HOOK"
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  deploy-to-digitalocean:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger DigitalOcean Deployment
+        run: |
+          curl -X POST "$DIGITALOCEAN_DEPLOY_HOOK"
+        env:
+          DIGITALOCEAN_DEPLOY_HOOK: ${{ secrets.DIGITALOCEAN_DEPLOY_HOOK }}
