@@ -1,4 +1,4 @@
-name: Deploy to Docker Hub and Render
+name: Deploy to Docker Hub and DigitalOcean
 
 on:
   push:
@@ -33,17 +33,6 @@ jobs:
           push: true
           tags: seanyl/xray:app
 
-  deploy-to-render:
-    needs: build-and-push  # Ensure this runs only after the Docker image is pushed
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Trigger Render Deployment
-        run: |
-          curl -X POST "$RENDER_DEPLOY_HOOK"
-        env:
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
-
   deploy-to-digitalocean:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -51,6 +40,7 @@ jobs:
     steps:
       - name: Trigger DigitalOcean Deployment
         run: |
-          curl -X POST "$DIGITALOCEAN_DEPLOY_HOOK"
-        env:
-          DIGITALOCEAN_DEPLOY_HOOK: ${{ secrets.DIGITALOCEAN_DEPLOY_HOOK }}
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_TOKEN }}" \
+            "https://api.digitalocean.com/v2/apps/${{ secrets.DIGITALOCEAN_APP_ID }}/deployments"
