@@ -636,62 +636,58 @@ def toggle_legend(n_clicks, dot_source, current_style, stored_state):
     prevent_initial_call=False
 )
 def update_legend(dot_source):
-    # print("Legend callback triggered")  # Debug print
-    # print("Dot source:", dot_source)    # Debug print
-    
     if not dot_source:
-        # print("No dot source available")  # Debug print
-        return html.Div()  # Return an empty div when there's no graph
+        return html.Div()
     
-    # Parse the dot source to find which node colors are actually used
     used_colors = set()
-    
-    # Split the dot source into lines and look for fillcolor attributes in node definitions
+    total_nodes = 0
+    nodes_with_fillcolor = 0
+
     for line in dot_source.split('\n'):
         # Only look at node definitions (lines with fillcolor but no ->)
-        if 'fillcolor=' in line and '->' not in line:
-            # Find all occurrences of fillcolor="COLOR" in the line
-            parts = line.split('fillcolor="')
-            for part in parts[1:]:  # Skip the first part as it's before any fillcolor
-                color = part.split('"')[0]  # Get everything up to the next quote
-                if color.startswith('#'):  # Only add if it's a valid hex color
-                    used_colors.add(color)
-                    # print(f"Found node color: {color}")  # Debug print
-    
-    # print("Used node colors:", used_colors)  # Debug print
+        if '->' not in line:
+            if 'fillcolor=' in line:
+                nodes_with_fillcolor += 1
+                parts = line.split('fillcolor="')
+                for part in parts[1:]:
+                    color = part.split('"')[0].lower()
+                    if color.startswith('#'):
+                        used_colors.add(color)
+            # Count all node lines (with or without fillcolor)
+            # A node line typically starts with a node id and has [label=...]
+            if '[' in line and 'label=' in line:
+                total_nodes += 1
 
-    # Create legend items based on used colors
     legend_items = []
-    
-    # Always show uncalculated (white)
-    legend_items.append(
-        html.Div([
-            html.Div(style={
-                "width": "20px",
-                "height": "20px",
-                "backgroundColor": "#FFFFFF",
-                "border": "1px solid #666",
-                "borderRadius": "50%",
-                "display": "inline-block",
-                "marginRight": "8px",
-                "verticalAlign": "middle"
-            }),
-            html.Span("Uncalculated", style={"verticalAlign": "middle"})
-        ], className="mb-2")
-    )
 
-    # Add colors that are actually used
+    # Only show uncalculated if not every node has a fillcolor
+    if nodes_with_fillcolor < total_nodes:
+        legend_items.append(
+            html.Div([
+                html.Div(style={
+                    "width": "20px",
+                    "height": "20px",
+                    "backgroundColor": "#FFFFFF",
+                    "border": "1px solid #666",
+                    "borderRadius": "50%",
+                    "display": "inline-block",
+                    "marginRight": "8px",
+                    "verticalAlign": "middle"
+                }),
+                html.Span("Uncalculated", style={"verticalAlign": "middle"})
+            ], className="mb-2")
+        )
+
     color_labels = {
         "#40cfff": "Accepted (IN)",
         "#a6e9ff": "Accepted (uncertain under grounded)",
         "#ffb763": "Defeated (OUT)",
         "#ffe6c9": "Defeated (uncertain under grounded)",
-        "#FEFE62": "Undecided"
+        "#fefe62": "Undecided"
     }
 
     for color in used_colors:
         if color in color_labels:
-            # print(f"Adding color: {color}")  # Debug print
             legend_items.append(
                 html.Div([
                     html.Div(style={
@@ -708,8 +704,7 @@ def update_legend(dot_source):
                 ], className="mb-2")
             )
 
-    # print("Returning legend with items:", len(legend_items))  # Debug print
     return html.Div([
-        html.H6("Node States", className="mb-2 fw-bold"),  # Updated title to be more descriptive
+        html.H6("Node States", className="mb-2 fw-bold"),
         html.Div(legend_items)
     ])

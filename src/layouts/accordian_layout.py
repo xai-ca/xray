@@ -24,6 +24,7 @@ def get_abstract_setting_specification_div():
                 id="example-content-modal",
                 is_open=False,
                 size="lg",
+                style={"zIndex": 9999},
             ),
             dbc.Col(
                 [
