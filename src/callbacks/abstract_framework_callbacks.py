@@ -68,21 +68,19 @@ if dot_path is None:
     State("abstract-attacks", "value"),
     State("21-af-filename", "value"),
     State("21-af-extension", "value"),
+    State("raw-json", "data"),
     prevent_initial_call=True,
 )
 def download_generated_abstract_argumentation_framework(
-    n_clicks, example_name, arguments_text, defeats_text, filename, extension
+    n_clicks, example_name, arguments_text, defeats_text, filename, extension, raw_json
 ):
     ctx = callback_context  # Get the callback context
     triggered_inputs = {t["prop_id"].split(".")[0] for t in ctx.triggered}
     
-
     # Ensure that both button and dropdown were triggered together
     if "21-af-download-button" not in triggered_inputs:
         return no_update  # Do nothing if only one is triggered
 
-    argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
-    
     # Only use example_name as filename if no custom filename is provided
     if not filename:
         if example_name:
@@ -91,23 +89,31 @@ def download_generated_abstract_argumentation_framework(
             filename = "edited_af"
 
     if extension == "json":
-        argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
-            argumentation_framework
-        )
-        argumentation_framework_str = json.dumps(argumentation_framework_json)
+        # Use the raw JSON data if available, otherwise convert from the framework
+        if raw_json:
+            argumentation_framework_str = json.dumps(raw_json)
+        else:
+            argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
+            argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
+                argumentation_framework
+            )
+            argumentation_framework_str = json.dumps(argumentation_framework_json)
     elif extension == "TGF":
+        argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
         argumentation_framework_str = (
             ArgumentationFrameworkToTrivialGraphFormatWriter.write_to_str(
                 argumentation_framework
             )
         )
     elif extension == "APX":
+        argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
         argumentation_framework_str = (
             ArgumentationFrameworkToASPARTIXFormatWriter.write_to_str(
                 argumentation_framework
             )
         )
     elif extension == "ICCMA23":
+        argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
         argumentation_framework_str = (
             ArgumentationFrameworkToICCMA23FormatWriter.write_to_str(
                 argumentation_framework

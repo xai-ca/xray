@@ -1,7 +1,8 @@
 # layouts/abstract_layout.py
 
 import dash_bootstrap_components as dbc
-from dash import html, dcc
+from dash import html, dcc, Input, Output, State, callback
+import json
 
 
 # --- Abstract Argumentation Framework Setting ---
@@ -11,6 +12,19 @@ def get_abstract_setting_specification_div():
             dcc.Store(id="selected-argument-store-abstract"),
             dcc.Store(id="selected_arguments_changed", data=None),
             dcc.Store(id="raw-json", data=None),
+            # Add modal for displaying example content
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(dbc.ModalTitle("Example Content")),
+                    dbc.ModalBody(id="example-content-modal-body"),
+                    dbc.ModalFooter(
+                        dbc.Button("Close", id="close-example-modal", className="ms-auto", n_clicks=0)
+                    ),
+                ],
+                id="example-content-modal",
+                is_open=False,
+                size="lg",
+            ),
             dbc.Col(
                 [
                     dbc.Row(
@@ -21,20 +35,34 @@ def get_abstract_setting_specification_div():
                                     id="generate-random-af-button",
                                     n_clicks=0,
                                     className="w-100",
-                                )
+                                ),
+                                width=3,
                             ),
                             dbc.Col(
                                 dcc.Upload(
                                     dbc.Button("Open File", className="w-100"),
                                     id="upload-af",
-                                )
+                                ),
+                                width=3,
                             ),
                             dbc.Col(
                                 dcc.Dropdown(
                                     id="examples-dropdown",
                                     className="w-100",
                                     placeholder="Example",
-                                )
+                                ),
+                                width=4,
+                            ),
+                            dbc.Col(
+                                dbc.Button(
+                                    html.I(className="fas fa-arrow-up-right-from-square"),
+                                    id="show-more-button",
+                                    n_clicks=0,
+                                    color="secondary",
+                                    className="w-100",
+                                    title="Show More"
+                                ),
+                                width=2,
                             ),
                         ],
                         className="mt-2",
