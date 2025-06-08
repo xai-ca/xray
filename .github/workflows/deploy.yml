@@ -33,14 +33,10 @@ jobs:
           push: true
           tags: seanyl/xray:app
 
-  deploy-to-digitalocean:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Trigger DigitalOcean Deployment
-        run: |
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.DIGITALOCEAN_TOKEN }}" \
-            "https://api.digitalocean.com/v2/apps/${{ secrets.DIGITALOCEAN_APP_ID }}/deployments"
+      - name: Deploy to DigitalOcean
+        uses: digitalocean/app_action/deploy@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          app_spec_location: .do/app.yaml
+          print_build_logs: true
+          print_deploy_logs: true
