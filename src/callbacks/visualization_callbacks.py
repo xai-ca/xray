@@ -2,7 +2,7 @@
 
 import os
 import subprocess
-from dash import callback, Input, Output, State, ctx
+from dash import callback, Input, Output, State, ctx, html, dcc, no_update
 from dash.exceptions import PreventUpdate
 from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string import (
     generate_plain_dot_string,
@@ -16,6 +16,7 @@ from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string impor
 from py_arg_visualisation.functions.import_functions.read_argumentation_framework_functions import (
     read_argumentation_framework,
 )
+import dash_bootstrap_components as dbc
 
 
 # -- Callback for generating and downloading the visualization (DOT graph) --
@@ -537,3 +538,178 @@ def update_provenance_dropdown_options(selected_arguments):
         {"label": "Actual Provenance", "value": "AC"},
         {"label": "Primary Provenance", "value": "PR"}
     ], "PO"
+
+
+# Add new callback for dynamic legend
+@callback(
+    [Output("legend-card", "style"),
+     Output("legend-toggle-button", "children"),
+     Output("legend-toggle-button", "style"),
+     Output("legend-state-store", "data")],  # Add output for store
+    [Input("legend-toggle-button", "n_clicks"),
+     Input("explanation-graph", "dot_source")],
+    [State("legend-card", "style"),
+     State("legend-state-store", "data")],  # Add state for store
+    prevent_initial_call=False
+)
+def toggle_legend(n_clicks, dot_source, current_style, stored_state):
+    # Get the trigger that caused the callback
+    trigger = ctx.triggered_id if ctx.triggered_id else None
+    
+    if not dot_source:
+        # If there's no graph, hide both the legend and the button
+        button_style = {
+            "position": "absolute",
+            "left": "-35px",
+            "bottom": "20px",
+            "zIndex": 2000,
+            "backgroundColor": "white",
+            "border": "1px solid #ccc",
+            "borderRadius": "4px",
+            "width": "30px",
+            "height": "30px",
+            "cursor": "pointer",
+            "display": "none",  # Hide the button when no graph
+            "alignItems": "center",
+            "justifyContent": "center",
+            "fontSize": "16px",
+            "padding": "0",
+            "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"
+        }
+        return {"display": "none"}, "▶", button_style, stored_state
+
+    # Initialize the display state from stored state
+    is_visible = stored_state.get('is_visible', True) if stored_state else True
+    
+    # Only toggle if the button was clicked
+    if trigger == "legend-toggle-button":
+        is_visible = not is_visible
+    
+    # Set the new display state
+    new_display = "block" if is_visible else "none"
+    button_text = "◀" if is_visible else "▶"  # Left arrow when visible, right arrow when hidden
+    
+    # Update the legend style
+    legend_style = {
+        "position": "absolute",
+        "bottom": "20px",
+        "left": "20px",
+        "zIndex": 1999,
+        "backgroundColor": "rgba(255, 255, 255, 0.9)",
+        "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+        "borderRadius": "8px",
+        "padding": "15px",
+        "minWidth": "300px",
+        "maxWidth": "350px",
+        "display": new_display
+    }
+    
+    # Update the button style
+    button_style = {
+        "position": "absolute",
+        "left": "-35px",
+        "bottom": "20px",
+        "zIndex": 2000,
+        "backgroundColor": "white",
+        "border": "1px solid #ccc",
+        "borderRadius": "4px",
+        "width": "30px",
+        "height": "30px",
+        "cursor": "pointer",
+        "display": "flex",  # Show the button when there's a graph
+        "alignItems": "center",
+        "justifyContent": "center",
+        "fontSize": "16px",
+        "padding": "0",
+        "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"
+    }
+    
+    # Update the stored state
+    new_stored_state = {'is_visible': is_visible}
+    
+    return legend_style, button_text, button_style, new_stored_state
+
+
+@callback(
+    Output("node-colors-legend", "children"),
+    Input("explanation-graph", "dot_source"),
+    prevent_initial_call=False
+)
+def update_legend(dot_source):
+    # print("Legend callback triggered")  # Debug print
+    # print("Dot source:", dot_source)    # Debug print
+    
+    if not dot_source:
+        # print("No dot source available")  # Debug print
+        return html.Div()  # Return an empty div when there's no graph
+    
+    # Parse the dot source to find which node colors are actually used
+    used_colors = set()
+    
+    # Split the dot source into lines and look for fillcolor attributes in node definitions
+    for line in dot_source.split('\n'):
+        # Only look at node definitions (lines with fillcolor but no ->)
+        if 'fillcolor=' in line and '->' not in line:
+            # Find all occurrences of fillcolor="COLOR" in the line
+            parts = line.split('fillcolor="')
+            for part in parts[1:]:  # Skip the first part as it's before any fillcolor
+                color = part.split('"')[0]  # Get everything up to the next quote
+                if color.startswith('#'):  # Only add if it's a valid hex color
+                    used_colors.add(color)
+                    # print(f"Found node color: {color}")  # Debug print
+    
+    # print("Used node colors:", used_colors)  # Debug print
+
+    # Create legend items based on used colors
+    legend_items = []
+    
+    # Always show uncalculated (white)
+    legend_items.append(
+        html.Div([
+            html.Div(style={
+                "width": "20px",
+                "height": "20px",
+                "backgroundColor": "#FFFFFF",
+                "border": "1px solid #666",
+                "borderRadius": "50%",
+                "display": "inline-block",
+                "marginRight": "8px",
+                "verticalAlign": "middle"
+            }),
+            html.Span("Uncalculated", style={"verticalAlign": "middle"})
+        ], className="mb-2")
+    )
+
+    # Add colors that are actually used
+    color_labels = {
+        "#40cfff": "Accepted (IN)",
+        "#a6e9ff": "Accepted (uncertain under grounded)",
+        "#ffb763": "Defeated (OUT)",
+        "#ffe6c9": "Defeated (uncertain under grounded)",
+        "#FEFE62": "Undecided"
+    }
+
+    for color in used_colors:
+        if color in color_labels:
+            # print(f"Adding color: {color}")  # Debug print
+            legend_items.append(
+                html.Div([
+                    html.Div(style={
+                        "width": "20px",
+                        "height": "20px",
+                        "backgroundColor": color,
+                        "border": "1px solid #666",
+                        "borderRadius": "50%",
+                        "display": "inline-block",
+                        "marginRight": "8px",
+                        "verticalAlign": "middle"
+                    }),
+                    html.Span(color_labels[color], style={"verticalAlign": "middle"})
+                ], className="mb-2")
+            )
+
+    # print("Returning legend with items:", len(legend_items))  # Debug print
+    return html.Div([
+        html.H6("Node States", className="mb-2 fw-bold"),  # Updated title to be more descriptive
+        html.Div(legend_items)
+    ])

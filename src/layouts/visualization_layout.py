@@ -5,6 +5,66 @@ from dash import html, dcc
 import dash_interactive_graphviz
 import dash_daq as daq
 
+# Add legend for node colors
+legend_container = html.Div([
+    # Store component to persist legend state
+    dcc.Store(id='legend-state-store', data={'is_visible': True}),
+    # Toggle button
+    html.Button(
+        "◀",  # Left arrow when legend is visible
+        id="legend-toggle-button",
+        style={
+            "position": "absolute",
+            "left": "-35px",  # Move slightly more to the left
+            "bottom": "20px",
+            "zIndex": 2000,  # Increase z-index to ensure it's above other elements
+            "backgroundColor": "white",
+            "border": "1px solid #ccc",
+            "borderRadius": "4px",
+            "width": "30px",
+            "height": "30px",
+            "cursor": "pointer",
+            "display": "flex",
+            "alignItems": "center",
+            "justifyContent": "center",
+            "fontSize": "16px",
+            "padding": "0",
+            "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+            "opacity": "0.9",  # Make it slightly transparent
+            "pointerEvents": "auto"  # Use camelCase for React
+        }
+    ),
+    # Legend card
+    dbc.Card(
+        dbc.CardBody(
+            html.Div(id="node-colors-legend")
+        ),
+        id="legend-card",
+        style={
+            "position": "absolute",
+            "bottom": "20px",
+            "left": "20px",
+            "zIndex": 1999,  # Just below the button
+            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+            "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+            "borderRadius": "8px",
+            "padding": "15px",  # Increased padding
+            "minWidth": "300px",  # Increased width
+            "maxWidth": "350px",  # Added max width
+            "display": "none",  # Start with display none
+            "pointerEvents": "auto"  # Use camelCase for React
+        }
+    )
+], style={
+    "position": "absolute",  # Change to absolute positioning
+    "bottom": "20px",
+    "left": "20px",
+    "zIndex": 1999,
+    "width": "auto",
+    "height": "auto",
+    "pointerEvents": "auto"  # Use camelCase for React
+})
+
 right_column = dbc.Col(
     [
         dbc.Row(
@@ -164,15 +224,20 @@ right_column = dbc.Col(
                                             persisted_props={"engine": "neato"},
                                             style={
                                                 "height": "550px",
-                                                "max-width": "98%",
+                                                "maxWidth": "98%",
                                                 "overflow": "hidden",
+                                                "position": "relative",  # Add position relative for absolute positioning of legend
+                                                "pointerEvents": "auto"  # Use camelCase for React
                                             },
                                         ),
+                                        legend_container  # Use the new legend container instead of just the legend
                                     ],
                                     style={
                                         "height": "550px",
-                                        "max-width": "98%",
-                                        "overflow": "hidden",
+                                        "maxWidth": "98%",
+                                        "overflow": "visible",  # Change to visible to ensure the button is not cut off
+                                        "position": "relative",  # Add position relative for absolute positioning of legend
+                                        "pointerEvents": "auto"  # Use camelCase for React
                                     },
                                 ),
                             ]
