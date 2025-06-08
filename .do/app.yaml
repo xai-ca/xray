@@ -4,7 +4,7 @@ services:
     image:
       registry_type: DOCKER_HUB
       repository: seanyl/xray
-      tag: app
+      digest: ${XRAY_IMAGE_DIGEST}
     http_port: 3000
     instance_count: 1
     instance_size_slug: basic-xxs
