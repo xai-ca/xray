@@ -715,7 +715,6 @@ def update_legend(dot_source):
             )
 
     return html.Div([
-        html.H6("Node States", className="mb-2 fw-bold"),
         html.Div(legend_items)
     ])
 

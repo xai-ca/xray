@@ -119,7 +119,7 @@ def handle_critical_attacks(arguments, attacks, selected_extension, selected_rad
         
         # Add combined facts to Clingo
         ctl.add("base", [], facts)
-        print(facts)
+        # print(facts)
         # Add ASP rules (to be implemented in separate file)
         ctl.load("encodings/critical_cal.dl")  # TODO: Implement this encoding
         
