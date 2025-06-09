@@ -911,7 +911,7 @@ def recalculate_fixed_args(arg_framework, dot_source):
     
     # Add new rank definitions before the final closing brace
     for number, args in sorted(number_groups.items(), key=lambda x: int(x[0]) if x[0] != '∞' else float('inf')):
-        if args:
+        if args and number != '∞':  # Skip infinite numbers
             node_list = '" "'.join(args)
             modified_lines.append(f'    {{ rank=same; "{node_list}" }}')
     
