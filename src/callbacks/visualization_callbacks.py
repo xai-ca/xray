@@ -660,7 +660,24 @@ def update_legend(dot_source):
     
     legend_items = []
     
-    # Only show uncalculated if not every node has a fillcolor
+    color_labels = {
+        "#40cfff": "IN (skeptical)",
+        "#a6e9ff": "IN (credulous)",
+        "#ffb763": "OUT (skeptical)",
+        "#ffe6c9": "OUT (credulous)",
+        "#fefe62": "UNDEC"
+    }
+
+    # Define the order of legend items
+    legend_order = [
+        "#40cfff",  # IN (skeptical)
+        "#a6e9ff",  # IN (credulous)
+        "#ffb763",  # OUT (skeptical)
+        "#ffe6c9",  # OUT (credulous)
+        "#fefe62",  # UNDEC
+    ]
+
+    # Add uncalculated first if needed
     if nodes_with_fillcolor < total_nodes:
         legend_items.append(
             html.Div([
@@ -674,20 +691,13 @@ def update_legend(dot_source):
                     "marginRight": "8px",
                     "verticalAlign": "middle"
                 }),
-                html.Span("Uncalculated", style={"verticalAlign": "middle"})
+                html.Span("Unlabeled", style={"verticalAlign": "middle"})
             ], className="mb-2")
         )
 
-    color_labels = {
-        "#40cfff": "Accepted (IN)",
-        "#a6e9ff": "Accepted (uncertain under grounded)",
-        "#ffb763": "Defeated (OUT)",
-        "#ffe6c9": "Defeated (uncertain under grounded)",
-        "#fefe62": "Undecided"
-    }
-
-    for color in used_colors:
-        if color in color_labels:
+    # Add legend items in the specified order
+    for color in legend_order:
+        if color in used_colors and color in color_labels:
             legend_items.append(
                 html.Div([
                     html.Div(style={
