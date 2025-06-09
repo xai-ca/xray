@@ -92,6 +92,11 @@ def handle_critical_attacks(arguments, attacks, selected_extension, selected_rad
          for attack in arg_framework.defeats]
     )
     
+    # Generate argument facts for all arguments in the framework
+    argument_facts = "\n".join(
+        [f'arg("{arg}").' for arg in arg_framework.arguments]
+    )
+    
     # Parse selected extension and generate in/1, out/1, and undec/1 facts
     accepted_args = selected_extension.get('green', [])
     rejected_args = selected_extension.get('red', [])
@@ -106,7 +111,7 @@ def handle_critical_attacks(arguments, attacks, selected_extension, selected_rad
     ])
     
     # Combine all facts
-    facts = attack_facts + "\n" + extension_facts
+    facts = argument_facts + "\n" + attack_facts + "\n" + extension_facts
     # print(facts)
     try:
         # Initialize Clingo control
@@ -114,7 +119,7 @@ def handle_critical_attacks(arguments, attacks, selected_extension, selected_rad
         
         # Add combined facts to Clingo
         ctl.add("base", [], facts)
-        
+        print(facts)
         # Add ASP rules (to be implemented in separate file)
         ctl.load("encodings/critical_cal.dl")  # TODO: Implement this encoding
         
@@ -160,7 +165,7 @@ def handle_critical_attacks(arguments, attacks, selected_extension, selected_rad
                         f"{a}_{b}" for a, b in critical_pairs
                     )
                     fixes.append({"label": label, "value": value})
-        
+
         return (
             fixes if fixes else [{"label": "No critical attacks under the selected extension", "value": "none"}],
             []  # Initialize with empty list since no selection has been made yet
