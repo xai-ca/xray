@@ -226,11 +226,61 @@ right_column = dbc.Col(
                                                 "height": "550px",
                                                 "maxWidth": "98%",
                                                 "overflow": "hidden",
-                                                "position": "relative",  # Add position relative for absolute positioning of legend
+                                                "position": "relative",
                                                 "pointerEvents": "auto"  # Use camelCase for React
                                             },
                                         ),
-                                        legend_container  # Use the new legend container instead of just the legend
+                                        legend_container,  # Use the new legend container instead of just the legend
+                                        # Add node details side panel
+                                        html.Div([
+                                            # Store component to persist panel state
+                                            dcc.Store(id='node-panel-state-store', data={'is_visible': False}),
+                                            # Toggle button
+                                            html.Button(
+                                                "▶",  # Right arrow when panel is hidden
+                                                id="node-panel-toggle-button",
+                                                style={
+                                                    "position": "absolute",
+                                                    "right": "-35px",  # Position on the right side
+                                                    "bottom": "20px",
+                                                    "zIndex": 2000,
+                                                    "backgroundColor": "white",
+                                                    "border": "1px solid #ccc",
+                                                    "borderRadius": "4px",
+                                                    "width": "30px",
+                                                    "height": "30px",
+                                                    "cursor": "pointer",
+                                                    "display": "none",  # Hide initially
+                                                    "alignItems": "center",
+                                                    "justifyContent": "center",
+                                                    "fontSize": "16px",
+                                                    "padding": "0",
+                                                    "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"
+                                                }
+                                            ),
+                                            # Node details panel
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    html.Div(id="node-details-content")
+                                                ),
+                                                id="node-details-panel",
+                                                style={
+                                                    "position": "absolute",
+                                                    "bottom": "20px",
+                                                    "right": "20px",
+                                                    "zIndex": 1999,
+                                                    "backgroundColor": "rgba(255, 255, 255, 0.9)",
+                                                    "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+                                                    "borderRadius": "8px",
+                                                    "padding": "15px",
+                                                    "minWidth": "300px",
+                                                    "maxWidth": "350px",
+                                                    "display": "none",  # Start hidden
+                                                    "pointerEvents": "auto"
+                                                }
+                                            )
+                                        ]),
+                                        dcc.Store(id="selected-node-store"),  # Store for selected node data
                                     ],
                                     style={
                                         "height": "550px",

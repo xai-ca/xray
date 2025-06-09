@@ -2,7 +2,7 @@
 
 import os
 import subprocess
-from dash import callback, Input, Output, State, ctx, html, dcc, no_update
+from dash import callback, Input, Output, State, ctx, html, dcc, no_update, callback_context
 from dash.exceptions import PreventUpdate
 from py_arg_visualisation.functions.graph_data_functions.get_af_dot_string import (
     generate_plain_dot_string,
@@ -642,24 +642,24 @@ def update_legend(dot_source):
     used_colors = set()
     total_nodes = 0
     nodes_with_fillcolor = 0
-
+    
     for line in dot_source.split('\n'):
         # Only look at node definitions (lines with fillcolor but no ->)
         if '->' not in line:
             if 'fillcolor=' in line:
                 nodes_with_fillcolor += 1
-                parts = line.split('fillcolor="')
-                for part in parts[1:]:
-                    color = part.split('"')[0].lower()
-                    if color.startswith('#'):
-                        used_colors.add(color)
+            parts = line.split('fillcolor="')
+            for part in parts[1:]:
+                color = part.split('"')[0].lower()
+                if color.startswith('#'):
+                    used_colors.add(color)
             # Count all node lines (with or without fillcolor)
             # A node line typically starts with a node id and has [label=...]
             if '[' in line and 'label=' in line:
                 total_nodes += 1
-
+    
     legend_items = []
-
+    
     # Only show uncalculated if not every node has a fillcolor
     if nodes_with_fillcolor < total_nodes:
         legend_items.append(
@@ -708,3 +708,169 @@ def update_legend(dot_source):
         html.H6("Node States", className="mb-2 fw-bold"),
         html.Div(legend_items)
     ])
+
+
+@callback(
+    Output("node-details-panel", "style"),
+    Output("node-panel-toggle-button", "children"),
+    Output("node-panel-toggle-button", "style"),
+    Output("node-panel-state-store", "data"),
+    Input("node-panel-toggle-button", "n_clicks"),
+    Input("explanation-graph", "selected_node"),
+    State("node-panel-state-store", "data"),
+    prevent_initial_call=True
+)
+def toggle_node_panel(n_clicks, selected_node, stored_state):
+    """Toggle the visibility of the node details panel."""
+    ctx = callback_context
+    if not ctx.triggered:
+        return no_update, no_update, no_update, no_update
+    
+    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    
+    # Initialize the display state from stored state
+    is_visible = stored_state.get('is_visible', False) if stored_state else False
+    
+    # If a node was selected, show the panel
+    if trigger_id == "explanation-graph" and selected_node:
+        is_visible = True
+    # If the toggle button was clicked, toggle the visibility
+    elif trigger_id == "node-panel-toggle-button":
+        is_visible = not is_visible
+    
+    # Set the new display state
+    new_display = "block" if is_visible else "none"
+    button_text = "◀" if is_visible else "▶"  # Left arrow when visible, right arrow when hidden
+    
+    # Update the panel style
+    panel_style = {
+        "position": "absolute",
+        "bottom": "20px",
+        "right": "20px",
+        "zIndex": 1999,
+        "backgroundColor": "rgba(255, 255, 255, 0.9)",
+        "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+        "borderRadius": "8px",
+        "padding": "15px",
+        "minWidth": "300px",
+        "maxWidth": "350px",
+        "display": new_display,
+        "pointerEvents": "auto"
+    }
+    
+    # Update the button style
+    button_style = {
+        "position": "absolute",
+        "right": "-35px",
+        "bottom": "20px",
+        "zIndex": 2000,
+        "backgroundColor": "white",
+        "border": "1px solid #ccc",
+        "borderRadius": "4px",
+        "width": "30px",
+        "height": "30px",
+        "cursor": "pointer",
+        "display": "flex",
+        "alignItems": "center",
+        "justifyContent": "center",
+        "fontSize": "16px",
+        "padding": "0",
+        "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"
+    }
+    
+    # Update the stored state
+    new_stored_state = {'is_visible': is_visible}
+    
+    return panel_style, button_text, button_style, new_stored_state
+
+
+@callback(
+    Output("node-details-content", "children"),
+    Output("selected-node-store", "data"),
+    Input("explanation-graph", "selected_node"),
+    State("abstract-arguments", "value"),
+    State("abstract-attacks", "value"),
+    State("raw-json", "data"),
+    prevent_initial_call=True
+)
+def update_node_details(selected_node, arguments, attacks, raw_json):
+    """Update the node details content when a node is selected."""
+    if not selected_node:
+        return None, None
+    
+    # Get node metadata from raw_json
+    node_meta = None
+    if raw_json and isinstance(raw_json, dict):
+        for arg in raw_json.get("arguments", []):
+            if arg.get("id") == selected_node:
+                node_meta = arg
+                break
+    
+    # Create node details content
+    content = []
+    
+    # Add node ID with a more prominent style
+    content.append(html.H4(f"Argument: {selected_node}", className="mb-3 text-primary"))
+    
+    # Add annotation if available
+    if node_meta and node_meta.get("annotation"):
+        content.append(html.Div([
+            html.H6("Annotation", className="mb-2 text-secondary"),
+            html.P(node_meta["annotation"], className="mb-3 p-2 bg-light rounded")
+        ], className="mb-3"))
+    
+    # Add URL if available
+    if node_meta and node_meta.get("url"):
+        content.append(html.Div([
+            html.H6("Reference", className="mb-2 text-secondary"),
+            html.A(
+                node_meta["url"],
+                href=node_meta["url"],
+                target="_blank",
+                className="text-primary text-decoration-none",
+                style={"wordBreak": "break-all"}
+            )
+        ], className="mb-3"))
+    
+    # Add attack information with a divider
+    if arguments and attacks:
+        arg_framework = read_argumentation_framework(arguments, attacks)
+        
+        # Find attackers (arguments that attack this node)
+        attackers = []
+        for attack in arg_framework.defeats:
+            if str(attack.to_argument) == selected_node:
+                attackers.append(str(attack.from_argument))
+        
+        # Find attacked arguments (arguments that this node attacks)
+        attacked = []
+        for attack in arg_framework.defeats:
+            if str(attack.from_argument) == selected_node:
+                attacked.append(str(attack.to_argument))
+        
+        # Add attack information to content with a divider
+        if attackers or attacked:
+            content.append(html.Hr(className="my-3"))
+            content.append(html.H6("Attack Information", className="mb-3 text-secondary"))
+            
+            if attackers:
+                content.append(html.Div([
+                    html.Strong("Attacked by: ", className="text-danger"),
+                    html.Span(", ".join(attackers), className="ms-1")
+                ], className="mb-2"))
+            
+            if attacked:
+                content.append(html.Div([
+                    html.Strong("Attacks: ", className="text-success"),
+                    html.Span(", ".join(attacked), className="ms-1")
+                ], className="mb-2"))
+    
+    # Store selected node data
+    node_data = {
+        "id": selected_node,
+        "metadata": node_meta,
+        "attackers": attackers if 'attackers' in locals() else [],
+        "attacked": attacked if 'attacked' in locals() else []
+    }
+    
+    return content, node_data

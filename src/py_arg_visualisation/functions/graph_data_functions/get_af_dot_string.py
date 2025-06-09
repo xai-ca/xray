@@ -19,13 +19,16 @@ def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any)
     for arg in argumentation_framework.arguments:
         name = arg.name
         meta = arg_meta.get(name, {})
-        attrs = [f'label="{name}"', "fontsize=14",'target="_blank"']
+        attrs = [
+            f'label="{name}"',
+            "fontsize=14",
+            'cursor="pointer"',  # Add cursor style only to individual nodes
+            f'id="node-{name}"',  # Add unique ID for each node
+        ]
         if meta.get("annotation"):
             # tooltip shows on hover in many viewers
             tip = meta["annotation"].replace('"', '\\"')
             attrs.append(f'tooltip="{tip}"')
-        if meta.get("url"):
-            attrs.append(f'URL="{meta["url"]}"')
         dot_string += (f'  "{name}" [{", ".join(attrs)}]\n')
 
     # Adding edge information
@@ -142,26 +145,24 @@ def generate_dot_string(
                 )
                 meta = arg_meta.get(argument_name, {})
                 tip = meta.get("annotation", "").replace('"', '\\"')
-                url = meta.get("url", "")
                 
                 node = (
                     f'    "{argument_name}" [style="filled" '
                     f'fillcolor="{argument_color}" '
                     f'label="{argument_label}" '
                     f'fontsize=14 {pos_attr}'
+                    f' cursor="pointer"'  # Add cursor style to individual nodes
                 )
                 
                 if tip:
                     node += f' tooltip="{tip}"'
-                if url:
-                    node += f' URL="{url}" target="_blank"'
                 
                 node += "]\n"
                 dot_string += node
 
                 unselected_arguments.remove(argument_name)
     for argument_name in unselected_arguments:
-        dot_string += f'    "{argument_name}" [fontsize=14]\n'
+        dot_string += f'    "{argument_name}" [fontsize=14, cursor="pointer"]\n'  # Add cursor style to unselected nodes too
 
     # Adding edge information
     dot_string += '\n edge[labeldistance=1.5 fontsize=12 fontname="helvetica"]\n'
