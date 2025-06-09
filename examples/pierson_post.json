@@ -1,0 +1,181 @@
+{
+    "arguments": [
+        {
+            "id": "A",
+            "name": "Pursuer had right to animal",
+            "type": "claim",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "The court decided that Post, the pursuer, had no right to the fox: \"The foregoing authorities are decisive to show that mere pursuit gave Post no legal right to the fox, but that he became the property of Pierson, who intercepted and killed him\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "B",
+            "name": "Pursuer not in possession",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "pursuer not in possession of the fox",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "D",
+            "name": "Animals not confined by owner",
+            "type": "fact",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "Fox is a wild animal and is not confined by anyone.",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "E",
+            "name": "Effort promising success made to secure animal made by pursuer",
+            "type": "fact",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "Post, the pursuer, pursued the fox with his own hounds, and was \"on the point of seizing his prey\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "I",
+            "name": "Pursuit not enough",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "The court opinion, written by Tompkins, stated that only pursuing wild animals (e.g., a fox) does not mean acquiring the right to wild animals. They cited Justinian's Institutes: \"Justinian's Institutes, lib. 2. tit. 1. s. 13. and Fleta, lib. 3. c. 2. p. 175. adopt the principle, that pursuit alone vests no property or right in the huntsman; and that even pursuit, accompanied with wounding, is equally ineffectual for that purpose, unless the animal be actually taken.\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "M",
+            "name": "Mere pursuit is not enough",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "Written by Tompkins: \"mere pursuit gave Post no legal right to the fox\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "N",
+            "name": "Justinian is too old an authority",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "Written by Livingston: \"Whatever Justinian may have thought of the matter, it must be recollected that his code was compiled many hundred years ago, and it would be very hard indeed, at the distance of so many centuries, not to have a right to establish a rule for ourselves.\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "O",
+            "name": "Bodily seizure is not necessary, interpreted as reasonable prospect of capture is enough",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "\"Bodily seizure is not necessary\" was quoted from Barbeyrac and Livinston wrote in the dissent that \"…which comports also with the learned conclusion of Barbeyrac, that property in animals feræ naturæ may be acquired without bodily touch or manucaption, provided the pursuer be within reach, or have a reasonable prospect (which certainly existed here) of taking, what he has thus discovered an intention of converting to his own use.\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "P",
+            "name": "Reasonable prospect does not give enough certainty",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "Written by Tompkins, a reasonable prospect of catching does not give enough certainty of occupying the fox: \"If the first seeing, starting or pursuing such animals, without having so wounded, circumvented or ensnared them, so as to deprive them of their natural liberty, and subject them to the control of their pursuer, should afford the basis of actions against others for intercepting and killing them…\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "Q",
+            "name": "The land was open",
+            "type": "fact",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "The fox hunting took place \"on waste and uninhabited ground\".",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "R",
+            "name": "Socially useful activities are to be encouraged",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "Written by Livingston, fox hunting is a socially useful activity and should be encouraged: \"When we reflect also that the interest of our husbandmen, the most useful of men in any community, will be advanced by the destruction of a beast so pernicious and incorrigible, we cannot greatly err, in saying, that a pursuit like the present, through waste and unoccupied lands, and which must inevitably and speedily have terminated in corporal possession, or bodily seisin, confers such a right to the object of it, as to make any one a wrongdoer, who shall interfere and shoulder the spoil.\"",
+            "url": "https://cite.case.law/cai/3/175/"
+        },
+        {
+            "id": "U",
+            "name": "Not for courts to regulate competition",
+            "type": "opinion",
+            "case_name": "Pierson v Post",
+            "case_year": 1805,
+            "citation": "3 Cai. R. 175 (N.Y. 1805)",
+            "context": "The court showed concern that its involvement \"would prove a fertile source of quarrels and litigation.\" Therefore, it implicitly indicated that it is not for courts to regulate competition",
+            "url": "https://cite.case.law/cai/3/175/"
+        }
+    ],
+    "defeats": [
+        {
+            "from": "B",
+            "to": "A",
+            "annotation": ""
+        },
+        {
+            "from": "D",
+            "to": "B",
+            "annotation": ""
+        },
+        {
+            "from": "E",
+            "to": "B",
+            "annotation": ""
+        },
+        {
+            "from": "A",
+            "to": "I",
+            "annotation": ""
+        },
+        {
+            "from": "A",
+            "to": "M",
+            "annotation": ""
+        },
+        {
+            "from": "I",
+            "to": "N",
+            "annotation": ""
+        },
+        {
+            "from": "M",
+            "to": "O",
+            "annotation": ""
+        },
+        {
+            "from": "O",
+            "to": "P",
+            "annotation": ""
+        },
+        {
+            "from": "B",
+            "to": "Q",
+            "annotation": ""
+        },
+        {
+            "from": "I",
+            "to": "R",
+            "annotation": ""
+        },
+        {
+            "from": "R",
+            "to": "U",
+            "annotation": ""
+        }
+    ]
+}

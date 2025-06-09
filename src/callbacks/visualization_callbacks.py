@@ -745,7 +745,7 @@ def toggle_node_panel(n_clicks, selected_node, stored_state):
     # Update the panel style
     panel_style = {
         "position": "absolute",
-        "bottom": "20px",
+        "top": "40px",  # Move down from top to give more space
         "right": "20px",
         "zIndex": 1999,
         "backgroundColor": "rgba(255, 255, 255, 0.9)",
@@ -754,15 +754,19 @@ def toggle_node_panel(n_clicks, selected_node, stored_state):
         "padding": "15px",
         "minWidth": "300px",
         "maxWidth": "350px",
+        "maxHeight": "470px",  # Reduced from 550px to fit within visualization
+        "overflowY": "auto",  # Enable vertical scrolling
         "display": new_display,
-        "pointerEvents": "auto"
+        "pointerEvents": "auto",
+        "marginBottom": "40px"  # Add space at the bottom
     }
     
     # Update the button style
     button_style = {
         "position": "absolute",
         "right": "-35px",
-        "bottom": "20px",
+        "top": "50%",  # Center vertically
+        "transform": "translateY(-50%)",  # Center vertically
         "zIndex": 2000,
         "backgroundColor": "white",
         "border": "1px solid #ccc",
@@ -809,68 +813,65 @@ def update_node_details(selected_node, arguments, attacks, raw_json):
     # Create node details content
     content = []
     
-    # Add node ID with a more prominent style
-    content.append(html.H4(f"Argument: {selected_node}", className="mb-3 text-primary"))
+    # Add node ID (mandatory)
+    content.append(html.H4(f"Argument {selected_node}", className="mb-2 text-primary"))
     
-    # Add annotation if available
-    if node_meta and node_meta.get("annotation"):
+    # Add name if available (mandatory)
+    if node_meta and node_meta.get("name"):
+        content.append(html.H5(node_meta["name"], className="mb-3 text-secondary"))
+    else:
+        # If name is missing, show a warning
         content.append(html.Div([
-            html.H6("Annotation", className="mb-2 text-secondary"),
-            html.P(node_meta["annotation"], className="mb-3 p-2 bg-light rounded")
+            html.I("Warning: Argument name is missing", className="text-warning")
         ], className="mb-3"))
     
-    # Add URL if available
-    if node_meta and node_meta.get("url"):
-        content.append(html.Div([
-            html.H6("Reference", className="mb-2 text-secondary"),
-            html.A(
-                node_meta["url"],
-                href=node_meta["url"],
-                target="_blank",
-                className="text-primary text-decoration-none",
-                style={"wordBreak": "break-all"}
-            )
-        ], className="mb-3"))
+    # Optional fields - only add sections if the field exists in metadata
+    if node_meta:
+        # Case information (if either case_name or case_year exists)
+        if node_meta.get("case_name") or node_meta.get("case_year"):
+            case_info = []
+            if node_meta.get("case_name"):
+                case_info.append(node_meta["case_name"])
+            if node_meta.get("case_year"):
+                case_info.append(str(node_meta["case_year"]))
+            if node_meta.get("citation"):
+                case_info.append(f"({node_meta['citation']})")
+            content.append(html.Div([
+                html.H6("Case", className="mb-2 text-secondary"),
+                html.P(" ".join(case_info), className="mb-3 p-2 bg-light rounded")
+            ], className="mb-3"))
+        
+        # Argument type
+        if node_meta.get("type"):
+            content.append(html.Div([
+                html.H6("Type", className="mb-2 text-secondary"),
+                html.P(node_meta["type"].replace("_", " ").title(), className="mb-3 p-2 bg-light rounded")
+            ], className="mb-3"))
+        
+        # Context
+        if node_meta.get("context"):
+            content.append(html.Div([
+                html.H6("Context", className="mb-2 text-secondary"),
+                html.P(node_meta["context"], className="mb-3 p-2 bg-light rounded")
+            ], className="mb-3"))
+        
+        # URL (if exists)
+        if node_meta.get("url"):
+            content.append(html.Div([
+                html.H6("Reference", className="mb-2 text-secondary"),
+                html.A(
+                    node_meta["url"],
+                    href=node_meta["url"],
+                    target="_blank",
+                    className="text-primary text-decoration-none",
+                    style={"wordBreak": "break-all"}
+                )
+            ], className="mb-3"))
     
-    # Add attack information with a divider
-    if arguments and attacks:
-        arg_framework = read_argumentation_framework(arguments, attacks)
-        
-        # Find attackers (arguments that attack this node)
-        attackers = []
-        for attack in arg_framework.defeats:
-            if str(attack.to_argument) == selected_node:
-                attackers.append(str(attack.from_argument))
-        
-        # Find attacked arguments (arguments that this node attacks)
-        attacked = []
-        for attack in arg_framework.defeats:
-            if str(attack.from_argument) == selected_node:
-                attacked.append(str(attack.to_argument))
-        
-        # Add attack information to content with a divider
-        if attackers or attacked:
-            content.append(html.Hr(className="my-3"))
-            content.append(html.H6("Attack Information", className="mb-3 text-secondary"))
-            
-            if attackers:
-                content.append(html.Div([
-                    html.Strong("Attacked by: ", className="text-danger"),
-                    html.Span(", ".join(attackers), className="ms-1")
-                ], className="mb-2"))
-            
-            if attacked:
-                content.append(html.Div([
-                    html.Strong("Attacks: ", className="text-success"),
-                    html.Span(", ".join(attacked), className="ms-1")
-                ], className="mb-2"))
-    
-    # Store selected node data
+    # Store selected node data (keeping minimal data for other callbacks that might need it)
     node_data = {
         "id": selected_node,
-        "metadata": node_meta,
-        "attackers": attackers if 'attackers' in locals() else [],
-        "attacked": attacked if 'attacked' in locals() else []
+        "metadata": node_meta
     }
     
     return content, node_data
