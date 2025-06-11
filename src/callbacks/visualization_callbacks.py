@@ -827,7 +827,10 @@ def update_node_details(selected_node, arguments, attacks, raw_json):
     
     # Add name if available (mandatory)
     if node_meta and node_meta.get("name"):
-        content.append(html.H5(node_meta["name"], className="mb-3 text-secondary"))
+        content.append(html.Div([
+            html.H6("Name", className="mb-2 text-secondary"),
+            html.P(node_meta["name"], className="mb-3 p-2 bg-light rounded")
+        ], className="mb-3"))
     else:
         # If name is missing, show a warning
         content.append(html.Div([
@@ -884,3 +887,15 @@ def update_node_details(selected_node, arguments, attacks, raw_json):
     }
     
     return content, node_data
+
+
+@callback(
+    Output("filename-display", "children"),
+    Input("21-af-filename", "value"),
+    prevent_initial_call=False
+)
+def update_filename_display(filename):
+    """Update the filename display when a file is selected."""
+    if not filename:
+        return ""
+    return f"File: {filename}"

@@ -224,7 +224,7 @@ def evaluate_abstract_argumentation_framework(
                     },
                 ),
                 html.Br(),
-                html.B("Stable Extensions:"),
+                html.B("Preferred, Stable Extensions:"),
                 html.Div(
                     stable_extension_radioitems,
                     style={
@@ -234,7 +234,7 @@ def evaluate_abstract_argumentation_framework(
                     },
                 ),
                 html.Br(),
-                html.B("Preferred Non-Stable Extensions:"),
+                html.B("Preferred, Non-Stable Extensions:"),
                 html.Div(
                     preferred_non_stable_extension_radioitems,
                     style={

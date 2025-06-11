@@ -296,6 +296,22 @@ right_column = dbc.Col(
                 ),
             ]
         ),
+        html.Div(
+            id="filename-display",
+            style={
+                "textAlign": "center",
+                "fontSize": "14px",
+                "color": "#666",
+                "fontStyle": "italic",
+                "padding": "5px 15px",
+                "marginTop": "18px",
+                "marginBottom": "0px",
+                "width": "100%",
+                "maxWidth": "700px",
+                "marginLeft": "auto",
+                "marginRight": "auto"
+            }
+        ),
     ],
     style={"width": "70%", "maxWidth": "70%"},
 )
