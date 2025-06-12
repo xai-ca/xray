@@ -8,12 +8,17 @@ from py_arg_visualisation.functions.graph_data_functions.get_color import get_co
 PATH_TO_ENCODINGS = pathlib.Path(__file__).parent / "encodings"
 
 
-def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any):
+def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any, layout_file=None):
     dot_string = "digraph {\n "
     dot_string += 'rankdir={}  \n \n node [fontname = "helvetica" , shape=circle, fixedsize=true, width=0.8, height=0.8] \n '.format(
         layout
     )
     arg_meta = {n["id"]: n for n in raw_json.get("arguments", [])}
+
+    # Get node positions if layout file is provided
+    node_positions = {}
+    if layout_file:
+        node_positions = extract_node_positions(layout_file)
 
     # Adding node information
     for arg in argumentation_framework.arguments:
@@ -25,6 +30,10 @@ def generate_plain_dot_string(argumentation_framework, layout=any, raw_json=any)
             'cursor="pointer"',  # Add cursor style only to individual nodes
             f'id="node-{name}"',  # Add unique ID for each node
         ]
+        # Add position information if available
+        if name in node_positions:
+            x, y = node_positions[name]
+            attrs.append(f'pos="{x},{y}!"')
         if meta.get("annotation"):
             # tooltip shows on hover in many viewers
             tip = meta["annotation"].replace('"', '\\"')
