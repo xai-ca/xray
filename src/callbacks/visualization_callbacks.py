@@ -805,9 +805,11 @@ def toggle_legend(n_clicks, dot_source, current_style, stored_state):
 @callback(
     Output("node-colors-legend", "children"),
     Input("explanation-graph", "dot_source"),
+    Input("prov-type-dropdown", "value"),
+    Input("abstract-evaluation-accordion", "active_item"),
     prevent_initial_call=False
 )
-def update_legend(dot_source):
+def update_legend(dot_source, prov_type, active_item):
     if not dot_source:
         return html.Div()
     
@@ -816,58 +818,65 @@ def update_legend(dot_source):
     nodes_with_fillcolor = 0
     
     for line in dot_source.split('\n'):
-        # Only look at node definitions (lines with fillcolor but no ->)
-        if '->' not in line:
+        if '->' not in line and '[' in line:
             if 'fillcolor=' in line:
                 nodes_with_fillcolor += 1
-            parts = line.split('fillcolor="')
-            for part in parts[1:]:
-                color = part.split('"')[0].lower()
-                if color.startswith('#'):
-                    used_colors.add(color)
-            # Count all node lines (with or without fillcolor)
-            # A node line typically starts with a node id and has [label=...]
-            if '[' in line and 'label=' in line:
+                if 'fillcolor="white"' in line:
+                    used_colors.add("#ffffff")
+                else:
+                    parts = line.split('fillcolor="')
+                    for part in parts[1:]:
+                        color = part.split('"')[0].lower()
+                        if color.startswith('#'):
+                            used_colors.add(color)
+            if 'label=' in line:
                 total_nodes += 1
     
     legend_items = []
     
-    color_labels = {
-        "#40cfff": "IN (skeptical)",
-        "#a6e9ff": "IN (credulous)",
-        "#ffb763": "OUT (skeptical)",
-        "#ffe6c9": "OUT (credulous)",
-        "#fefe62": "UNDEC"
-    }
+    if active_item == "Provenance" and prov_type == "PO":  # Potential Provenance
+        color_labels = {
+            "#ffffff": "Cannot reach target",
+            "#bebebe": "Can reach target"
+        }
+        legend_order = []
+        if "#ffffff" in used_colors:
+            legend_order.append("#ffffff")
+        if "#bebebe" in used_colors:
+            legend_order.append("#bebebe")
+        # Do NOT show 'Unlabeled' in this mode
+    else:
+        color_labels = {
+            "#40cfff": "IN (skeptical)",
+            "#a6e9ff": "IN (credulous)",
+            "#ffb763": "OUT (skeptical)",
+            "#ffe6c9": "OUT (credulous)",
+            "#fefe62": "UNDEC"
+        }
+        legend_order = [
+            "#40cfff",
+            "#a6e9ff",
+            "#ffb763",
+            "#ffe6c9",
+            "#fefe62",
+        ]
+        if nodes_with_fillcolor < total_nodes:
+            legend_items.append(
+                html.Div([
+                    html.Div(style={
+                        "width": "20px",
+                        "height": "20px",
+                        "backgroundColor": "#FFFFFF",
+                        "border": "1px solid #666",
+                        "borderRadius": "50%",
+                        "display": "inline-block",
+                        "marginRight": "8px",
+                        "verticalAlign": "middle"
+                    }),
+                    html.Span("Unlabeled", style={"verticalAlign": "middle"})
+                ], className="mb-2")
+            )
 
-    # Define the order of legend items
-    legend_order = [
-        "#40cfff",  # IN (skeptical)
-        "#a6e9ff",  # IN (credulous)
-        "#ffb763",  # OUT (skeptical)
-        "#ffe6c9",  # OUT (credulous)
-        "#fefe62",  # UNDEC
-    ]
-
-    # Add uncalculated first if needed
-    if nodes_with_fillcolor < total_nodes:
-        legend_items.append(
-            html.Div([
-                html.Div(style={
-                    "width": "20px",
-                    "height": "20px",
-                    "backgroundColor": "#FFFFFF",
-                    "border": "1px solid #666",
-                    "borderRadius": "50%",
-                    "display": "inline-block",
-                    "marginRight": "8px",
-                    "verticalAlign": "middle"
-                }),
-                html.Span("Unlabeled", style={"verticalAlign": "middle"})
-            ], className="mb-2")
-        )
-
-    # Add legend items in the specified order
     for color in legend_order:
         if color in used_colors and color in color_labels:
             legend_items.append(
