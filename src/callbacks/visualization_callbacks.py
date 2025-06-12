@@ -581,47 +581,26 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "CriticalAttacks":
-        # In CriticalAttacks tab, layout direction is disabled when frozen
-        # and local view is always disabled
-        if layout_freeze:
-            return (
-                disabled_style,  # direction label style
-                disabled_style,  # layout control style
-                enabled_style,  # layout freeze label style
-                False,  # layout freeze switch
-                disabled_style,  # view label style
-                True,  # global-local switch (always disabled in Critical Attacks)
-                enabled_style,  # download button
-            )
+        # In CriticalAttacks tab, both freeze layout and global-local switch are disabled
         return (
-            enabled_style,  # direction label style
-            enabled_style,  # layout control style
-            enabled_style,  # layout freeze label style
-            False,  # layout freeze switch
+            disabled_style,  # direction label style
+            disabled_style,  # layout control style
+            disabled_style,  # layout freeze label style
+            True,  # layout freeze switch (disabled)
             disabled_style,  # view label style
-            True,  # global-local switch (always disabled in Critical Attacks)
+            True,  # global-local switch (disabled)
             enabled_style,  # download button
         )
     
     elif active_item == "Provenance":
-        # In Provenance tab, layout direction is always disabled
-        if layout_freeze:
-            return (
-                disabled_style,  # direction label style
-                disabled_style,  # layout control style
-                enabled_style,  # layout freeze label style
-                False,  # layout freeze switch
-                disabled_style,  # view label style
-                True,  # global-local switch (disabled when frozen)
-                enabled_style,  # download button
-            )
+        # In Provenance tab, freeze layout is always disabled and grayed out, but global-local switch is enabled
         return (
             disabled_style,  # direction label style
             disabled_style,  # layout control style
-            enabled_style,  # layout freeze label style
-            False,  # layout freeze switch
+            disabled_style,  # layout freeze label style
+            True,  # layout freeze switch (disabled)
             enabled_style,  # view label style
-            False,  # global-local switch (enabled when not frozen)
+            False,  # global-local switch (enabled)
             enabled_style,  # download button
         )
     
@@ -675,18 +654,17 @@ def reset_switches(active_item, current_freeze_value):
     Reset switches based on tab:
     - ArgumentationFramework: both switches False
     - Evaluation: only local view False, freeze layout keeps current value
-    - Provenance: keep existing values
-    - CriticalAttacks: local view False, freeze layout keeps current value
+    - Provenance: freeze layout always False, local view keeps current value
+    - CriticalAttacks: freeze layout always False, local view False
     """
     if active_item == "ArgumentationFramework":
         return False, False
     elif active_item == "Evaluation":
         return current_freeze_value, False
     elif active_item == "Provenance":
-        return current_freeze_value, False
+        return False, None  # Only turn off freeze layout, keep local/global as is
     elif active_item == "CriticalAttacks":
-        return current_freeze_value, False
-    # Keep existing values in other tabs
+        return False, False
     raise PreventUpdate
 
 
