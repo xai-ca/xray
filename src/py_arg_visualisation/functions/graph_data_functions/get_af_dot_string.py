@@ -96,12 +96,7 @@ def generate_dot_string(
     gr_status_by_arg, number_by_argument = get_numbered_grounded_extension(
         argumentation_framework
     )
-    # processing the layout file
-    layout_file = (
-        pathlib.Path(__file__).parent.parent.parent.parent.parent
-        / "temp"
-        / "layout.txt"
-    )
+    # Get node positions if layout file is provided
     node_positions = extract_node_positions(layout_file) if layout_file else {}
     # print(node_positions)
 

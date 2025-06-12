@@ -41,7 +41,7 @@ def get_abstract_setting_specification_div():
                             ),
                             dbc.Col(
                                 dcc.Upload(
-                                    dbc.Button("Open File", className="w-100"),
+                                    dbc.Button("Open", className="w-100"),
                                     id="upload-af",
                                 ),
                                 width=3,
