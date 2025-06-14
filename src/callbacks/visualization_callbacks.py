@@ -885,10 +885,11 @@ def update_legend(dot_source, prov_type, active_item):
     Output("node-panel-state-store", "data"),
     Input("node-panel-toggle-button", "n_clicks"),
     Input("explanation-graph", "selected_node"),
+    Input("explanation-graph", "selected_edge"),
     State("node-panel-state-store", "data"),
     prevent_initial_call=True
 )
-def toggle_node_panel(n_clicks, selected_node, stored_state):
+def toggle_node_panel(n_clicks, selected_node, selected_edge, stored_state):
     """Toggle the visibility of the node details panel."""
     ctx = callback_context
     if not ctx.triggered:
@@ -899,8 +900,8 @@ def toggle_node_panel(n_clicks, selected_node, stored_state):
     # Initialize the display state from stored state
     is_visible = stored_state.get('is_visible', False) if stored_state else False
     
-    # If a node was selected, show the panel
-    if trigger_id == "explanation-graph" and selected_node:
+    # If a node or edge was selected, show the panel
+    if trigger_id == "explanation-graph" and (selected_node or selected_edge):
         is_visible = True
     # If the toggle button was clicked, toggle the visibility
     elif trigger_id == "node-panel-toggle-button":
@@ -960,13 +961,91 @@ def toggle_node_panel(n_clicks, selected_node, stored_state):
     Output("node-details-content", "children"),
     Output("selected-node-store", "data"),
     Input("explanation-graph", "selected_node"),
+    Input("explanation-graph", "selected_edge"),
     State("abstract-arguments", "value"),
     State("abstract-attacks", "value"),
     State("raw-json", "data"),
     prevent_initial_call=True
 )
-def update_node_details(selected_node, arguments, attacks, raw_json):
-    """Update the node details content when a node is selected."""
+def update_node_details(selected_node, selected_edge, arguments, attacks, raw_json):
+    """Update the node details content when a node or edge is selected."""
+    ctx = callback_context
+    if not ctx.triggered:
+        return None, None
+    
+    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    
+    # Handle edge selection
+    if trigger_id == "explanation-graph" and selected_edge:
+        # Parse the edge string (format: "from->to")
+        from_arg, to_arg = selected_edge.split("->")
+        
+        # Get edge metadata and argument names from raw_json
+        edge_meta = None
+        from_arg_name = None
+        to_arg_name = None
+        if raw_json and isinstance(raw_json, dict):
+            # Get edge metadata
+            for defeat in raw_json.get("defeats", []):
+                if defeat.get("from") == from_arg and defeat.get("to") == to_arg:
+                    edge_meta = defeat
+                    break
+            
+            # Get argument names
+            for arg in raw_json.get("arguments", []):
+                if arg.get("id") == from_arg:
+                    from_arg_name = arg.get("name")
+                elif arg.get("id") == to_arg:
+                    to_arg_name = arg.get("name")
+                if from_arg_name and to_arg_name:  # Stop searching if we found both names
+                    break
+        
+        # Create edge details content
+        content = []
+        
+        # Add edge relationship header (simple format)
+        content.append(html.H4(f"Attack: {from_arg} → {to_arg}", className="mb-2 text-primary"))
+        
+        # Add argument information
+        content.append(html.Div([
+            # Attacking argument
+            html.Div([
+                html.H6(f"Argument {from_arg}", className="mb-2 text-secondary"),
+                html.P(from_arg_name if from_arg_name else "No name available", 
+                      className="mb-3 p-2 bg-light rounded")
+            ], className="mb-3"),
+            # Attacked argument
+            html.Div([
+                html.H6(f"Argument {to_arg}", className="mb-2 text-secondary"),
+                html.P(to_arg_name if to_arg_name else "No name available", 
+                      className="mb-3 p-2 bg-light rounded")
+            ], className="mb-3")
+        ]))
+        
+        # Add annotation if available
+        if edge_meta and edge_meta.get("annotation"):
+            content.append(html.Div([
+                html.H6("Annotation", className="mb-2 text-secondary"),
+                html.P(edge_meta["annotation"], className="mb-3 p-2 bg-light rounded")
+            ], className="mb-3"))
+        else:
+            # If no annotation, show a message
+            content.append(html.Div([
+                html.I("No annotation available for this attack", className="text-muted")
+            ], className="mb-3"))
+        
+        # Store selected edge data
+        edge_data = {
+            "from": from_arg,
+            "to": to_arg,
+            "from_name": from_arg_name,
+            "to_name": to_arg_name,
+            "metadata": edge_meta
+        }
+        
+        return content, edge_data
+    
+    # Handle node selection
     if not selected_node:
         return None, None
     
@@ -1039,7 +1118,7 @@ def update_node_details(selected_node, arguments, attacks, raw_json):
                 )
             ], className="mb-3"))
     
-    # Store selected node data (keeping minimal data for other callbacks that might need it)
+    # Store selected node data
     node_data = {
         "id": selected_node,
         "metadata": node_meta
