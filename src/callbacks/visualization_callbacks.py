@@ -948,9 +948,9 @@ def update_legend(dot_source, prov_type, active_item, layout_freeze):
     legend_items = []
     
     # Add a title to the legend
-    legend_items.append(
-        html.H6("Node Colors", className="mb-3 text-primary", style={"fontWeight": "bold"})
-    )
+    # legend_items.append(
+    #     html.H6("Node Colors", className="mb-3 text-primary", style={"fontWeight": "bold"})
+    # )
     
     # Define all possible color labels
     all_color_labels = {
