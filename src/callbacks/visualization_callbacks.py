@@ -534,7 +534,7 @@ def create_visualization(
     Output("layout-freeze-switch", "disabled"),
     # Global view controls
     Output("global-view-label", "style"),
-    Output("global-local-switch", "disabled"),
+    Output("global-local-switch", "style"),
     # Download button
     Output("21-dot-download-button", "style"),
     Input("layout-freeze-switch", "value"),
@@ -552,10 +552,13 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
     """
     disabled_style = {"pointer-events": "none", "opacity": "0.5"}
     enabled_style = {}
+    hidden_style = {"display": "none"}  # Style for hiding elements
+    disabled_switch_style = {"pointer-events": "none", "opacity": "0.5", "display": "flex"}  # Style for disabled but visible switch
+    enabled_switch_style = {"display": "flex"}  # Style for enabled switch
 
     # If no graph data, disable all controls
     if not (arguments and attacks):
-        return (disabled_style,) * 6 + (disabled_style,)
+        return (disabled_style,) * 5 + (hidden_style,) + (disabled_style,)
 
     # Handle different tabs
     if active_item == "ArgumentationFramework":
@@ -566,8 +569,8 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
                 disabled_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch
-                disabled_style,  # view label style
-                True,  # global-local switch
+                hidden_style,  # view label style (hidden)
+                hidden_style,  # global-local switch (hidden)
                 enabled_style,  # download button
             )
         return (
@@ -575,32 +578,52 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             enabled_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch
-            disabled_style,  # view label style
-            True,  # global-local switch
+            hidden_style,  # view label style (hidden)
+            hidden_style,  # global-local switch (hidden)
             enabled_style,  # download button
         )
     
     elif active_item == "CriticalAttacks":
-        # In CriticalAttacks tab, both freeze layout and global-local switch are disabled
+        # In CriticalAttacks tab, enable freeze layout but disable layout direction
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch (enabled)
+                hidden_style,  # view label style (hidden)
+                hidden_style,  # global-local switch (hidden)
+                enabled_style,  # download button
+            )
         return (
             disabled_style,  # direction label style
             disabled_style,  # layout control style
-            disabled_style,  # layout freeze label style
-            True,  # layout freeze switch (disabled)
-            disabled_style,  # view label style
-            True,  # global-local switch (disabled)
+            enabled_style,  # layout freeze label style
+            False,  # layout freeze switch (enabled)
+            hidden_style,  # view label style (hidden)
+            hidden_style,  # global-local switch (hidden)
             enabled_style,  # download button
         )
     
     elif active_item == "Provenance":
-        # In Provenance tab, freeze layout is always disabled and grayed out, but global-local switch is enabled
+        # In Provenance tab, enable both freeze layout and global-local switch
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch (enabled)
+                enabled_style,  # view label style (visible)
+                disabled_switch_style,  # global-local switch (visible but disabled)
+                enabled_style,  # download button
+            )
         return (
             disabled_style,  # direction label style
             disabled_style,  # layout control style
-            disabled_style,  # layout freeze label style
-            True,  # layout freeze switch (disabled)
-            enabled_style,  # view label style
-            False,  # global-local switch (enabled)
+            enabled_style,  # layout freeze label style
+            False,  # layout freeze switch (enabled)
+            enabled_style,  # view label style (visible)
+            enabled_switch_style,  # global-local switch (visible and enabled)
             enabled_style,  # download button
         )
     
@@ -612,8 +635,8 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
                 disabled_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch
-                disabled_style,  # view label style
-                True,  # global-local switch
+                hidden_style,  # view label style (hidden)
+                hidden_style,  # global-local switch (hidden)
                 enabled_style,  # download button
             )
         
@@ -624,8 +647,8 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
                 enabled_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch
-                disabled_style,  # view label style
-                True,  # global-local switch
+                hidden_style,  # view label style (hidden)
+                hidden_style,  # global-local switch (hidden)
                 enabled_style,  # download button
             )
         
@@ -634,13 +657,13 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             enabled_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch
-            disabled_style,  # view label style
-            True,  # global-local switch
+            hidden_style,  # view label style (hidden)
+            hidden_style,  # global-local switch (hidden)
             enabled_style,  # download button
         )
 
-    # Default case - all controls enabled
-    return (enabled_style,) * 6 + (enabled_style,)
+    # Default case - all controls enabled except global/local view
+    return (enabled_style,) * 4 + (hidden_style, hidden_style, enabled_style)
 
 
 @callback(
@@ -654,17 +677,17 @@ def reset_switches(active_item, current_freeze_value):
     Reset switches based on tab:
     - ArgumentationFramework: both switches False
     - Evaluation: only local view False, freeze layout keeps current value
-    - Provenance: freeze layout always False, local view keeps current value
-    - CriticalAttacks: freeze layout always False, local view False
+    - Provenance: freeze layout keeps current value, local view keeps current value
+    - CriticalAttacks: freeze layout keeps current value, local view False
     """
     if active_item == "ArgumentationFramework":
         return False, False
     elif active_item == "Evaluation":
         return current_freeze_value, False
     elif active_item == "Provenance":
-        return False, None  # Only turn off freeze layout, keep local/global as is
+        return current_freeze_value, None  # Keep both freeze layout and local/global as is
     elif active_item == "CriticalAttacks":
-        return False, False
+        return current_freeze_value, False  # Keep freeze layout, reset local view
     raise PreventUpdate
 
 
