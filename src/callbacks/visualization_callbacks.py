@@ -257,18 +257,52 @@ def create_visualization(
     elif active_item == "CriticalAttacks":
         if triggered_id == "layout-freeze-switch":
             if layout_freeze:
-                # When freezing, generate new dot source with current state
-                # First generate with current layout to get the proper layout type
-                temp_dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    False,  # Don't use layout file yet
-                    raw_json=raw_json,
-                )
+                # When freezing, first handle any suspended attacks
+                if selected_fix and apply_fix_switch:
+                    # Convert selected_fix from list of lists to the format "(A,B)"
+                    selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
+                    # Remove the selected critical edges from attacks
+                    fixed_attacks = []
+                    i = 0
+                    while i < len(attacks):
+                        if i + 4 < len(attacks):
+                            attack_str = ''.join(attacks[i:i+5])
+                            if attack_str not in selected_fix_strings:
+                                fixed_attacks.extend([c for c in attack_str])
+                                if i + 5 < len(attacks) and attacks[i + 5] == '\n':
+                                    fixed_attacks.append('\n')
+                            i += 6
+                        else:
+                            fixed_attacks.extend(attacks[i:])
+                            break
+                    
+                    fixed_attacks_str = ''.join(fixed_attacks)
+                    fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
+                    
+                    # Generate dot source with suspended attacks
+                    temp_dot_source = generate_dot_string(
+                        fixed_arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        False,  # Don't use layout file yet
+                        raw_json=raw_json,
+                    )
+                else:
+                    # Generate dot source without suspended attacks
+                    temp_dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        False,  # Don't use layout file yet
+                        raw_json=raw_json,
+                    )
+                
                 # Save the current layout
                 os.makedirs("temp", exist_ok=True)
                 with open("temp/layout.dot", "w") as dot_file:
@@ -278,87 +312,9 @@ def create_visualization(
                     ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
                     check=True,
                 )
-                # Now generate final dot source with saved positions but preserving layout type
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,  # Keep the original layout type
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    layout_file="temp/layout.txt",
-                    raw_json=raw_json,
-                )
-            else:
-                # When unfreezing, generate new layout without saving
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    raw_json=raw_json,
-                )
-        elif layout_freeze:
-            # If layout is frozen, regenerate dot source with proper coloring while maintaining positions
-            dot_source = generate_dot_string(
-                arg_framework,
-                selected_arguments,
-                True,
-                dot_layout,
-                dot_rank,
-                special_handling,
-                layout_freeze,
-                layout_file="temp/layout.txt",
-                raw_json=raw_json,
-            )
-        else:
-            # Only generate new layout when not frozen
-            dot_source = generate_dot_string(
-                arg_framework,
-                selected_arguments,
-                True,
-                dot_layout,
-                dot_rank,
-                special_handling,
-                layout_freeze,
-                raw_json=raw_json,
-            )
-
-        # Handle critical attack highlighting and fixes
-        if selected_fix:
-            if apply_fix_switch:  # Switch is turned ON - suspend critical attacks
-                # Convert selected_fix from list of lists to the format "(A,B)"
-                selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
-                # Remove the selected critical edges from attacks by reconstructing each attack string
-                fixed_attacks = []
-                i = 0
-                while i < len(attacks):
-                    # Each attack is in format ['(', 'A', ',', 'B', ')', '\n', ...]
-                    if i + 4 < len(attacks):  # Make sure we have enough characters
-                        attack_str = ''.join(attacks[i:i+5])  # Join '(', 'A', ',', 'B', ')'
-                        if attack_str not in selected_fix_strings:
-                            # Keep the original character-by-character format
-                            fixed_attacks.extend([c for c in attack_str])
-                            if i + 5 < len(attacks) and attacks[i + 5] == '\n':
-                                fixed_attacks.append('\n')
-                        i += 6  # Skip to next attack (including '\n')
-                    else:
-                        fixed_attacks.extend(attacks[i:])
-                        break
                 
-                # Convert fixed_attacks list to string before passing to read_argumentation_framework
-                fixed_attacks_str = ''.join(fixed_attacks)
-                fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
-                
-                # Recalculate the graph with suspended attacks while maintaining layout
-                if layout_freeze:
-                    # First recalculate without layout file
-                    dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
-                    # Then apply the saved layout
+                # Generate final dot source with saved positions
+                if selected_fix and apply_fix_switch:
                     dot_source = generate_dot_string(
                         fixed_arg_framework,
                         selected_arguments,
@@ -371,9 +327,152 @@ def create_visualization(
                         raw_json=raw_json,
                     )
                 else:
-                    dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
-            else:  # Switch is OFF - just highlight critical attacks
-                dot_source = highlight_critical_edges(dot_source, selected_fix)
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        layout_file="temp/layout.txt",
+                        raw_json=raw_json,
+                    )
+            else:
+                # When unfreezing, handle suspended attacks first
+                if selected_fix and apply_fix_switch:
+                    # Convert selected_fix from list of lists to the format "(A,B)"
+                    selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
+                    # Remove the selected critical edges from attacks
+                    fixed_attacks = []
+                    i = 0
+                    while i < len(attacks):
+                        if i + 4 < len(attacks):
+                            attack_str = ''.join(attacks[i:i+5])
+                            if attack_str not in selected_fix_strings:
+                                fixed_attacks.extend([c for c in attack_str])
+                                if i + 5 < len(attacks) and attacks[i + 5] == '\n':
+                                    fixed_attacks.append('\n')
+                            i += 6
+                        else:
+                            fixed_attacks.extend(attacks[i:])
+                            break
+                    
+                    fixed_attacks_str = ''.join(fixed_attacks)
+                    fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
+                    dot_source = generate_dot_string(
+                        fixed_arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        raw_json=raw_json,
+                    )
+                else:
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        raw_json=raw_json,
+                    )
+        elif layout_freeze:
+            # If layout is frozen, handle suspended attacks first
+            if selected_fix and apply_fix_switch:
+                # Convert selected_fix from list of lists to the format "(A,B)"
+                selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
+                # Remove the selected critical edges from attacks
+                fixed_attacks = []
+                i = 0
+                while i < len(attacks):
+                    if i + 4 < len(attacks):
+                        attack_str = ''.join(attacks[i:i+5])
+                        if attack_str not in selected_fix_strings:
+                            fixed_attacks.extend([c for c in attack_str])
+                            if i + 5 < len(attacks) and attacks[i + 5] == '\n':
+                                fixed_attacks.append('\n')
+                        i += 6
+                    else:
+                        fixed_attacks.extend(attacks[i:])
+                        break
+                
+                fixed_attacks_str = ''.join(fixed_attacks)
+                fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
+                dot_source = generate_dot_string(
+                    fixed_arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    layout_file="temp/layout.txt",
+                    raw_json=raw_json,
+                )
+            else:
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    layout_file="temp/layout.txt",
+                    raw_json=raw_json,
+                )
+        else:
+            # Only generate new layout when not frozen
+            if selected_fix and apply_fix_switch:
+                # Convert selected_fix from list of lists to the format "(A,B)"
+                selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
+                # Remove the selected critical edges from attacks
+                fixed_attacks = []
+                i = 0
+                while i < len(attacks):
+                    if i + 4 < len(attacks):
+                        attack_str = ''.join(attacks[i:i+5])
+                        if attack_str not in selected_fix_strings:
+                            fixed_attacks.extend([c for c in attack_str])
+                            if i + 5 < len(attacks) and attacks[i + 5] == '\n':
+                                fixed_attacks.append('\n')
+                        i += 6
+                    else:
+                        fixed_attacks.extend(attacks[i:])
+                        break
+                
+                fixed_attacks_str = ''.join(fixed_attacks)
+                fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
+                dot_source = generate_dot_string(
+                    fixed_arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    raw_json=raw_json,
+                )
+            else:
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    raw_json=raw_json,
+                )
+
+        # Handle critical attack highlighting (only if not suspended)
+        if selected_fix and not apply_fix_switch:
+            dot_source = highlight_critical_edges(dot_source, selected_fix)
     # ========================== Semantics Session ==========================
     else:
         if selected_arguments == {}:
@@ -588,22 +687,15 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
     if not (arguments and attacks):
         return (disabled_style,) * 4 + (hidden_style,)*2 + (disabled_style,)
 
+    # Layout direction is enabled when layout is not frozen, regardless of tab
+    layout_direction_style = enabled_style if not layout_freeze else disabled_style
+
     # Handle different tabs
     if active_item == "ArgumentationFramework":
-        # In ArgumentationFramework tab, layout direction is disabled when frozen
-        if layout_freeze:
-            return (
-                disabled_style,  # direction label style
-                disabled_style,  # layout control style
-                enabled_style,  # layout freeze label style
-                False,  # layout freeze switch
-                hidden_style,  # view label style (hidden)
-                hidden_style,  # global-local switch (hidden)
-                enabled_style,  # download button
-            )
+        # In ArgumentationFramework tab, layout direction is enabled when not frozen
         return (
-            enabled_style,  # direction label style
-            enabled_style,  # layout control style
+            layout_direction_style,  # direction label style
+            layout_direction_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch
             hidden_style,  # view label style (hidden)
@@ -612,20 +704,10 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "CriticalAttacks":
-        # In CriticalAttacks tab, enable freeze layout but disable layout direction
-        if layout_freeze:
-            return (
-                disabled_style,  # direction label style
-                disabled_style,  # layout control style
-                enabled_style,  # layout freeze label style
-                False,  # layout freeze switch (enabled)
-                hidden_style,  # view label style (hidden)
-                hidden_style,  # global-local switch (hidden)
-                enabled_style,  # download button
-            )
+        # In CriticalAttacks tab, enable layout direction when not frozen
         return (
-            disabled_style,  # direction label style
-            disabled_style,  # layout control style
+            layout_direction_style,  # direction label style
+            layout_direction_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch (enabled)
             hidden_style,  # view label style (hidden)
@@ -634,11 +716,11 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "Provenance":
-        # In Provenance tab, enable both freeze layout and global-local switch
+        # In Provenance tab, enable layout direction when not frozen
         if layout_freeze:
             return (
-                disabled_style,  # direction label style
-                disabled_style,  # layout control style
+                layout_direction_style,  # direction label style
+                layout_direction_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch (enabled)
                 disabled_label_style,  # view label style (visible but gray)
@@ -646,8 +728,8 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
                 enabled_style,  # download button
             )
         return (
-            disabled_style,  # direction label style
-            disabled_style,  # layout control style
+            layout_direction_style,  # direction label style
+            layout_direction_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch (enabled)
             enabled_style,  # view label style (visible and enabled)
@@ -656,11 +738,11 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
     
     elif active_item == "Evaluation":
-        # In Evaluation tab, layout direction is disabled when frozen, regardless of selected_extensions
+        # In Evaluation tab, enable layout direction when not frozen
         if layout_freeze:
             return (
-                disabled_style,  # direction label style
-                disabled_style,  # layout control style
+                layout_direction_style,  # direction label style
+                layout_direction_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch
                 hidden_style,  # view label style (hidden)
@@ -668,21 +750,10 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
                 enabled_style,  # download button
             )
         
-        # When not frozen, enable layout direction if there are selected extensions
-        if not selected_extensions:
-            return (
-                enabled_style,  # direction label style
-                enabled_style,  # layout control style
-                enabled_style,  # layout freeze label style
-                False,  # layout freeze switch
-                hidden_style,  # view label style (hidden)
-                hidden_style,  # global-local switch (hidden)
-                enabled_style,  # download button
-            )
-        
+        # When not frozen, enable layout direction
         return (
-            enabled_style,  # direction label style
-            enabled_style,  # layout control style
+            layout_direction_style,  # direction label style
+            layout_direction_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch
             hidden_style,  # view label style (hidden)
@@ -691,7 +762,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
         )
 
     # Default case - all controls enabled except global/local view
-    return (enabled_style,) * 4 + (hidden_style, hidden_style, enabled_style)
+    return (layout_direction_style,) * 2 + (enabled_style,) * 2 + (hidden_style, hidden_style, enabled_style)
 
 
 @callback(
@@ -758,12 +829,13 @@ def update_provenance_dropdown_options(selected_arguments):
      Output("legend-toggle-button", "style"),
      Output("legend-state-store", "data")],  # Add output for store
     [Input("legend-toggle-button", "n_clicks"),
-     Input("explanation-graph", "dot_source")],
+     Input("explanation-graph", "dot_source"),
+     Input("abstract-evaluation-accordion", "active_item")],  # Add active_item as input
     [State("legend-card", "style"),
      State("legend-state-store", "data")],  # Add state for store
     prevent_initial_call=False
 )
-def toggle_legend(n_clicks, dot_source, current_style, stored_state):
+def toggle_legend(n_clicks, dot_source, active_item, current_style, stored_state):
     # Get the trigger that caused the callback
     trigger = ctx.triggered_id if ctx.triggered_id else None
     
@@ -806,13 +878,14 @@ def toggle_legend(n_clicks, dot_source, current_style, stored_state):
         "bottom": "20px",
         "left": "20px",
         "zIndex": 1999,
-        "backgroundColor": "rgba(255, 255, 255, 0.9)",
-        "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+        "backgroundColor": "rgba(255, 255, 255, 0.95)",  # More opaque background
+        "boxShadow": "0 2px 4px rgba(0,0,0,0.2)",  # Stronger shadow
         "borderRadius": "8px",
         "padding": "15px",
         "minWidth": "300px",
         "maxWidth": "350px",
-        "display": new_display
+        "display": new_display,
+        "border": "1px solid #dee2e6"  # Add border for better visibility
     }
     
     # Update the button style
@@ -827,7 +900,7 @@ def toggle_legend(n_clicks, dot_source, current_style, stored_state):
         "width": "30px",
         "height": "30px",
         "cursor": "pointer",
-        "display": "flex",  # Show the button when there's a graph
+        "display": "flex",  # Always show the button when there's a graph
         "alignItems": "center",
         "justifyContent": "center",
         "fontSize": "16px",
@@ -846,9 +919,10 @@ def toggle_legend(n_clicks, dot_source, current_style, stored_state):
     Input("explanation-graph", "dot_source"),
     Input("prov-type-dropdown", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
+    Input("layout-freeze-switch", "value"),
     prevent_initial_call=False
 )
-def update_legend(dot_source, prov_type, active_item):
+def update_legend(dot_source, prov_type, active_item, layout_freeze):
     if not dot_source:
         return html.Div()
     
@@ -873,25 +947,42 @@ def update_legend(dot_source, prov_type, active_item):
     
     legend_items = []
     
-    if active_item == "Provenance" and prov_type == "PO":  # Potential Provenance
-        color_labels = {
-            "#ffffff": "Cannot reach target",
-            "#bebebe": "Can reach target"
-        }
+    # Add a title to the legend
+    legend_items.append(
+        html.H6("Node Colors", className="mb-3 text-primary", style={"fontWeight": "bold"})
+    )
+    
+    # Define all possible color labels
+    all_color_labels = {
+        # Evaluation colors
+        "#40cfff": "IN (skeptical)",
+        "#a6e9ff": "IN (credulous)",
+        "#ffb763": "OUT (skeptical)",
+        "#ffe6c9": "OUT (credulous)",
+        "#fefe62": "UNDEC",
+        # Provenance colors
+        "#ffffff": "Cannot reach target",
+        "#bebebe": "Can reach target"
+    }
+    
+    # For actual provenance (AC) or primary provenance (PR), show all colors present in the dot source
+    if active_item == "Provenance" and prov_type in ["AC", "PR"]:
+        # Create a list of colors in a specific order, prioritizing evaluation colors
+        ordered_colors = [
+            "#40cfff", "#a6e9ff", "#ffb763", "#ffe6c9", "#fefe62",  # Evaluation colors
+            "#ffffff", "#bebebe"  # Provenance colors
+        ]
+        # Filter to only include colors that are actually present
+        legend_order = [color for color in ordered_colors if color in used_colors]
+    # For potential provenance (PO), show only provenance colors if present
+    elif "#ffffff" in used_colors or "#bebebe" in used_colors:
         legend_order = []
         if "#ffffff" in used_colors:
             legend_order.append("#ffffff")
         if "#bebebe" in used_colors:
             legend_order.append("#bebebe")
-        # Do NOT show 'Unlabeled' in this mode
+    # For all other cases, show evaluation colors
     else:
-        color_labels = {
-            "#40cfff": "IN (skeptical)",
-            "#a6e9ff": "IN (credulous)",
-            "#ffb763": "OUT (skeptical)",
-            "#ffe6c9": "OUT (credulous)",
-            "#fefe62": "UNDEC"
-        }
         legend_order = [
             "#40cfff",
             "#a6e9ff",
@@ -916,8 +1007,9 @@ def update_legend(dot_source, prov_type, active_item):
                 ], className="mb-2")
             )
 
+    # Add colors that are actually present in the dot source
     for color in legend_order:
-        if color in used_colors and color in color_labels:
+        if color in used_colors and color in all_color_labels:
             legend_items.append(
                 html.Div([
                     html.Div(style={
@@ -930,12 +1022,21 @@ def update_legend(dot_source, prov_type, active_item):
                         "marginRight": "8px",
                         "verticalAlign": "middle"
                     }),
-                    html.Span(color_labels[color], style={"verticalAlign": "middle"})
+                    html.Span(all_color_labels[color], style={"verticalAlign": "middle"})
                 ], className="mb-2")
             )
 
+    # Add a note about layout freeze if active
+    if layout_freeze:
+        legend_items.append(
+            html.Div([
+                html.I(className="fas fa-lock me-2"),
+                html.Span("Layout is frozen", style={"color": "#666", "fontStyle": "italic"})
+            ], className="mt-3 pt-2 border-top")
+        )
+
     return html.Div([
-        html.Div(legend_items)
+        html.Div(legend_items, style={"fontSize": "14px"})
     ])
 
 
