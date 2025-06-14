@@ -39,6 +39,7 @@ import dash_bootstrap_components as dbc
     Input("global-local-switch", "value"),
     Input("available-fixes-store", "data"),
     Input("apply-fix-switch", "value"),
+    Input("examples-dropdown", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     State("raw-json", "data"),
@@ -60,10 +61,10 @@ def create_visualization(
     local_view,
     selected_fix,
     apply_fix_switch,
+    example_value,
     selected_arguments_changed,
     current_dot_source,
     raw_json,
-
 ):
     if not arguments or not attacks:
         raise PreventUpdate
@@ -160,11 +161,11 @@ def create_visualization(
         selected_arguments_changed = False
     # ========================== Provenance Session ==========================
     elif active_item == "Provenance":
-        # Always use generate_dot_string but adjust dot_rank based on selection
-        if selected_arguments:
+        if triggered_id == "layout-freeze-switch":
             if layout_freeze:
-                # If layout is frozen, use the existing dot source with saved positions
+                # When freezing, use current dot source or generate a new one if none exists
                 if current_dot_source is None:
+                    # Generate new dot source if none exists
                     dot_source = generate_dot_string(
                         arg_framework,
                         selected_arguments,
@@ -172,25 +173,36 @@ def create_visualization(
                         dot_layout,
                         dot_rank,
                         special_handling,
-                        layout_freeze,
-                        layout_file="temp/layout.txt",
+                        False,  # Don't use layout file yet
                         raw_json=raw_json,
                     )
                 else:
-                    # When using current dot source, we need to regenerate it with the current selection
-                    # to ensure proper highlighting
-                    dot_source = generate_dot_string(
-                        arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        layout_freeze,
-                        layout_file="temp/layout.txt",
-                        raw_json=raw_json,
-                    )
+                    # Use current dot source to preserve the current state
+                    dot_source = current_dot_source
+                
+                # Save the current layout
+                os.makedirs("temp", exist_ok=True)
+                with open("temp/layout.dot", "w") as dot_file:
+                    dot_file.write(dot_source)
+                # Generate position information
+                subprocess.run(
+                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                    check=True,
+                )
+                # Update dot source with position information while preserving the current state
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    layout_file="temp/layout.txt",
+                    raw_json=raw_json,
+                )
             else:
+                # When unfreezing, generate new layout without saving
                 dot_source = generate_dot_string(
                     arg_framework,
                     selected_arguments,
@@ -201,13 +213,32 @@ def create_visualization(
                     layout_freeze,
                     raw_json=raw_json,
                 )
+        elif layout_freeze:
+            # If layout is frozen, use the existing dot source with saved positions
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,
+                True,
+                dot_layout,
+                dot_rank,
+                special_handling,
+                layout_freeze,
+                layout_file="temp/layout.txt",
+                raw_json=raw_json,
+            )
         else:
-            if layout_freeze:
-                # If layout is frozen, use the existing dot source with saved positions
-                if current_dot_source is None:
-                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json, layout_file="temp/layout.txt")
-                else:
-                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json, layout_file="temp/layout.txt")
+            # Always use generate_dot_string but adjust dot_rank based on selection
+            if selected_arguments:
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    raw_json=raw_json,
+                )
             else:
                 dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
 
@@ -544,6 +575,14 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
     hidden_style = {"display": "none"}  # Style for hiding elements
     disabled_switch_style = {"pointer-events": "none", "opacity": "0.5", "display": "flex"}  # Style for disabled but visible switch
     enabled_switch_style = {"display": "flex"}  # Style for enabled switch
+    disabled_label_style = {
+        "opacity": "0.5",
+        "color": "#666666",  # Explicitly set a gray color
+        "pointer-events": "none",
+        "line-height": "40px",  # Match the original style
+        "font-size": "16px",    # Match the original style
+        "font-weight": "bold"   # Match the original style
+    }  # Style for disabled label text
 
     # If no graph data, disable all controls
     if not (arguments and attacks):
@@ -602,7 +641,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
                 disabled_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch (enabled)
-                enabled_style,  # view label style (visible)
+                disabled_label_style,  # view label style (visible but gray)
                 disabled_switch_style,  # global-local switch (visible but disabled)
                 enabled_style,  # download button
             )
@@ -611,7 +650,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
             disabled_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch (enabled)
-            enabled_style,  # view label style (visible)
+            enabled_style,  # view label style (visible and enabled)
             enabled_switch_style,  # global-local switch (visible and enabled)
             enabled_style,  # download button
         )
@@ -659,16 +698,25 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
     Output("layout-freeze-switch", "value"),
     Output("global-local-switch", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
+    Input("21-af-filename", "value"),
+    Input("examples-dropdown", "value"),
     State("layout-freeze-switch", "value"),
 )
-def reset_switches(active_item, current_freeze_value):
+def reset_switches(active_item, filename, example_value, current_freeze_value):
     """
-    Reset switches based on tab:
-    - ArgumentationFramework: both switches False
-    - Evaluation: only local view False, freeze layout keeps current value
-    - Provenance: freeze layout keeps current value, local view keeps current value
-    - CriticalAttacks: freeze layout keeps current value, local view False
+    Reset switches based on:
+    1. Active tab (ArgumentationFramework, Evaluation, Provenance, or CriticalAttacks)
+    2. File selection (turns off freeze layout when switching files)
+    3. Example selection (turns off freeze layout when switching examples)
     """
+    # Get the trigger that caused the callback
+    trigger = ctx.triggered_id if ctx.triggered_id else None
+    
+    # If triggered by file or example selection, turn off freeze layout
+    if trigger in ["21-af-filename", "examples-dropdown"]:
+        return False, False
+    
+    # Handle tab changes
     if active_item == "ArgumentationFramework":
         return False, False
     elif active_item == "Evaluation":
@@ -677,6 +725,7 @@ def reset_switches(active_item, current_freeze_value):
         return current_freeze_value, None  # Keep both freeze layout and local/global as is
     elif active_item == "CriticalAttacks":
         return current_freeze_value, False  # Keep freeze layout, reset local view
+    
     raise PreventUpdate
 
 
