@@ -102,14 +102,50 @@
     }
   ],
   "defeats": [
-    { "from": "B", "to": "A", "annotation": "Arguing Post did not possess the fox" },
-    { "from": "E", "to": "B", "annotation": "Promising efforts to catch the fox rather than in possession can already help establish the fox's ownership" },
-    { "from": "E", "to": "D", "annotation": "Promising efforts to catch the fox rather than confining it can already help establish the fox's ownership" },
-    { "from": "I", "to": "E", "annotation": "According to Justinian, pursuit is not enough to establish the right to the animal" },
-    { "from": "M", "to": "E", "annotation": "pursuit is not enough to establish the right to the animal" },
-    { "from": "M", "to": "O", "annotation": "Judge Tompkins points out that pursuit with a reasonable prospect of capture is not enough to establish the right to the animal" },
-    { "from": "N", "to": "I", "annotation": "Quoting from Justinian is not appropriate, as it is too old an authority" },
-    { "from": "O", "to": "I", "annotation": "Judge Livingston cited Barbeyrac, claiming that a reasonable prospect of capture is enough" },
-    { "from": "O", "to": "M", "annotation": "udge Livingston cited Barbeyrac, claiming that a reasonable prospect of capture is enough" }
+    {
+      "from": "B",
+      "to": "A",
+      "annotation": "Arguing Post did not possess the fox"
+    },
+    {
+      "from": "E",
+      "to": "B",
+      "annotation": "Promising efforts to catch the fox rather than in possession can already help establish the fox's ownership"
+    },
+    {
+      "from": "E",
+      "to": "D",
+      "annotation": "Promising efforts to catch the fox rather than confining it can already help establish the fox's ownership"
+    },
+    {
+      "from": "I",
+      "to": "E",
+      "annotation": "According to Justinian, pursuit is not enough to establish the right to the animal"
+    },
+    {
+      "from": "M",
+      "to": "E",
+      "annotation": "pursuit is not enough to establish the right to the animal"
+    },
+    {
+      "from": "M",
+      "to": "O",
+      "annotation": "Judge Tompkins points out that pursuit with a reasonable prospect of capture is not enough to establish the right to the animal"
+    },
+    {
+      "from": "N",
+      "to": "I",
+      "annotation": "Quoting from Justinian is not appropriate, as it is too old an authority"
+    },
+    {
+      "from": "O",
+      "to": "I",
+      "annotation": "Judge Livingston cited Barbeyrac, claiming that a reasonable prospect of capture is enough"
+    },
+    {
+      "from": "O",
+      "to": "M",
+      "annotation": "Judge Livingston cited Barbeyrac, claiming that a reasonable prospect of capture is enough"
+    }
   ]
 }
