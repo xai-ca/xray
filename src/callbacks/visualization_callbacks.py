@@ -226,35 +226,33 @@ def create_visualization(
     elif active_item == "CriticalAttacks":
         if triggered_id == "layout-freeze-switch":
             if layout_freeze:
-                # When freezing, use current dot source or generate a new one if none exists
-                if current_dot_source is None:
-                    dot_source = generate_dot_string(
-                        arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        layout_freeze,
-                        raw_json=raw_json,
-                    )
-                else:
-                    dot_source = current_dot_source
+                # When freezing, generate new dot source with current state
+                # First generate with current layout to get the proper layout type
+                temp_dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    False,  # Don't use layout file yet
+                    raw_json=raw_json,
+                )
                 # Save the current layout
                 os.makedirs("temp", exist_ok=True)
                 with open("temp/layout.dot", "w") as dot_file:
-                    dot_file.write(dot_source)
+                    dot_file.write(temp_dot_source)
                 # Generate position information
                 subprocess.run(
                     ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
                     check=True,
                 )
-                # Immediately update dot source with position information
+                # Now generate final dot source with saved positions but preserving layout type
                 dot_source = generate_dot_string(
                     arg_framework,
                     selected_arguments,
                     True,
-                    dot_layout,
+                    dot_layout,  # Keep the original layout type
                     dot_rank,
                     special_handling,
                     layout_freeze,
@@ -274,24 +272,18 @@ def create_visualization(
                     raw_json=raw_json,
                 )
         elif layout_freeze:
-            # If layout is frozen, ALWAYS use the saved layout from when freeze was turned on
-            # Only update the highlighting and fixes while maintaining the exact same positions
-            if current_dot_source is None:
-                # This should not happen in normal operation, but just in case
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    layout_file="temp/layout.txt",
-                    raw_json=raw_json,
-                )
-            else:
-                # Use the exact same dot source that was saved when freeze was turned on
-                dot_source = current_dot_source
+            # If layout is frozen, regenerate dot source with proper coloring while maintaining positions
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,
+                True,
+                dot_layout,
+                dot_rank,
+                special_handling,
+                layout_freeze,
+                layout_file="temp/layout.txt",
+                raw_json=raw_json,
+            )
         else:
             # Only generate new layout when not frozen
             dot_source = generate_dot_string(
@@ -304,23 +296,10 @@ def create_visualization(
                 layout_freeze,
                 raw_json=raw_json,
             )
-        
-        # Store the frozen layout for future use
-        if layout_freeze and triggered_id == "layout-freeze-switch":
-            temp_dot_source = dot_source
-        else:
-            temp_dot_source = current_dot_source if layout_freeze else dot_source
-        
-        # Add highlighting for selected fixes while preserving the frozen layout
+
+        # Handle critical attack highlighting and fixes
         if selected_fix:
-            if layout_freeze:
-                # When frozen, apply highlighting to the frozen layout
-                dot_source = highlight_critical_edges(temp_dot_source, selected_fix)
-            else:
-                # When not frozen, apply highlighting to the current layout
-                dot_source = highlight_critical_edges(dot_source, selected_fix)
-            
-            if apply_fix_switch:  # Switch is turned ON
+            if apply_fix_switch:  # Switch is turned ON - suspend critical attacks
                 # Convert selected_fix from list of lists to the format "(A,B)"
                 selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
                 # Remove the selected critical edges from attacks by reconstructing each attack string
@@ -343,17 +322,27 @@ def create_visualization(
                 # Convert fixed_attacks list to string before passing to read_argumentation_framework
                 fixed_attacks_str = ''.join(fixed_attacks)
                 fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
+                
+                # Recalculate the graph with suspended attacks while maintaining layout
                 if layout_freeze:
-                    # When layout is frozen, use the frozen layout to maintain positions
-                    dot_source = recalculate_fixed_args(fixed_arg_framework, temp_dot_source)
+                    # First recalculate without layout file
+                    dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
+                    # Then apply the saved layout
+                    dot_source = generate_dot_string(
+                        fixed_arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        layout_file="temp/layout.txt",
+                        raw_json=raw_json,
+                    )
                 else:
                     dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
-            else:  # Switch is OFF
-                if layout_freeze:
-                    # When layout is frozen, use the frozen layout
-                    dot_source = highlight_critical_edges(temp_dot_source, selected_fix)
-                else:
-                    dot_source = highlight_critical_edges(dot_source, selected_fix)
+            else:  # Switch is OFF - just highlight critical attacks
+                dot_source = highlight_critical_edges(dot_source, selected_fix)
     # ========================== Semantics Session ==========================
     else:
         if selected_arguments == {}:
@@ -558,7 +547,7 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
 
     # If no graph data, disable all controls
     if not (arguments and attacks):
-        return (disabled_style,) * 5 + (hidden_style,) + (disabled_style,)
+        return (disabled_style,) * 4 + (hidden_style,)*2 + (disabled_style,)
 
     # Handle different tabs
     if active_item == "ArgumentationFramework":
