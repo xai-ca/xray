@@ -672,98 +672,135 @@ def toggle_controls_state(layout_freeze, active_item, arguments, attacks, select
     disabled_style = {"pointer-events": "none", "opacity": "0.5"}
     enabled_style = {}
     hidden_style = {"display": "none"}  # Style for hiding elements
-    disabled_switch_style = {"pointer-events": "none", "opacity": "0.5", "display": "flex"}  # Style for disabled but visible switch
-    enabled_switch_style = {"display": "flex"}  # Style for enabled switch
-    disabled_label_style = {
-        "opacity": "0.5",
-        "color": "#666666",  # Explicitly set a gray color
-        "pointer-events": "none",
-        "line-height": "40px",  # Match the original style
-        "font-size": "16px",    # Match the original style
-        "font-weight": "bold"   # Match the original style
-    }  # Style for disabled label text
+    switch_base_style = {
+        "transform": "scale(1.5)",
+        "margin-top": "3px",
+    }  # Base style for switches
 
     # If no graph data, disable all controls
     if not (arguments and attacks):
-        return (disabled_style,) * 4 + (hidden_style,)*2 + (disabled_style,)
-
-    # Layout direction is enabled when layout is not frozen, regardless of tab
-    layout_direction_style = enabled_style if not layout_freeze else disabled_style
+        return (
+            disabled_style,  # direction label style
+            disabled_style,  # layout control style
+            disabled_style,  # layout freeze label style
+            True,  # layout freeze switch (disabled)
+            hidden_style,  # view label style (hidden)
+            hidden_style,  # global-local switch style (hidden)
+            disabled_style,  # download button
+        )
 
     # Handle different tabs
     if active_item == "ArgumentationFramework":
-        # In ArgumentationFramework tab, layout direction is enabled when not frozen
+        # In ArgumentationFramework tab, layout direction is disabled when frozen
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                hidden_style,  # view label style (hidden)
+                hidden_style,  # global-local switch style (hidden)
+                enabled_style,  # download button
+            )
         return (
-            layout_direction_style,  # direction label style
-            layout_direction_style,  # layout control style
+            enabled_style,  # direction label style
+            enabled_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch
             hidden_style,  # view label style (hidden)
-            hidden_style,  # global-local switch (hidden)
+            hidden_style,  # global-local switch style (hidden)
             enabled_style,  # download button
         )
     
     elif active_item == "CriticalAttacks":
-        # In CriticalAttacks tab, enable layout direction when not frozen
+        # In CriticalAttacks tab, layout direction is enabled only when not frozen
+        if layout_freeze:
+            return (
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch (disabled)
+                hidden_style,  # view label style (hidden)
+                hidden_style,  # global-local switch style (hidden)
+                enabled_style,  # download button
+            )
         return (
-            layout_direction_style,  # direction label style
-            layout_direction_style,  # layout control style
+            enabled_style,  # direction label style
+            enabled_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch (enabled)
             hidden_style,  # view label style (hidden)
-            hidden_style,  # global-local switch (hidden)
+            hidden_style,  # global-local switch style (hidden)
             enabled_style,  # download button
         )
     
     elif active_item == "Provenance":
-        # In Provenance tab, enable layout direction when not frozen
+        # In Provenance tab, layout direction is enabled only when not frozen
         if layout_freeze:
             return (
-                layout_direction_style,  # direction label style
-                layout_direction_style,  # layout control style
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch (enabled)
-                disabled_label_style,  # view label style (visible but gray)
-                disabled_switch_style,  # global-local switch (visible but disabled)
+                disabled_style,  # view label style (grayed out)
+                switch_base_style,  # global-local switch style (visible but disabled)
                 enabled_style,  # download button
             )
         return (
-            layout_direction_style,  # direction label style
-            layout_direction_style,  # layout control style
+            enabled_style,  # direction label style
+            enabled_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch (enabled)
-            enabled_style,  # view label style (visible and enabled)
-            enabled_switch_style,  # global-local switch (visible and enabled)
+            enabled_style,  # view label style (visible)
+            switch_base_style,  # global-local switch style (visible)
             enabled_style,  # download button
         )
     
     elif active_item == "Evaluation":
-        # In Evaluation tab, enable layout direction when not frozen
+        # In Evaluation tab, layout direction is disabled when frozen, regardless of selected_extensions
         if layout_freeze:
             return (
-                layout_direction_style,  # direction label style
-                layout_direction_style,  # layout control style
+                disabled_style,  # direction label style
+                disabled_style,  # layout control style
                 enabled_style,  # layout freeze label style
                 False,  # layout freeze switch
                 hidden_style,  # view label style (hidden)
-                hidden_style,  # global-local switch (hidden)
+                hidden_style,  # global-local switch style (hidden)
                 enabled_style,  # download button
             )
         
-        # When not frozen, enable layout direction
+        # When not frozen, enable layout direction if there are selected extensions
+        if not selected_extensions:
+            return (
+                enabled_style,  # direction label style
+                enabled_style,  # layout control style
+                enabled_style,  # layout freeze label style
+                False,  # layout freeze switch
+                hidden_style,  # view label style (hidden)
+                hidden_style,  # global-local switch style (hidden)
+                enabled_style,  # download button
+            )
+        
         return (
-            layout_direction_style,  # direction label style
-            layout_direction_style,  # layout control style
+            enabled_style,  # direction label style
+            enabled_style,  # layout control style
             enabled_style,  # layout freeze label style
             False,  # layout freeze switch
             hidden_style,  # view label style (hidden)
-            hidden_style,  # global-local switch (hidden)
+            hidden_style,  # global-local switch style (hidden)
             enabled_style,  # download button
         )
 
-    # Default case - all controls enabled except global/local view
-    return (layout_direction_style,) * 2 + (enabled_style,) * 2 + (hidden_style, hidden_style, enabled_style)
-
+    # Default case - all controls enabled except local view
+    return (
+        enabled_style,  # direction label style
+        enabled_style,  # layout control style
+        enabled_style,  # layout freeze label style
+        False,  # layout freeze switch
+        hidden_style,  # view label style (hidden)
+        hidden_style,  # global-local switch style (hidden)
+        enabled_style,  # download button
+    )
 
 @callback(
     Output("layout-freeze-switch", "value"),
