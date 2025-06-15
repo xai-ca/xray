@@ -39,7 +39,6 @@ import dash_bootstrap_components as dbc
     Input("global-local-switch", "value"),
     Input("available-fixes-store", "data"),
     Input("apply-fix-switch", "value"),
-    Input("examples-dropdown", "value"),
     State("selected_arguments_changed", "data"),
     State("explanation-graph", "dot_source"),
     State("raw-json", "data"),
@@ -61,10 +60,10 @@ def create_visualization(
     local_view,
     selected_fix,
     apply_fix_switch,
-    example_value,
     selected_arguments_changed,
     current_dot_source,
     raw_json,
+
 ):
     if not arguments or not attacks:
         raise PreventUpdate
@@ -161,11 +160,11 @@ def create_visualization(
         selected_arguments_changed = False
     # ========================== Provenance Session ==========================
     elif active_item == "Provenance":
-        if triggered_id == "layout-freeze-switch":
+        # Always use generate_dot_string but adjust dot_rank based on selection
+        if selected_arguments:
             if layout_freeze:
-                # When freezing, use current dot source or generate a new one if none exists
+                # If layout is frozen, use the existing dot source with saved positions
                 if current_dot_source is None:
-                    # Generate new dot source if none exists
                     dot_source = generate_dot_string(
                         arg_framework,
                         selected_arguments,
@@ -173,13 +172,74 @@ def create_visualization(
                         dot_layout,
                         dot_rank,
                         special_handling,
-                        False,  # Don't use layout file yet
+                        layout_freeze,
+                        layout_file="temp/layout.txt",
                         raw_json=raw_json,
                     )
                 else:
-                    # Use current dot source to preserve the current state
+                    # When using current dot source, we need to regenerate it with the current selection
+                    # to ensure proper highlighting
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        layout_file="temp/layout.txt",
+                        raw_json=raw_json,
+                    )
+            else:
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    raw_json=raw_json,
+                )
+        else:
+            if layout_freeze:
+                # If layout is frozen, use the existing dot source with saved positions
+                if current_dot_source is None:
+                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json, layout_file="temp/layout.txt")
+                else:
+                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json, layout_file="temp/layout.txt")
+            else:
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+
+        if prov_arg:
+            # Only allow local view if layout is not frozen
+            if local_view and not layout_freeze:
+                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
+                local_view_rank = get_local_view_rank(arg_framework, prov_arg)
+                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view, local_view_rank)
+            else:
+                # Force global view if layout is frozen
+                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
+                # Always use global view (False) when layout is frozen
+                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, False)
+    # ========================== Critical Attacks Session ==========================
+    elif active_item == "CriticalAttacks":
+        if triggered_id == "layout-freeze-switch":
+            if layout_freeze:
+                # When freezing, use current dot source or generate a new one if none exists
+                if current_dot_source is None:
+                    dot_source = generate_dot_string(
+                        arg_framework,
+                        selected_arguments,
+                        True,
+                        dot_layout,
+                        dot_rank,
+                        special_handling,
+                        layout_freeze,
+                        raw_json=raw_json,
+                    )
+                else:
                     dot_source = current_dot_source
-                
                 # Save the current layout
                 os.makedirs("temp", exist_ok=True)
                 with open("temp/layout.dot", "w") as dot_file:
@@ -189,7 +249,7 @@ def create_visualization(
                     ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
                     check=True,
                 )
-                # Update dot source with position information while preserving the current state
+                # Immediately update dot source with position information
                 dot_source = generate_dot_string(
                     arg_framework,
                     selected_arguments,
@@ -214,7 +274,8 @@ def create_visualization(
                     raw_json=raw_json,
                 )
         elif layout_freeze:
-            # If layout is frozen, use the existing dot source with saved positions
+            # If layout is frozen, generate a new dot source with the saved positions
+            # but with Critical Attacks specific styling and highlighting
             dot_source = generate_dot_string(
                 arg_framework,
                 selected_arguments,
@@ -227,252 +288,46 @@ def create_visualization(
                 raw_json=raw_json,
             )
         else:
-            # Always use generate_dot_string but adjust dot_rank based on selection
-            if selected_arguments:
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    raw_json=raw_json,
-                )
-            else:
-                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
-
-        if prov_arg:
-            # Only allow local view if layout is not frozen
-            if local_view and not layout_freeze:
-                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
-                local_view_rank = get_local_view_rank(arg_framework, prov_arg)
-                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, local_view, local_view_rank)
-            else:
-                # Force global view if layout is frozen
-                hl_edges, hl_nodes = get_provenance(arg_framework, prov_type, prov_arg)
-                # Always use global view (False) when layout is frozen
-                dot_source = highlight_dot_source(dot_source, hl_nodes, prov_arg, prov_type, False)
-    # ========================== Critical Attacks Session ==========================
-    elif active_item == "CriticalAttacks":
-        if triggered_id == "layout-freeze-switch":
-            if layout_freeze:
-                # When freezing, first handle any suspended attacks
-                if selected_fix and apply_fix_switch:
-                    # Convert selected_fix from list of lists to the format "(A,B)"
-                    selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
-                    # Remove the selected critical edges from attacks
-                    fixed_attacks = []
-                    i = 0
-                    while i < len(attacks):
-                        if i + 4 < len(attacks):
-                            attack_str = ''.join(attacks[i:i+5])
-                            if attack_str not in selected_fix_strings:
-                                fixed_attacks.extend([c for c in attack_str])
-                                if i + 5 < len(attacks) and attacks[i + 5] == '\n':
-                                    fixed_attacks.append('\n')
-                            i += 6
-                        else:
-                            fixed_attacks.extend(attacks[i:])
-                            break
-                    
-                    fixed_attacks_str = ''.join(fixed_attacks)
-                    fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
-                    
-                    # Generate dot source with suspended attacks
-                    temp_dot_source = generate_dot_string(
-                        fixed_arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        False,  # Don't use layout file yet
-                        raw_json=raw_json,
-                    )
-                else:
-                    # Generate dot source without suspended attacks
-                    temp_dot_source = generate_dot_string(
-                        arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        False,  # Don't use layout file yet
-                        raw_json=raw_json,
-                    )
-                
-                # Save the current layout
-                os.makedirs("temp", exist_ok=True)
-                with open("temp/layout.dot", "w") as dot_file:
-                    dot_file.write(temp_dot_source)
-                # Generate position information
-                subprocess.run(
-                    ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
-                    check=True,
-                )
-                
-                # Generate final dot source with saved positions
-                if selected_fix and apply_fix_switch:
-                    dot_source = generate_dot_string(
-                        fixed_arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        layout_freeze,
-                        layout_file="temp/layout.txt",
-                        raw_json=raw_json,
-                    )
-                else:
-                    dot_source = generate_dot_string(
-                        arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        layout_freeze,
-                        layout_file="temp/layout.txt",
-                        raw_json=raw_json,
-                    )
-            else:
-                # When unfreezing, handle suspended attacks first
-                if selected_fix and apply_fix_switch:
-                    # Convert selected_fix from list of lists to the format "(A,B)"
-                    selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
-                    # Remove the selected critical edges from attacks
-                    fixed_attacks = []
-                    i = 0
-                    while i < len(attacks):
-                        if i + 4 < len(attacks):
-                            attack_str = ''.join(attacks[i:i+5])
-                            if attack_str not in selected_fix_strings:
-                                fixed_attacks.extend([c for c in attack_str])
-                                if i + 5 < len(attacks) and attacks[i + 5] == '\n':
-                                    fixed_attacks.append('\n')
-                            i += 6
-                        else:
-                            fixed_attacks.extend(attacks[i:])
-                            break
-                    
-                    fixed_attacks_str = ''.join(fixed_attacks)
-                    fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
-                    dot_source = generate_dot_string(
-                        fixed_arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        layout_freeze,
-                        raw_json=raw_json,
-                    )
-                else:
-                    dot_source = generate_dot_string(
-                        arg_framework,
-                        selected_arguments,
-                        True,
-                        dot_layout,
-                        dot_rank,
-                        special_handling,
-                        layout_freeze,
-                        raw_json=raw_json,
-                    )
-        elif layout_freeze:
-            # If layout is frozen, handle suspended attacks first
-            if selected_fix and apply_fix_switch:
-                # Convert selected_fix from list of lists to the format "(A,B)"
-                selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
-                # Remove the selected critical edges from attacks
-                fixed_attacks = []
-                i = 0
-                while i < len(attacks):
-                    if i + 4 < len(attacks):
-                        attack_str = ''.join(attacks[i:i+5])
-                        if attack_str not in selected_fix_strings:
-                            fixed_attacks.extend([c for c in attack_str])
-                            if i + 5 < len(attacks) and attacks[i + 5] == '\n':
-                                fixed_attacks.append('\n')
-                        i += 6
-                    else:
-                        fixed_attacks.extend(attacks[i:])
-                        break
-                
-                fixed_attacks_str = ''.join(fixed_attacks)
-                fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
-                dot_source = generate_dot_string(
-                    fixed_arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    layout_file="temp/layout.txt",
-                    raw_json=raw_json,
-                )
-            else:
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    layout_file="temp/layout.txt",
-                    raw_json=raw_json,
-                )
-        else:
             # Only generate new layout when not frozen
-            if selected_fix and apply_fix_switch:
+            dot_source = generate_dot_string(
+                arg_framework,
+                selected_arguments,
+                True,
+                dot_layout,
+                dot_rank,
+                special_handling,
+                layout_freeze,
+                raw_json=raw_json,
+            )
+        
+        # Add highlighting for selected fixes
+        if selected_fix:
+            dot_source = highlight_critical_edges(dot_source, selected_fix)
+            
+            if apply_fix_switch:  # Switch is turned ON
                 # Convert selected_fix from list of lists to the format "(A,B)"
                 selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
-                # Remove the selected critical edges from attacks
+                # Remove the selected critical edges from attacks by reconstructing each attack string
                 fixed_attacks = []
                 i = 0
                 while i < len(attacks):
-                    if i + 4 < len(attacks):
-                        attack_str = ''.join(attacks[i:i+5])
+                    # Each attack is in format ['(', 'A', ',', 'B', ')', '\n', ...]
+                    if i + 4 < len(attacks):  # Make sure we have enough characters
+                        attack_str = ''.join(attacks[i:i+5])  # Join '(', 'A', ',', 'B', ')'
                         if attack_str not in selected_fix_strings:
+                            # Keep the original character-by-character format
                             fixed_attacks.extend([c for c in attack_str])
                             if i + 5 < len(attacks) and attacks[i + 5] == '\n':
                                 fixed_attacks.append('\n')
-                        i += 6
+                        i += 6  # Skip to next attack (including '\n')
                     else:
                         fixed_attacks.extend(attacks[i:])
                         break
                 
+                # Convert fixed_attacks list to string before passing to read_argumentation_framework
                 fixed_attacks_str = ''.join(fixed_attacks)
                 fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
-                dot_source = generate_dot_string(
-                    fixed_arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    raw_json=raw_json,
-                )
-            else:
-                dot_source = generate_dot_string(
-                    arg_framework,
-                    selected_arguments,
-                    True,
-                    dot_layout,
-                    dot_rank,
-                    special_handling,
-                    layout_freeze,
-                    raw_json=raw_json,
-                )
-
-        # Handle critical attack highlighting (only if not suspended)
-        if selected_fix and not apply_fix_switch:
-            dot_source = highlight_critical_edges(dot_source, selected_fix)
+                dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
     # ========================== Semantics Session ==========================
     else:
         if selected_arguments == {}:
@@ -1336,3 +1191,4 @@ def update_filename_display(filename):
     if not filename:
         return ""
     return f"File: {filename}"
+
