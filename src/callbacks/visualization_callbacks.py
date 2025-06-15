@@ -162,9 +162,32 @@ def create_visualization(
     elif active_item == "Provenance":
         # Always use generate_dot_string but adjust dot_rank based on selection
         if selected_arguments:
-            if layout_freeze:
-                # If layout is frozen, use the existing dot source with saved positions
-                if current_dot_source is None:
+            if triggered_id == "layout-freeze-switch":
+                if layout_freeze:
+                    # When freezing, use current dot source or generate a new one if none exists
+                    if current_dot_source is None:
+                        dot_source = generate_dot_string(
+                            arg_framework,
+                            selected_arguments,
+                            True,
+                            dot_layout,
+                            dot_rank,
+                            special_handling,
+                            layout_freeze,
+                            raw_json=raw_json,
+                        )
+                    else:
+                        dot_source = current_dot_source
+                    # Save the current layout
+                    os.makedirs("temp", exist_ok=True)
+                    with open("temp/layout.dot", "w") as dot_file:
+                        dot_file.write(dot_source)
+                    # Generate position information
+                    subprocess.run(
+                        ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                        check=True,
+                    )
+                    # Immediately update dot source with position information
                     dot_source = generate_dot_string(
                         arg_framework,
                         selected_arguments,
@@ -177,8 +200,7 @@ def create_visualization(
                         raw_json=raw_json,
                     )
                 else:
-                    # When using current dot source, we need to regenerate it with the current selection
-                    # to ensure proper highlighting
+                    # When unfreezing, generate new layout without saving
                     dot_source = generate_dot_string(
                         arg_framework,
                         selected_arguments,
@@ -187,9 +209,21 @@ def create_visualization(
                         dot_rank,
                         special_handling,
                         layout_freeze,
-                        layout_file="temp/layout.txt",
                         raw_json=raw_json,
                     )
+            elif layout_freeze:
+                # If layout is frozen, use the saved positions but update highlighting
+                dot_source = generate_dot_string(
+                    arg_framework,
+                    selected_arguments,
+                    True,
+                    dot_layout,
+                    dot_rank,
+                    special_handling,
+                    layout_freeze,
+                    layout_file="temp/layout.txt",
+                    raw_json=raw_json,
+                )
             else:
                 dot_source = generate_dot_string(
                     arg_framework,
@@ -202,12 +236,30 @@ def create_visualization(
                     raw_json=raw_json,
                 )
         else:
-            if layout_freeze:
-                # If layout is frozen, use the existing dot source with saved positions
-                if current_dot_source is None:
+            if triggered_id == "layout-freeze-switch":
+                if layout_freeze:
+                    # When freezing, use current dot source or generate a new one if none exists
+                    if current_dot_source is None:
+                        dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+                    else:
+                        dot_source = current_dot_source
+                    # Save the current layout
+                    os.makedirs("temp", exist_ok=True)
+                    with open("temp/layout.dot", "w") as dot_file:
+                        dot_file.write(dot_source)
+                    # Generate position information
+                    subprocess.run(
+                        ["dot", "-Tplain", "temp/layout.dot", "-o", "temp/layout.txt"],
+                        check=True,
+                    )
+                    # Immediately update dot source with position information
                     dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json, layout_file="temp/layout.txt")
                 else:
-                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json, layout_file="temp/layout.txt")
+                    # When unfreezing, generate new layout without saving
+                    dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
+            elif layout_freeze:
+                # If layout is frozen, use the saved positions
+                dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json, layout_file="temp/layout.txt")
             else:
                 dot_source = generate_plain_dot_string(arg_framework, dot_layout, raw_json)
 
