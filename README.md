@@ -43,16 +43,26 @@ python app.py
 gunicorn app:server
 ``` -->
 
-## Docker Manually Deployment
-Rebuild the Docker Image
+## Docker Local Deployment
+To run the application locally using Docker:
+
+1. Build the Docker image:
 ```bash
-docker buildx build --platform linux/amd64 -t seanyl/xray:app .
+docker build -t seanyl/xray:app .
 ```
 
-Push the image to docker hub
+2. Run the container with volume mounting for temp files:
+```bash
+docker run -p 8050:8050 -v $(pwd)/temp:/app/temp seanyl/xray:app
 ```
-docker push seanyl/xray:app
-```
+
+The application will be available at http://localhost:8050
+
+Notes:
+- The `-p 8050:8050` flag maps port 8050 from the container to port 8050 on your host machine
+- The `-v $(pwd)/temp:/app/temp` flag mounts a local `temp` directory to store layout files
+- To stop the container, press Ctrl+C in the terminal or run `docker stop <container_id>`
+
 
 # License
 The software is available under the MIT license.
@@ -60,6 +70,21 @@ The software is available under the MIT license.
 
 # Acknowledgment
 AF-XRAY is built upon [PyArg](https://github.com/DaphneOdekerken/PyArg)
+
+# Citation
+
+```bibtex
+@inproceedings{xia2025afxray,
+  title     = {AF-Xray: Visual Explanation and Resolution of Ambiguity in Legal Argumentation Frameworks},
+  author    = {Yilin Xia and Heng Zheng and Shawn Bowers and Bertram Ludäscher},
+  booktitle = {Proceedings of the Twentieth International Conference on Artificial Intelligence and Law (ICAIL 2025)},
+  year      = {2025},
+  pages     = {483--485},
+  address   = {Chicago, IL, USA},
+  publisher = {ACM},
+  isbn      = {979-8-4007-1939-4}
+}
+```
 
 # Contact
 For any queries, please open an issue on GitHub or contact [Yilin Xia](https://yilinxia.com/)
