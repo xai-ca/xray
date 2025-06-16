@@ -70,9 +70,9 @@ layout = html.Div(
                     dbc.Col(
                         html.P(
                             [
-                                "Released under MIT License. Copyright©2025-Present. University of Illinois Urbana-Champaign ",
+                                "Released under MIT License and built upon PyArg. Copyright © 2025-Present. University of Illinois Urbana-Champaign ",
                                 html.A(
-                                    "CIRSS",
+                                    "CIRSS.",
                                     href="https://cirss.ischool.illinois.edu/",
                                     target="_blank",
                                     className="text-decoration-underline text-muted",
