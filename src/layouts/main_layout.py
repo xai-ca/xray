@@ -41,6 +41,36 @@ layout = html.Div(
                                     },
                                     className="lead",
                                 ),
+                                html.A(
+                                    [
+                                        html.I(
+                                            className="fab fa-github me-2 github-icon",
+                                            style={
+                                                "fontSize": "1.3rem",
+                                                "verticalAlign": "middle"
+                                            }
+                                        ),
+                                        html.Span("GitHub", style={"verticalAlign": "middle", "fontWeight": "bold", "fontSize": "1.1rem"})
+                                    ],
+                                    href="https://github.com/idaks/xray",
+                                    target="_blank",
+                                    className="ms-3 github-btn",
+                                ),
+                                html.A(
+                                    [
+                                        html.I(
+                                            className="fas fa-file-pdf me-2 paper-icon",
+                                            style={
+                                                "fontSize": "1.3rem",
+                                                "verticalAlign": "middle"
+                                            }
+                                        ),
+                                        html.Span("Paper", style={"verticalAlign": "middle", "fontWeight": "bold", "fontSize": "1.1rem"})
+                                    ],
+                                    href="/assets/preprint-XRAY.pdf",
+                                    target="_blank",
+                                    className="ms-3 paper-btn",
+                                ),
                             ],
                             className="d-flex align-items-center text-start ms-3",  # Added ms-3 for left spacing
                         ),

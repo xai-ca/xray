@@ -70,7 +70,7 @@ input[type="radio"] {
     /* Keep it aligned with text */
 }
 
-/* 3) When checked, change the outer ring’s color */
+/* 3) When checked, change the outer ring's color */
 input[type="radio"]:checked {
     border-color: #0064f7;
     /* Purple border when checked */
@@ -85,9 +85,64 @@ input[type="radio"]:checked::before {
     left: 3px;
     /* Centers the circle horizontally */
     width: 10px;
-    /* Inner circle’s diameter */
+    /* Inner circle's diameter */
     height: 10px;
     background: #ffffff;
     border-radius: 50%;
     /* Make it a circle */
+}
+
+.github-btn,
+.paper-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: #f5f5f5;
+    border: 1px solid #d1d9e2;
+    color: #222 !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    font-weight: 500;
+    transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+    margin-left: 0.5rem;
+}
+
+.github-btn:hover,
+.github-btn:focus {
+    background: #e0e6ed;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    color: #111 !important;
+    text-decoration: none !important;
+}
+
+.paper-btn:hover,
+.paper-btn:focus {
+    background: #ffeaea;
+    box-shadow: 0 4px 8px rgba(183, 28, 28, 0.08);
+    color: #b71c1c !important;
+    text-decoration: none !important;
+}
+
+.github-icon,
+.paper-icon {
+    color: #111 !important;
+    transition: color 0.2s;
+}
+
+.github-btn:hover .github-icon,
+.github-btn:focus .github-icon,
+.paper-btn:hover .paper-icon,
+.paper-btn:focus .paper-icon {
+    color: #1976d2 !important;
+}
+
+.github-btn:hover,
+.github-btn:focus,
+.paper-btn:hover,
+.paper-btn:focus {
+    background: #e3f2fd;
+    box-shadow: 0 4px 8px rgba(25, 118, 210, 0.08);
+    color: #1976d2 !important;
+    text-decoration: none !important;
 }
