@@ -67,7 +67,7 @@ layout = html.Div(
                                         ),
                                         html.Span("Paper", style={"verticalAlign": "middle", "fontWeight": "bold", "fontSize": "1.1rem"})
                                     ],
-                                    href="/assets/preprint-xray.pdf",
+                                    href="/assets/cr-xray.pdf",
                                     target="_blank",
                                     className="ms-3 paper-btn",
                                 ),
