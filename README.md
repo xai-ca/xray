@@ -69,7 +69,10 @@ The software is available under the MIT license.
 
 
 # Acknowledgment
-AF-XRAY is built upon [PyArg](https://github.com/DaphneOdekerken/PyArg)
+AF-XRAY builds upon [PyArg](https://github.com/DaphneOdekerken/PyArg), originally developed by Daphne Odekerken.
+
+Portions of the code are adapted from PyArg, which is licensed under the MIT License.  
+The license is included in `third_party/pyarg/LICENSE`.
 
 # Citation
 
