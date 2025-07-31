@@ -89,15 +89,13 @@ def download_generated_abstract_argumentation_framework(
             filename = "edited_af"
 
     if extension == "json":
-        # Use the raw JSON data if available, otherwise convert from the framework
-        if raw_json:
-            argumentation_framework_str = json.dumps(raw_json)
-        else:
-            argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
-            argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
-                argumentation_framework
-            )
-            argumentation_framework_str = json.dumps(argumentation_framework_json)
+        # Always use the current arguments and attacks from input fields
+        # Convert from the current framework, not from raw_json
+        argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
+        argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
+            argumentation_framework
+        )
+        argumentation_framework_str = json.dumps(argumentation_framework_json)
     elif extension == "TGF":
         argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
         argumentation_framework_str = (
