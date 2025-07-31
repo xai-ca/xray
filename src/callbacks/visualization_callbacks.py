@@ -353,33 +353,37 @@ def create_visualization(
             )
         
         # Add highlighting for selected fixes
+        # print(attacks)
         if selected_fix:
             dot_source = highlight_critical_edges(dot_source, selected_fix)
             
             if apply_fix_switch:  # Switch is turned ON
                 # Convert selected_fix from list of lists to the format "(A,B)"
                 selected_fix_strings = {f"({fix[0]},{fix[1]})" for fix in selected_fix}
-                # Remove the selected critical edges from attacks by reconstructing each attack string
-                fixed_attacks = []
-                i = 0
-                while i < len(attacks):
-                    # Each attack is in format ['(', 'A', ',', 'B', ')', '\n', ...]
-                    if i + 4 < len(attacks):  # Make sure we have enough characters
-                        attack_str = ''.join(attacks[i:i+5])  # Join '(', 'A', ',', 'B', ')'
-                        if attack_str not in selected_fix_strings:
-                            # Keep the original character-by-character format
-                            fixed_attacks.extend([c for c in attack_str])
-                            if i + 5 < len(attacks) and attacks[i + 5] == '\n':
-                                fixed_attacks.append('\n')
-                        i += 6  # Skip to next attack (including '\n')
-                    else:
-                        fixed_attacks.extend(attacks[i:])
-                        break
                 
-                # Convert fixed_attacks list to string before passing to read_argumentation_framework
-                fixed_attacks_str = ''.join(fixed_attacks)
-                fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
-                dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
+                # Parse attacks string properly - split by lines and filter out selected fixes
+                import re
+                attack_lines = attacks.strip().split('\n')
+                fixed_attacks_lines = []
+                
+                for line in attack_lines:
+                    line = line.strip()
+                    if line and line not in selected_fix_strings:
+                        fixed_attacks_lines.append(line)
+                
+                # Join the remaining attacks with newlines
+                fixed_attacks_str = '\n'.join(fixed_attacks_lines)
+                
+                # print(fixed_attacks_str)
+                try:
+                    fixed_arg_framework = read_argumentation_framework(arguments, fixed_attacks_str)
+                    dot_source = recalculate_fixed_args(fixed_arg_framework, dot_source)
+                except ValueError as e:
+                    # If there's an error creating the fixed framework (e.g., invalid attacks),
+                    # fall back to using the original framework
+                    print(f"Warning: Could not create fixed framework: {e}")
+                    # Continue with the original dot_source without applying fixes
+                    pass
     # ========================== Semantics Session ==========================
     else:
         if selected_arguments == {}:
