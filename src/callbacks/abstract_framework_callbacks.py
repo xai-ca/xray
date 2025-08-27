@@ -89,13 +89,87 @@ def download_generated_abstract_argumentation_framework(
             filename = "edited_af"
 
     if extension == "json":
-        # Always use the current arguments and attacks from input fields
-        # Convert from the current framework, not from raw_json
-        argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
-        argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
-            argumentation_framework
-        )
-        argumentation_framework_str = json.dumps(argumentation_framework_json)
+        # Prefer preserving annotations from raw_json (if available) while
+        # reflecting current edits from the text fields.
+        def _parse_argument_ids(text: str):
+            seen = set()
+            ordered_ids = []
+            for line in (text or "").splitlines():
+                arg_id = line.strip()
+                if not arg_id:
+                    continue
+                if arg_id not in seen:
+                    seen.add(arg_id)
+                    ordered_ids.append(arg_id)
+            return ordered_ids
+
+        def _parse_defeats(text: str):
+            pairs = []
+            seen_pairs = set()
+            for line in (text or "").splitlines():
+                s = line.strip()
+                if not s:
+                    continue
+                # Accept formats like (a,b) or a,b
+                if s.startswith("(") and s.endswith(")"):
+                    s = s[1:-1]
+                if "," in s:
+                    left, right = s.split(",", 1)
+                    frm = left.strip()
+                    to = right.strip()
+                    key = (frm, to)
+                    if frm and to and key not in seen_pairs:
+                        seen_pairs.add(key)
+                        pairs.append(key)
+            return pairs
+
+        if raw_json:
+            try:
+                source = raw_json
+                source_args = {a.get("id"): a for a in source.get("arguments", [])}
+                source_defs = {(d.get("from"), d.get("to")): d for d in source.get("defeats", [])}
+
+                new_arg_ids = _parse_argument_ids(arguments_text)
+                new_def_pairs = _parse_defeats(defeats_text)
+
+                merged_arguments = []
+                for arg_id in new_arg_ids:
+                    existing = source_args.get(arg_id)
+                    if existing:
+                        # keep all known fields (incl. annotation/url)
+                        merged_arguments.append({**existing, "id": arg_id})
+                    else:
+                        merged_arguments.append({"id": arg_id, "annotation": "", "url": ""})
+
+                merged_defeats = []
+                for frm, to in new_def_pairs:
+                    existing = source_defs.get((frm, to))
+                    if existing:
+                        merged_defeats.append({**existing, "from": frm, "to": to})
+                    else:
+                        merged_defeats.append({"from": frm, "to": to, "annotation": ""})
+
+                name = source.get("name") or (filename or "edited_af")
+                argumentation_framework_json = {
+                    "name": name,
+                    "arguments": merged_arguments,
+                    "defeats": merged_defeats,
+                }
+                argumentation_framework_str = json.dumps(argumentation_framework_json)
+            except Exception:
+                # Fallback to constructing from text fields only if merging fails
+                argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
+                argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
+                    argumentation_framework
+                )
+                argumentation_framework_str = json.dumps(argumentation_framework_json)
+        else:
+            # No raw_json available: construct from text fields only
+            argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
+            argumentation_framework_json = ArgumentationFrameworkToJSONWriter().to_dict(
+                argumentation_framework
+            )
+            argumentation_framework_str = json.dumps(argumentation_framework_json)
     elif extension == "TGF":
         argumentation_framework = read_argumentation_framework(arguments_text, defeats_text)
         argumentation_framework_str = (
@@ -216,7 +290,11 @@ def load_argumentation_framework(_nr_clicks_random, af_content, selected_example
             for defeat in opened_af.defeats
         )
         file_name = af_filename.split(".")[0]  # Remove the file extension
-        raw_json = json.loads(decoded.decode())
+        if af_filename.upper().endswith(".JSON"):
+            raw_json = json.loads(decoded.decode())
+        else:
+            # Populate raw_json from the parsed AF for non-JSON uploads
+            raw_json = ArgumentationFrameworkToJSONWriter().to_dict(opened_af)
         # Clear the examples dropdown when opening a file.
         return abstract_arguments_value, abstract_attacks_value, None, file_name, raw_json
     
