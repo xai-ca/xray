@@ -306,12 +306,24 @@ left_column = dbc.Col(
                 item_id="ArgumentationFramework",
             ),
             dbc.AccordionItem(
-                get_abstract_evaluation_div(),
+                html.Div(
+                    get_abstract_evaluation_div(),
+                    style={
+                        "maxHeight": "400px",
+                        "overflowY": "auto",
+                    },
+                ),
                 title="Extensions (Semantics)",
                 item_id="Evaluation",
             ),
             dbc.AccordionItem(
-                get_abstract_explanation_div(),
+                html.Div(
+                    get_abstract_explanation_div(),
+                    style={
+                        "maxHeight": "400px",
+                        "overflowY": "auto",
+                    },
+                ),
                 title="Argument Status Provenance",
                 item_id="Provenance",
             ),
@@ -323,5 +335,9 @@ left_column = dbc.Col(
         ],
         id="abstract-evaluation-accordion",
     ),
-    style={"width": "30%", "maxWidth": "30%"},
+    style={
+        "width": "30%",
+        "maxWidth": "30%",
+        "maxHeight": "400px",  # match grey box height
+    },
 )
