@@ -18,7 +18,12 @@ def get_abstract_setting_specification_div():
                     dbc.ModalHeader(dbc.ModalTitle("Example Content")),
                     dbc.ModalBody(id="example-content-modal-body"),
                     dbc.ModalFooter(
-                        dbc.Button("Close", id="close-example-modal", className="ms-auto", n_clicks=0)
+                        dbc.Button(
+                            "Close",
+                            id="close-example-modal",
+                            className="ms-auto",
+                            n_clicks=0,
+                        )
                     ),
                 ],
                 id="example-content-modal",
@@ -56,12 +61,14 @@ def get_abstract_setting_specification_div():
                             ),
                             dbc.Col(
                                 dbc.Button(
-                                    html.I(className="fas fa-arrow-up-right-from-square"),
+                                    html.I(
+                                        className="fas fa-arrow-up-right-from-square"
+                                    ),
                                     id="show-more-button",
                                     n_clicks=0,
                                     color="secondary",
                                     className="w-100",
-                                    title="Show More"
+                                    title="Show More",
                                 ),
                                 width=2,
                             ),
@@ -150,6 +157,25 @@ def get_abstract_evaluation_div():
                             ),
                         ]
                     ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.B("Show labels"),
+                            ),
+                            dbc.Col(
+                                dbc.Checklist(
+                                    id="label-filter-checklist",
+                                    options=[
+                                        {"label": "IN", "value": "IN"},
+                                        {"label": "UNDEC", "value": "UNDEC"},
+                                        {"label": "OUT", "value": "OUT"},
+                                    ],
+                                    value=["IN"],
+                                    inline=True,
+                                ),
+                            ),
+                        ]
+                    ),
                     # Hidden radio items (will be populated by callbacks)
                     html.Div(
                         [
@@ -167,6 +193,7 @@ def get_abstract_evaluation_div():
                     ),
                     dbc.Row(id="21-abstract-evaluation-semantics"),
                     dcc.Store(id="grounded-extension-long-str-store"),
+                    html.Div(id="label-filter-output-text", className="mt-2"),
                 ]
             ),
         ]
@@ -229,32 +256,37 @@ def get_critical_div():
                     ),
                     dbc.Row(
                         [
-                            dbc.Col([
-                                dbc.Row([
-                                    dbc.Col(
-                                        html.Label(
-                                            "Suspend Critical Attacks",
-                                            htmlFor="apply-fix-switch",
-                                            style={"marginRight": "10px"}
-                                        ),
-                                        width="auto"
+                            dbc.Col(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                html.Label(
+                                                    "Suspend Critical Attacks",
+                                                    htmlFor="apply-fix-switch",
+                                                    style={"marginRight": "10px"},
+                                                ),
+                                                width="auto",
+                                            ),
+                                            dbc.Col(
+                                                dbc.Switch(
+                                                    id="apply-fix-switch",
+                                                    value=False,
+                                                    style={
+                                                        "transform": "scale(1.4)",
+                                                        "transformOrigin": "left center",
+                                                        "marginTop": "4px",
+                                                    },
+                                                ),
+                                                width="auto",
+                                            ),
+                                        ],
+                                        align="center",
                                     ),
-                                    dbc.Col(
-                                        dbc.Switch(
-                                            id="apply-fix-switch",
-                                            value=False,
-                                            style={
-                                                "transform": "scale(1.4)",
-                                                "transformOrigin": "left center",
-                                                "marginTop": "4px"
-                                            }
-                                        ),
-                                        width="auto"
-                                    )
-                                ], align="center"),
-                            ]),
+                                ]
+                            ),
                         ],
-                        className="mt-4"
+                        className="mt-4",
                     ),
                     # Store for keeping track of available fixes
                     dcc.Store(id="available-fixes-store", data=None),

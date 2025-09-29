@@ -13,6 +13,59 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
 )
 
 
+def _format_extension_label_from_value(long_value: str, selected_labels):
+    parts = long_value.split("|") if "|" in long_value else ("", "", "")
+    in_args = [a for a in parts[0].split("+") if a] if parts[0] else []
+    undec_args = [a for a in parts[1].split("+") if a] if parts[1] else []
+    out_args = [a for a in parts[2].split("+") if a] if parts[2] else []
+
+    sections = []
+    if "IN" in selected_labels:
+        # Match original single-label style when only IN is selected
+        sections.append("{" + ", ".join(in_args) + "}" if len(selected_labels) == 1 else "IN={" + ", ".join(in_args) + "}")
+    if "UNDEC" in selected_labels:
+        sections.append("UNDEC={" + ", ".join(undec_args) + "}")
+    if "OUT" in selected_labels:
+        sections.append("OUT={" + ", ".join(out_args) + "}")
+
+    return "\n".join(sections) if sections else "{}"
+
+
+@callback(
+    [
+        Output("extension-radioitems-grounded", "options"),
+        Output("extension-radioitems-stable", "options"),
+        Output("extension-radioitems-preferred", "options"),
+        Output("extension-radioitems-other", "options"),
+    ],
+    Input("label-filter-checklist", "value"),
+    [
+        State("extension-radioitems-grounded", "options"),
+        State("extension-radioitems-stable", "options"),
+        State("extension-radioitems-preferred", "options"),
+        State("extension-radioitems-other", "options"),
+    ],
+    prevent_initial_call=True,
+)
+def relabel_extension_options(selected_labels, grounded_opts, stable_opts, preferred_opts, other_opts):
+    def relabel(opts):
+        if not opts:
+            return []
+        return [
+            {
+                **opt,
+                "label": _format_extension_label_from_value(opt.get("value", ""), selected_labels),
+            }
+            for opt in opts
+        ]
+
+    return (
+        relabel(grounded_opts),
+        relabel(stable_opts),
+        relabel(preferred_opts),
+        relabel(other_opts),
+    )
+
 # -- Callback for evaluating the abstract argumentation framework --
 @callback(
     Output("21-abstract-evaluation-semantics", "children"),
@@ -21,10 +74,11 @@ from py_arg_visualisation.functions.import_functions.read_argumentation_framewor
     State("abstract-attacks", "value"),
     Input("abstract-evaluation-accordion", "active_item"),
     Input("abstract-evaluation-semantics", "value"),
+    State("label-filter-checklist", "value"),
     prevent_initial_call=True,
 )
 def evaluate_abstract_argumentation_framework(
-    arguments, attacks, active_item, semantics
+    arguments, attacks, active_item, semantics, selected_labels
 ):
     if active_item != "Evaluation":
         raise PreventUpdate
@@ -74,10 +128,17 @@ def evaluate_abstract_argumentation_framework(
         arg_framework, "Complete"
     )
 
-    # Create radio items for each semantic group
+    # Default labels selection if None
+    if not selected_labels:
+        selected_labels = ["IN"]
+
+    # Create radio items for each semantic group (labels formatted from current selection)
     grounded_extension_radioitems = dbc.RadioItems(
         options=[
-            {"label": label, "value": value}
+            {
+                "label": _format_extension_label_from_value(value, selected_labels),
+                "value": value,
+            }
             for label, value in extension_dict.items()
             if label
             in [
@@ -87,10 +148,14 @@ def evaluate_abstract_argumentation_framework(
         ],
         id="extension-radioitems-grounded",
         inline=True,
+        style={"whiteSpace": "pre-line"},
     )
     stable_extension_radioitems = dbc.RadioItems(
         options=[
-            {"label": label, "value": value}
+            {
+                "label": _format_extension_label_from_value(value, selected_labels),
+                "value": value,
+            }
             for label, value in extension_dict.items()
             if label
             in [
@@ -100,10 +165,14 @@ def evaluate_abstract_argumentation_framework(
         ],
         id="extension-radioitems-stable",
         inline=True,
+        style={"whiteSpace": "pre-line"},
     )
     preferred_non_stable_extension_radioitems = dbc.RadioItems(
         options=[
-            {"label": label, "value": value}
+            {
+                "label": _format_extension_label_from_value(value, selected_labels),
+                "value": value,
+            }
             for label, value in extension_dict.items()
             if label
             in [
@@ -113,10 +182,14 @@ def evaluate_abstract_argumentation_framework(
         ],
         id="extension-radioitems-preferred",
         inline=True,
+        style={"whiteSpace": "pre-line"},
     )
     other_complete_extension_radioitems = dbc.RadioItems(
         options=[
-            {"label": label, "value": value}
+            {
+                "label": _format_extension_label_from_value(value, selected_labels),
+                "value": value,
+            }
             for label, value in extension_dict.items()
             if label
             in [
@@ -129,6 +202,7 @@ def evaluate_abstract_argumentation_framework(
         ],
         id="extension-radioitems-other",
         inline=True,
+        style={"whiteSpace": "pre-line"},
     )
 
     semantics_div = html.Div(children=[])
